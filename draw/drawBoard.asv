@@ -1,0 +1,17 @@
+function [ output_args ] = drawBoard( board,robotPositions )
+%  draws a figure of the boardgame
+global BoardFigure;
+
+close();
+BoardFigure = figure('name','Robo Rally');
+[m,n,nFeat] = size(board);
+axis ( [1, m+1, 1, n+1 ] );
+
+axis equal;
+set(gca, 'XTickLabelMode', 'manual', 'XTickLabel', [],'Visible','off');
+set(gca, 'YTickLabelMode', 'manual', 'YTickLabel', []);
+set(BoardFigure,'color','white');
+drawGrid(m,n);
+drawRobots(robotPositions);
+end
+

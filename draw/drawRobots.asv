@@ -1,0 +1,6 @@
+function [  ] = drawRobots( robotPos )
+
+
+
+end
+

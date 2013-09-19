@@ -1,0 +1,13 @@
+function [  ] = drawGrid( m,n )
+% draws the Grid
+for x = 1:m+1  % vertical lines
+    line([x,x],[1,m+1],'color','black');
+end
+
+for y = 1:n+1   % horizontal lines
+    line([1,n+1],[y,y],'color','black');
+end
+
+
+end
+
