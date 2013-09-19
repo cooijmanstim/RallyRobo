@@ -1,6 +1,14 @@
-function [  ] = drawRobots( robotPos )
-
-
-
+function [  ] = drawRobots(m,n, robots )
+colors = ['black','blue','red','green'];
+hold on;
+resize = 0.2;
+for i = 1: length(robots.direction)
+    x = robots.position(i,1);
+    y = robots.position(i,2);
+    image = imread(strcat(colors(i),'.png'));
+    imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],image);
+end
+  
+   
 end
 

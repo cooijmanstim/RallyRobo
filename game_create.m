@@ -16,7 +16,7 @@ game.state.checkpoints = zeros(ncheckpoints, 2);
 % robots(i, :) similarly
 game.state.robots = zeros(nrobots, 2);
 % directions(i) is the direction the ith robot is facing, represented by an
-% integer [0 1 2 3] for [east north west south]
-game.state.directions = zeros(nrobots, 2);
+% integer [1 2 3 4] for [east north west south]
+game.state.robots.direction = zeros(nrobots, 2);
 % progress(i) is the number of the checkpoint the ith robot is chasing
 game.state.progress = ones(nrobots, 1);

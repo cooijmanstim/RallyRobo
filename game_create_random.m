@@ -11,11 +11,11 @@ game.state.checkpoints = randi(m, ncheckpoints, 2);
 
 % ensure no two robots end up on the same tile
 assert(m * n >= nrobots);
-game.state.robots = randi(m, nrobots, 2);
+game.state.robots.position = randi(m, nrobots, 2);
 while has_duplicate_rows(game.state.robots)
-    game.state.robots = randi(m, nrobots, 2);
+    game.state.robots.position = randi(m, nrobots, 2);
 end
 
-game.state.directions = randi(RR.ndirections, nrobots, 1) - 1;
+game.state.robots.direction = randi(RR.ndirections, nrobots, 1);
 
-drawBoard(game.board,game.state.robots, game.state.);
+end

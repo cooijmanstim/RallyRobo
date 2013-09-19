@@ -1,4 +1,4 @@
-function [ output_args ] = drawBoard( board,robotPositions )
+function [ output_args ] = drawBoard( board,robots )
 %  draws a figure of the boardgame
 global BoardFigure;
 
@@ -12,6 +12,6 @@ set(gca, 'XTickLabelMode', 'manual', 'XTickLabel', [],'Visible','off');
 set(gca, 'YTickLabelMode', 'manual', 'YTickLabel', []);
 set(BoardFigure,'color','white');
 drawGrid(m,n);
-drawRobots(robotPositions);
+drawRobots(m,n,robots);
 end
 
