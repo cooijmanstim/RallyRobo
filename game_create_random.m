@@ -17,5 +17,3 @@ while has_duplicate_rows(game.state.robots)
 end
 
 game.state.robots.direction = randi(RR.ndirections, nrobots, 1);
-
-end
