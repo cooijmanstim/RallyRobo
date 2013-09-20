@@ -16,4 +16,4 @@ while has_duplicate_rows(game.state.robots)
     game.state.robots.position = randi(m, nrobots, 2);
 end
 
-game.state.robots.direction = RR.directions.ascolumns(:, randi(RR.ndirections, nrobots, 1));
+game.state.robots.direction = RR.directions.asrows(randi(RR.ndirections, nrobots, 1), :);
