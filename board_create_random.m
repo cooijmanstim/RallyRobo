@@ -4,4 +4,4 @@ function [board] = board_create_random(m, n)
 global RR;
 % probability of each feature appearing; somewhat arbitrary
 P = repmat(shiftdim([4 5 10 10 10 10 3 3 3 3 1 1]/144, -1), [m n 1]);
-board = binornd(1, P, [m n RR.nfeatures]);
+board = logical(binornd(1, P, [m n RR.nfeatures]));
