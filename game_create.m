@@ -13,10 +13,10 @@ game.state = [];
 % checkpoints(i, :) is a 2-element vector [y x] containing the row-major
 % coordinates of the ith checkpoint
 game.state.checkpoints = zeros(ncheckpoints, 2);
-% robots(i, :) similarly
+% robots.position(i, :) similarly
 game.state.robots.position = zeros(nrobots, 2);
-% directions(i) is the direction the ith robot is facing, represented by an
-% integer [1 2 3 4] for [east north west south]
-game.state.robots.direction = zeros(nrobots, 2);
+% robots.direction(i, :) is the direction the ith robot is facing,
+% represented by a displacement vector
+game.state.robots.direction = repmat(RR.directions.byname.east, [nrobots 1]);
 % progress(i) is the number of the checkpoint the ith robot is chasing
 game.state.progress = ones(nrobots, 1);

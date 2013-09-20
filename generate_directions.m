@@ -1,5 +1,7 @@
 function [dir] = generate_directions()
-    dir.east = 1;
-    dir.north = 2;
-    dir.west = 3;
-    dir.south = 4;
+    % TODO: figure out a better way to store these
+    dir.byname.east  = [ 0  1]';
+    dir.byname.north = [ 1  0]';
+    dir.byname.west  = [ 0 -1]';
+    dir.byname.south = [-1  0]';
+    dir.ascolumns = [dir.byname.east dir.byname.north dir.byname.west dir.byname.south];

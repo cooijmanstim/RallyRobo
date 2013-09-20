@@ -11,7 +11,5 @@ RR.nfeatures = length(fieldnames(RR.tfi));
 
 RR.cards = generate_cards();
 
-% directions (ENWS) and their integer representations
-RR.dir = generate_directions();
-RR.ndirections = length(fieldnames(RR.dir));
-RR.directions = load('directions.mat');
+RR.directions = generate_directions();
+RR.ndirections = size(RR.directions.ascolumns, 2);
