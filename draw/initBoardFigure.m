@@ -10,7 +10,5 @@ set(gca, 'XTickLabelMode', 'manual', 'XTickLabel', [],'Visible','off');
 set(gca, 'YTickLabelMode', 'manual', 'YTickLabel', [],'Visible','off');
 set(BoardFigure,'color','white');
 hold on;
-
-refreshBoard(game.board,game.state.robots);
 end
 
