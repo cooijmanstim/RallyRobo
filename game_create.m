@@ -1,4 +1,6 @@
 function [game] = game_create(m, n, nrobots, ncheckpoints)
+global RR;
+
 game = [];
 game.height = m;
 game.width = n;
