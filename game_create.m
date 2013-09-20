@@ -14,7 +14,7 @@ game.state = [];
 % coordinates of the ith checkpoint
 game.state.checkpoints = zeros(ncheckpoints, 2);
 % robots(i, :) similarly
-game.state.robots = zeros(nrobots, 2);
+game.state.robots.position = zeros(nrobots, 2);
 % directions(i) is the direction the ith robot is facing, represented by an
 % integer [1 2 3 4] for [east north west south]
 game.state.robots.direction = zeros(nrobots, 2);
