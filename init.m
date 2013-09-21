@@ -12,4 +12,4 @@ RR.nfeatures = length(fieldnames(RR.tfi));
 RR.cards = generate_cards();
 
 RR.directions = generate_directions();
-RR.ndirections = size(RR.directions.ascolumns, 2);
+RR.ndirections = size(RR.directions.asrows, 1);
