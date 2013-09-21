@@ -1,2 +1,2 @@
-function [angle] = direction_get_angle(direction)
-angle = atan2(direction(1), direction(2));
+function [angle] = direction_get_angle(dx)
+angle = atan2(dx(1), dx(2));

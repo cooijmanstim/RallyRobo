@@ -13,3 +13,5 @@ RR.cards = generate_cards();
 
 RR.directions = generate_directions();
 RR.ndirections = size(RR.directions.asrows, 1);
+
+RR.obstructions = precompute_obstructions();

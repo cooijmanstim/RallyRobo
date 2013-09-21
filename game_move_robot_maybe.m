@@ -13,8 +13,8 @@ xnew = xold + dx;
 % TODO: what if moving outside the boundaries of the board? maybe grow the
 % board to 14x14 with a border of pits to avoid this case
 
-if any(game.board(xold(1), xold(2), get_obstructions_to_leaving(dx)) ...
-    || game.board(xnew(1), xnew(2), get_obstructions_to_entering(dx)))
+if ~robot_can_leave(game, irobot, xold, dx) || ...
+   ~robot_can_enter(game, irobot, xnew, dx)
     moved = false;
     return;
 end
