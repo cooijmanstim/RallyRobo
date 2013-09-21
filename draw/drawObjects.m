@@ -50,15 +50,15 @@ for x = 1:columns
             rectY = [y,y,y+widthWalls,y+widthWalls];
             fill(rectX,rectY,'black');
          end
-         if board(x,y,RR.tfi.repair)
+         if board(x,y,RR.features.repair)
              resize = 0.2;
              imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],imageRepair);
          end
-         if board(x,y,RR.tfi.conveyor_turning_clockwise)
+         if board(x,y,RR.features.conveyor_turning_clockwise)
              convImage = imageConveyorEastClockwise;
              width = conveyorImageCwWidth;
              height = conveyorImageCwHeight;
-         elseif board(x,y,RR.tfi.conveyor_turning_counterclockwise)
+         elseif board(x,y,RR.features.conveyor_turning_counterclockwise)
              convImage = imageConveyorEastCounterclockwise;
              width = conveyorImageCCwWidth;
              height = conveyorImageCCwHeight;
@@ -67,14 +67,14 @@ for x = 1:columns
              width = conveyorImageWidth;
              height = conveyorImageHeight;
          end
-         if board(x,y,RR.tfi.conveyor_east)
+         if board(x,y,RR.features.conveyor_east)
              imagesc([x+conveyorDistance,x+conveyorDistance+height],[y+0.5+0.5*width,y+0.5-0.5*width],convImage);
-         elseif board(x,y,RR.tfi.conveyor_north)
+         elseif board(x,y,RR.features.conveyor_north)
              rotated = imrotate(convImage,-90);
              imagesc([x+0.5+0.5*width,x+0.5-0.5*width],[y+conveyorDistance,y+conveyorDistance+height],rotated);
-         elseif board(x,y,RR.tfi.conveyor_west)
+         elseif board(x,y,RR.features.conveyor_west)
              imagesc([x+1-conveyorDistance,x+1-conveyorDistance-height],[y+0.5+0.5*width,y+0.5-0.5*width],convImage);
-         elseif board(x,y,RR.tfi.conveyor_south)
+         elseif board(x,y,RR.features.conveyor_south)
             rotated = imrotate(convImage,-90);
             imagesc([x+0.5+0.5*width,x+0.5-0.5*width],[y+conveyorDistance+height,y+conveyorDistance],rotated);
          end

@@ -1,4 +1,4 @@
-function [tfi] = generate_tile_feature_indices()
+function [tfi] = generate_features()
     tfi = [];
     tfi.pit = 1;
     tfi.repair = 2;

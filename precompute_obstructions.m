@@ -11,17 +11,18 @@ xzero = 2; yzero = 2;
 o.leave_ = cell(3, 3); o.enter_ = cell(3, 3);
 
 % pits obstruct leaving regardless of direction
-o.leave_{:,:} = [RR.tfi.pit];
+o.leave_{:,:} = [RR.features.pit];
 
 % add the walls
 for dy = [-1 0 1]
     for dx = [-1 0 1]
         y = yzero + dy; x = xzero + dx;
 
-        wall = round(RR.tfi.wall_east+direction_get_angle(dx)*2/pi);
+        offset = RR.features.wall_east;
+        wall = round(offset+direction_get_angle(dx)*2/pi);
         o.leave_{y, x} = [wall o.leave_{y, x}];
         
-        wall = round(RR.tfi.wall_east+mod(direction_get_angle(dx)+pi, 2*pi)*2/pi);
+        wall = round(offset+mod(direction_get_angle(dx)+pi, 2*pi)*2/pi);
         o.enter_{y, x} = [wall o.enter_{y, x}];
     end
 end

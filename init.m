@@ -1,13 +1,13 @@
 function [] = init()
 % gets the environment in order
 
-global RR;
 % for constants and other things we need in many places
+global RR;
 RR = [];
 
 % indices of tile features (for the third dimension of the board matrix)
-RR.tfi = generate_tile_feature_indices();
-RR.nfeatures = length(fieldnames(RR.tfi));
+RR.features = generate_features();
+RR.nfeatures = length(fieldnames(RR.features));
 
 RR.cards = generate_cards();
 
