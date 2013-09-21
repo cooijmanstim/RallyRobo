@@ -10,9 +10,6 @@ global RR;
 xzero = 2; yzero = 2;
 o.leave_ = cell(3, 3); o.enter_ = cell(3, 3);
 
-% pits obstruct leaving regardless of direction
-o.leave_{:,:} = [RR.features.pit];
-
 % add the walls
 for dy = [-1 0 1]
     for dx = [-1 0 1]
@@ -22,10 +19,10 @@ for dy = [-1 0 1]
         direction = [dy dx];
         
         wall = round(offset+direction_get_angle(direction)*2/pi);
-        o.leave_{y, x} = [wall o.leave_{y, x}];
+        o.leave_{y, x} = [wall RR.features.pit];
         
         wall = round(offset+direction_get_angle(-direction)*2/pi);
-        o.enter_{y, x} = [wall o.enter_{y, x}];
+        o.enter_{y, x} = wall;
     end
 end
 
