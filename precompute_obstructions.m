@@ -19,10 +19,12 @@ for dy = [-1 0 1]
         y = yzero + dy; x = xzero + dx;
 
         offset = RR.features.wall_east;
-        wall = round(offset+direction_get_angle(dx)*2/pi);
+        direction = [dy dx];
+        
+        wall = round(offset+direction_get_angle(direction)*2/pi);
         o.leave_{y, x} = [wall o.leave_{y, x}];
         
-        wall = round(offset+mod(direction_get_angle(dx)+pi, 2*pi)*2/pi);
+        wall = round(offset+direction_get_angle(-direction)*2/pi);
         o.enter_{y, x} = [wall o.enter_{y, x}];
     end
 end
