@@ -7,7 +7,7 @@ for i = 1: length(robots.direction)
     y = robots.position(i,2);
     file = strcat('images/',colors{i},'.png');
     image = imread(file);
-    rotated = imrotate(image,radtodeg(direction_get_angle(robots.direction(i, :))));
+    rotated = imrotate(image,angle(robots.direction(i, 1)+i*robots.direction(i, 2)));
     imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],rotated);
 end
   

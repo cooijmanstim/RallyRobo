@@ -25,27 +25,27 @@ file = strcat('images/conveyorEastCounterclockwise.png');
 imageConveyorEastCounterclockwise = imread(file);
 for x = 1:columns
     for y = 1:rows
-        if board(x,y,RR.tfi.pit)
+        if board(x,y,RR.features.pit)
             rectX = [x,x+1,x+1,x];
             rectY = [y,y,y+1,y+1];
             fill(rectX,rectY,'black');
         end
-        if board(x,y,RR.tfi.wall_east)
+        if board(x,y,RR.features.wall_east)
             rectX = [x+1-widthWalls,x+1,x+1,x+1-widthWalls];
             rectY = [y,y,y+1,y+1];
             fill(rectX,rectY,'black');
         end
-        if board(x,y,RR.tfi.wall_north)
+        if board(x,y,RR.features.wall_north)
             rectX = [x+1,x+1,x,x];
             rectY = [y-widthWalls,y,y,y-widthWalls];
             fill(rectX,rectY,'black');
         end
-        if board(x,y,RR.tfi.wall_west)
+        if board(x,y,RR.features.wall_west)
             rectX = [x+widthWalls,x+widthWalls,x,x];
             rectY = [y,y+1,y+1,y];
             fill(rectX,rectY,'black');
         end
-         if board(x,y,RR.tfi.wall_south)
+         if board(x,y,RR.features.wall_south)
             rectX = [x,x+1,x+1,x];
             rectY = [y,y,y+widthWalls,y+widthWalls];
             fill(rectX,rectY,'black');
