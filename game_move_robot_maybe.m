@@ -7,7 +7,7 @@ function [game, moved] = game_move_robot_maybe(game, irobot, dx)
 % due to conveyor belt action, so do not use this function for that
 
 % assume going east
-xold = game.robots.position(irobot, :);
+xold = game.state.robots.position(irobot, :);
 xnew = xold + dx;
 
 % TODO: what if moving outside the boundaries of the board? maybe grow the
@@ -20,7 +20,7 @@ if ~robot_can_leave(game, irobot, xold, dx) || ...
 end
 
 % which robots are at xnew?
-irobot2 = find(all(bsxfun(@eq, game.robots.position, xnew), 2), 1);
+irobot2 = find(all(bsxfun(@eq, game.state.robots.position, xnew), 2), 1);
 % assume that at most one robot is there (otherwise we have a bug)
 assert(length(irobot2 < 2));
 % if there is a robot there
@@ -33,4 +33,4 @@ if ~empty(irobot2)
     end
 end
 
-game.robots.position(irobot, :) = xnew;
+game.state.robots.position(irobot, :) = xnew;
