@@ -1,11 +1,12 @@
 function [game] = game_create_example()
 game = [];
-game.height = 12;
-game.width = 12;
 game.nrobots = 4;
 game.ncheckpoints = 4;
 
 game.board = board_create_example();
+
+game.height = board_height(game.board);
+game.width = board_width(game.board);
 
 % isolate the stuff that changes as the game progresses
 game.state = [];
