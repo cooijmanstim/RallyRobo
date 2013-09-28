@@ -12,8 +12,8 @@ for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
          RR.features.wall_north     [10 2; 4 5; 7 7; 3 10]
          RR.features.wall_west      [4 1; 10 2; 7 3; 1 7; 11 9; 5 12]
          RR.features.wall_south     [6 1]}'
-    feature = o{1}; xys = o{2};
-    for i = 1:size(xys, 1)
-        board(xys(i, 1), xys(i, 2), feature) = 1;
+    feature = o{1}; xs = o{2};
+    for i = 1:size(xs, 1)
+        board = board_enable_feature(board, xs(i, :), feature);
     end
 end
