@@ -35,7 +35,7 @@ for x = 1:board_width(board)
         end
         if board_has_feature(board, [x y], RR.features.wall_north)
             rectX = [x+1,x+1,x,x];
-            rectY = [y-widthWalls,y,y,y-widthWalls];
+            rectY = [y+1-widthWalls,y+1,y+1,y+1-widthWalls];
             fill(rectX,rectY,'black');
         end
         if board_has_feature(board, [x y], RR.features.wall_west)
