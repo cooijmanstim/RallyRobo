@@ -1,10 +1,10 @@
 function [ ] = drawObjects( board )
-% draws the walls
 global RR;
-widthWalls = 0.15;
+
+figure;
 hold on;
-file = strcat('images/repair.png');
-imageRepair = imread(file);
+
+widthWalls = 0.15;
 conveyorImageScale = 101/68;
 conveyorImageHeight = 0.7;
 conveyorImageWidth = conveyorImageHeight/conveyorImageScale;
@@ -14,15 +14,17 @@ conveyorImageCwWidth = conveyorImageCwHeight/conveyorImageCwScale;
 conveyorImageCCwScale = 112/114;
 conveyorImageCCwHeight = 0.7;
 conveyorImageCCwWidth = conveyorImageCCwHeight/conveyorImageCCwScale;
-conveyorDistance = 0.2;
-file = strcat('images/conveyorEast.png');
-imageConveyorEast = imread(file);
-file = strcat('images/conveyorEastClockwise.png');
-imageConveyorEastClockwise = imread(file);
-file = strcat('images/conveyorEastCounterclockwise.png');
-imageConveyorEastCounterclockwise = imread(file);
-for x = 1:board_width(board)
-    for y = 1:board_height(board)
+
+images = [];
+for s = {'repair' 'conveyorEast' 'conveyorEastClockwise' 'conveyorEastCounterclockwise'}
+    kack = s{1};
+    images.(kack) = imread(sprintf('images/%s.png', kack));
+end
+
+for i = 1:board_height(board)
+    for j = 1:board_width(board)
+        x = i; y = j;
+        
         if board_has_feature(board, [x y], RR.features.pit)
             rectX = [x,x+1,x+1,x];
             rectY = [y,y,y+1,y+1];
@@ -50,31 +52,42 @@ for x = 1:board_width(board)
         end
         if board_has_feature(board, [x y], RR.features.repair)
             resize = 0.2;
-            imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],imageRepair);
+            imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],images.repair);
         end
         if board_has_feature(board, [x y], RR.features.conveyor_turning_clockwise)
-            convImage = imageConveyorEastClockwise;
+            convImage = images.conveyorEastClockwise;
             width = conveyorImageCwWidth;
             height = conveyorImageCwHeight;
         elseif board_has_feature(board, [x y], RR.features.conveyor_turning_counterclockwise)
-            convImage = imageConveyorEastCounterclockwise;
+            convImage = images.conveyorEastCounterclockwise;
             width = conveyorImageCCwWidth;
             height = conveyorImageCCwHeight;
         else
-            convImage = imageConveyorEast;
+            convImage = images.conveyorEast;
             width = conveyorImageWidth;
             height = conveyorImageHeight;
         end
+        
         if board_has_feature(board, [x y], RR.features.conveyor_east)
-            imagesc([x+conveyorDistance,x+conveyorDistance+height],[y+0.5+0.5*width,y+0.5-0.5*width],convImage);
         elseif board_has_feature(board, [x y], RR.features.conveyor_north)
-            rotated = imrotate(convImage,-90);
-            imagesc([x+0.5+0.5*width,x+0.5-0.5*width],[y+conveyorDistance,y+conveyorDistance+height],rotated);
+            convImage = imrotate(convImage,90);
+            [width, height] = deal(height, width);
         elseif board_has_feature(board, [x y], RR.features.conveyor_west)
-            imagesc([x+1-conveyorDistance,x+1-conveyorDistance-height],[y+0.5+0.5*width,y+0.5-0.5*width],convImage);
+            convImage = imrotate(convImage, 180);
         elseif board_has_feature(board, [x y], RR.features.conveyor_south)
-            rotated = imrotate(convImage,-90);
-            imagesc([x+0.5+0.5*width,x+0.5-0.5*width],[y+conveyorDistance+height,y+conveyorDistance],rotated);
+            convImage = imrotate(convImage,-90);
+            [width, height] = deal(height, width);
+        end
+        [width,height] = deal(height, width);
+
+        if any(board_has_feature(board, [x y], RR.features.conveyor_east:RR.features.conveyor_south))
+            xs = x + 0.5 + 0.5*width*[-1 1];
+            ys = y + 0.5 + 0.5*height*[-1 1];
+            
+            % imagesc flips the image vertically, so compensate for that
+            convImage = convImage(fliplr(1:end), :, :);
+            
+            imagesc(xs, ys, convImage);
         end
     end
 end
