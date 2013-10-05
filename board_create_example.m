@@ -18,6 +18,11 @@ for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
          RR.features.wall_west      [4 1; 10 2; 7 3; 1 5; 11 9; 5 12]
          RR.features.wall_south     [6 1]}'
     feature = o{1}; xs = o{2};
+
+    % the first dimension of board is the vertical one, i.e., y.  the
+    % coordinates above are all in [x y] order.
+    xs = fliplr(xs);
+        
     for i = 1:size(xs, 1)
         board = board_enable_feature(board, xs(i, :), feature);
     end
