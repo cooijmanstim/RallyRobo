@@ -1,9 +1,6 @@
 function [ ] = drawObjects( board )
 global RR;
 
-figure;
-hold on;
-
 widthWalls = 0.15;
 conveyorImageScale = 101/68;
 conveyorImageHeight = 0.7;
