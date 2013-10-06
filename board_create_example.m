@@ -1,6 +1,6 @@
 function [board] = board_create_example()
 global RR;
-board = zeros(12, 12, RR.nfeatures);
+board = false(12, 12, RR.nfeatures);
 
 for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
          RR.features.conveyor_north [repmat(3, [3 1]) (1:3)';
