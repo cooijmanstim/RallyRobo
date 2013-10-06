@@ -2,21 +2,23 @@ function [ ] = drawObjects( board )
 global RR;
 
 widthWalls = 0.15;
-conveyorImageScale = 101/68;
-conveyorImageHeight = 0.7;
-conveyorImageWidth = conveyorImageHeight/conveyorImageScale;
-conveyorImageCwScale = 112/114;
-conveyorImageCwHeight = 0.7;
-conveyorImageCwWidth = conveyorImageCwHeight/conveyorImageCwScale;
-conveyorImageCCwScale = 112/114;
-conveyorImageCCwHeight = 0.7;
-conveyorImageCCwWidth = conveyorImageCCwHeight/conveyorImageCCwScale;
 
-images = [];
-for s = {'repair' 'conveyorEast' 'conveyorEastClockwise' 'conveyorEastCounterclockwise'}
-    kack = s{1};
-    images.(kack) = imread(sprintf('images/%s.png', kack));
-end
+scale = 101/68;
+height = 0.5;
+width = height*scale;
+conveyorImages = generate_conveyor_images(imread('images/conveyorEast.png'), height, width, RR.directions.asrows);
+
+scale = 112/114;
+height = 0.7;
+width = height*scale;
+conveyorImagesCw = generate_conveyor_images(imread('images/conveyorEastClockwise.png'), height, width, RR.directions.asrows);
+
+scale = 126/118;
+height = 0.7;
+width = height*scale;
+conveyorImagesCCw = generate_conveyor_images(imread('images/conveyorEastCounterclockwise.png'), height, width, RR.directions.asrows);
+
+repairImage = imread('images/repair.png');
 
 for y = 1:board_height(board)
     for x = 1:board_width(board)
@@ -47,42 +49,29 @@ for y = 1:board_height(board)
         end
         if board_has_feature(board, [y x], RR.features.repair)
             resize = 0.2;
-            imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],images.repair);
-        end
-        if board_has_feature(board, [y x], RR.features.conveyor_turning_clockwise)
-            convImage = images.conveyorEastClockwise;
-            width = conveyorImageCwWidth;
-            height = conveyorImageCwHeight;
-        elseif board_has_feature(board, [y x], RR.features.conveyor_turning_counterclockwise)
-            convImage = images.conveyorEastCounterclockwise;
-            width = conveyorImageCCwWidth;
-            height = conveyorImageCCwHeight;
-        else
-            convImage = images.conveyorEast;
-            width = conveyorImageWidth;
-            height = conveyorImageHeight;
+            imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],repairImage);
         end
         
-        if board_has_feature(board, [y x], RR.features.conveyor_east)
-        elseif board_has_feature(board, [y x], RR.features.conveyor_north)
-            convImage = imrotate(convImage,90);
-            [width, height] = deal(height, width);
-        elseif board_has_feature(board, [y x], RR.features.conveyor_west)
-            convImage = imrotate(convImage, 180);
-        elseif board_has_feature(board, [y x], RR.features.conveyor_south)
-            convImage = imrotate(convImage,-90);
-            [width, height] = deal(height, width);
+        if board_has_feature(board, [y x], RR.features.conveyor_turning_clockwise)
+            imageContainer = conveyorImagesCw;
+        elseif board_has_feature(board, [y x], RR.features.conveyor_turning_counterclockwise)
+            imageContainer = conveyorImagesCCw;
+        else
+            imageContainer = conveyorImages;
         end
-        [width,height] = deal(height, width);
 
-        if any(board_has_feature(board, [y x], RR.features.conveyor_east:RR.features.conveyor_south))
-            xs = x + 0.5 + 0.5*width*[-1 1];
-            ys = y + 0.5 + 0.5*height*[-1 1];
+        features = RR.features.conveyor_east:RR.features.conveyor_south;
+        for feature = features(board_has_feature(board, [y x], features))
+            dx = RR.directions.asrows(1 + feature - RR.features.conveyor_east, :);
+            conveyorImage = imageContainer{2+dx(1), 2+dx(2)};
             
-            % imagesc flips the image vertically, so compensate for that
-            convImage = convImage(fliplr(1:end), :, :);
+            xs = x + 0.5 + 0.5*conveyorImage.width*[-1 1];
+            ys = y + 0.5 + 0.5*conveyorImage.height*[-1 1];
             
-            imagesc(xs, ys, convImage);
+            % imagesc flips the image vertically, so compensate for that by
+            % flipping the ys
+            h = imagesc(xs, fliplr(ys), conveyorImage.rgbdata);
+            set(h, 'AlphaData', conveyorImage.alphadata);
         end
     end
 end
