@@ -1,7 +1,9 @@
+function [tiles,featuresets] = generate_tile_images()
+
 clear; clc;
 
 global RR;
-
+global BoardFigure;
 init();
 
 % data set size
@@ -59,11 +61,37 @@ featuresets = logical(featuresets);
 
 game = game_create(board_size, board_size, 0, 0);
 tile_features = reshape(featuresets, [board_size board_size RR.nfeatures]);
-for i = 1:board_size
-    for j = 1:board_size
-        game.board = board_enable_feature(game.board, [i, j], tile_features(i, j, :));
+for x = 1:board_size
+    for y = 1:board_size
+        game.board = board_enable_feature(game.board, [x, y], tile_features(x, y, :));
     end
 end
 
 initBoardFigure(game);
 refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+tiles = {board_size*board_size};
+
+saveas(BoardFigure,'generatedTiles','bmp');
+I = imread('generatedTiles.bmp');
+rows = sum(I,2)/size(I,2);
+rows = find(rows-255);
+rowmin = rows(1);
+rowmax = rows(size(rows,1));
+columns = sum(I,1)/size(I,1);
+columns = find(columns-255);
+columnmin = columns(1);
+columnmax = columns(size(columns,2));
+I = I(rowmin:rowmax,columnmin:columnmax);
+axis equal
+widthOneTile = size(I,2)/board_size;
+heightOneTile = size(I,1)/board_size;
+counter = 1;
+for x = 1:board_size
+    for y = 1:board_size
+        rect=round([widthOneTile*(x-1)+1 heightOneTile*(y-1)+1 widthOneTile heightOneTile]);
+        tiles{counter} = makeLogicalOfImage(imcrop(I,rect));
+        counter = counter +1;
+    end
+end
+
+
