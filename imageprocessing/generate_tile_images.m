@@ -1,10 +1,12 @@
-function [tiles,featuresets] = generate_tile_images()
+function [tiles,featuresets] = generate_tile_images(n)
+% n is sample size; generates a set of distorted images for each featureset
+if nargin < 1
+    n = 1;
+end
+
 global RR;
 
 init();
-
-% data set size
-n = 1;
 
 % rows are logical vectors f(i), on if the ith feature is present
 featuresets = zeros(0, RR.nfeatures);
@@ -52,7 +54,7 @@ featuresets(end+1, :) = featureset;
 assert(all(featuresets(:) == 0 | featuresets(:) == 1));
 featuresets = logical(featuresets);
 
-tiles = cell(size(featuresets, 1), 1);
+tiles = cell(size(featuresets, 1), n);
 
 global BoardFigure;
 for i = 1:size(featuresets, 1)
@@ -99,6 +101,12 @@ for i = 1:size(featuresets, 1)
         a = a - 1;
         b = b - 1;
     end
+
+    % include the clean tile in the sample
+    tiles{i, 1} = A(a:b, a:b, :);
     
-    tiles{i} = A(a:b, a:b, :);
+    for j = 2:n
+        B = image_distort_slightly(A);
+        tiles{i, j} = B(a:b, a:b, :);
+    end
 end
