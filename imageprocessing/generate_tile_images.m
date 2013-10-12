@@ -1,5 +1,4 @@
-clear; clc;
-
+function [tiles,featuresets] = generate_tile_images()
 global RR;
 
 init();
@@ -53,10 +52,12 @@ featuresets(end+1, :) = featureset;
 assert(all(featuresets(:) == 0 | featuresets(:) == 1));
 featuresets = logical(featuresets);
 
-global BoardFigure;
-%for featureset = featuresets'
-featureset = featuresets(10, :);
+tiles = cell(size(featuresets, 1), 1);
 
+global BoardFigure;
+for i = 1:size(featuresets, 1)
+    featureset = featuresets(i, :);
+    
     % make it three by three to have some tiles around it; when we distort
     % the image later this will introduce some additional realistic noise
     board_size = 3;
@@ -66,14 +67,38 @@ featureset = featuresets(10, :);
 
     initBoardFigure(game);
     refreshBoard(game.board, game.state.robots, game.state.checkpoints);
-    A = frame2im(getframe(get(BoardFigure, 'CurrentAxes')));
+    axes = get(BoardFigure, 'CurrentAxes');
+    % make sure the tiles as displayed have the right width and height
+    % and a comfortable offset so nothing is obscured by window chrome.
+    board_size_px = board_size*(RR.tile_size+1); % +1 to include grid line
+    set(axes, 'Units', 'pixels');
+    set(axes, 'Position', [10 10 board_size_px board_size_px]);
+    % if we don't refresh, matlab will capture whatever is *behind* where
+    % the figure should be. zzz
+    refresh(BoardFigure);
+    
+    % grab the image
+    A = frame2im(getframe(axes));
+    
+    % the image contains the outer gridlines and is therefore too large by
+    % one pixel in both dimensions.
+    assert(all([size(A, 1) size(A, 2)] == board_size_px+1));
 
-    % remove the white padding:
-    % remove rows where all columns are saturated in all channels
-    A(all(all(A == 255, 2), 3), :, :) = [];
-    % remove columns where all rows are saturated in all channels
-    A(:, all(all(A == 255, 1), 3), :) = [];
-
-    figure(23);image(A);
-    %close(BoardFigure);
-%end
+    close(BoardFigure);
+    
+    % extract the center tile without including grid lines
+    offset = 1;
+    % +1 for 1-based indexing, +1 for grid line, +1 for grid line
+    a = 1+1+offset*(RR.tile_size+1);
+    % -1 for halfopen interval
+    b = a+RR.tile_size-1;
+    
+    % somehow, the presence of a conveyor belt changes the position and/or
+    % scale of the whole image ever so slightly.
+    if any(featureset(RR.features.conveyor_east:RR.features.conveyor_south))
+        a = a - 1;
+        b = b - 1;
+    end
+    
+    tiles{i} = A(a:b, a:b, :);
+end
