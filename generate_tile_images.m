@@ -50,20 +50,30 @@ featureset = zeros(1, RR.nfeatures);
 featureset(RR.features.pit) = 1;
 featuresets(end+1, :) = featureset;
 
-board_size = ceil(sqrt(size(featuresets, 1)));
-pad = board_size^2 - size(featuresets, 1);
-featuresets(end+1:end+pad, :) = zeros(pad, size(featuresets, 2));
-
 assert(all(featuresets(:) == 0 | featuresets(:) == 1));
 featuresets = logical(featuresets);
 
-game = game_create(board_size, board_size, 0, 0);
-tile_features = reshape(featuresets, [board_size board_size RR.nfeatures]);
-for i = 1:board_size
-    for j = 1:board_size
-        game.board = board_enable_feature(game.board, [i, j], tile_features(i, j, :));
-    end
-end
+global BoardFigure;
+%for featureset = featuresets'
+featureset = featuresets(10, :);
 
-initBoardFigure(game);
-refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+    % make it three by three to have some tiles around it; when we distort
+    % the image later this will introduce some additional realistic noise
+    board_size = 3;
+    game = game_create(board_size, board_size, 0, 0);
+
+    game.board = board_enable_feature(game.board, [2 2], featureset);
+
+    initBoardFigure(game);
+    refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+    A = frame2im(getframe(get(BoardFigure, 'CurrentAxes')));
+
+    % remove the white padding:
+    % remove rows where all columns are saturated in all channels
+    A(all(all(A == 255, 2), 3), :, :) = [];
+    % remove columns where all rows are saturated in all channels
+    A(:, all(all(A == 255, 1), 3), :) = [];
+
+    figure(23);image(A);
+    %close(BoardFigure);
+%end
