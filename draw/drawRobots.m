@@ -2,7 +2,7 @@ function [  ] = drawRobots(robots)
 colors = {'black','blue','red','green'};
 hold on;
 resize = 0.2;
-for i = 1: length(robots.direction)
+for i = 1:  size(robots.direction,1)
     x = robots.position(i,1);
     y = robots.position(i,2);
     file = strcat('images/',colors{i},'.png');
