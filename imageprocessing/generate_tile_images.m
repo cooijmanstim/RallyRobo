@@ -101,12 +101,29 @@ for i = 1:size(featuresets, 1)
         a = a - 1;
         b = b - 1;
     end
+    
+    if any(i == [3 5 7 9])
+        %figure; image(A(a:b, a:b, :));
+        i
+    end
+    
+    % due to no identifiable cause, the image is sometimes shifted by three
+    % pixels in a vertical direction. detect and adapt.
+    d = weirdbrokenness(A, a, b);
 
     % include the clean tile in the sample
-    tiles{i, 1} = A(a:b, a:b, :);
+    tiles{i, 1} = A(a+d:b+d, a:b, :);
     
     for j = 2:n
         B = image_distort_slightly(A);
-        tiles{i, j} = B(a:b, a:b, :);
+        tiles{i, j} = B(a+d:b+d, a:b, :);
     end
+end
+
+function [d] = weirdbrokenness(x, a, b)
+d = 0;
+if all(all(all(x(a:a+1, a:b, :) > 250))) && all(all(all(x(a+2, a:b, :) < 5)))
+    d = +3;
+elseif all(all(all(x(b-1:b, a:b, :) > 250))) && all(all(all(x(b-2, a:b, :) < 5)))
+    d = -3;
 end
