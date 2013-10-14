@@ -1,4 +1,4 @@
-function [tiles,featuresets, gamestates] = generate_tile_images(n)
+function [tiles,featuresets,gamestates] = generate_tile_images(n)
 % n is sample size; positivity implies that distorted images should be
 % generated
 if nargin < 1

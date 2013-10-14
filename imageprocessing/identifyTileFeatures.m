@@ -22,7 +22,7 @@ feature = zeros(1,sampleSize);
     end
     index = find(S == max(S),1);
     feature = TFM.featuresets(index,:);
-    gamestate = TFM.gamestatesets{index};
+    gamestate = TFM.gamestates(index);
     
     %         if (Plocal(k,3) == 5 || Plocal(k,3) == 6) && abs(S(5) - S(6)) < 0.1 %If it's a 5 or 6, use the Euler number
     %             E = regionprops(tile,'EulerNumber');
