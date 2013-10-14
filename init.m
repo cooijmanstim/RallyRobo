@@ -17,4 +17,4 @@ RR.ndirections = size(RR.directions.asrows, 1);
 RR.obstructions = precompute_obstructions();
 
 % width and height of tiles; used in image processing. subject to change.
-RR.tile_size = 128;
+RR.tile_size = 64;

@@ -1,7 +1,8 @@
 function [tiles,featuresets] = generate_tile_images(n)
-% n is sample size; generates a set of distorted images for each featureset
+% n is sample size; positivity implies that distorted images should be
+% generated
 if nargin < 1
-    n = 1;
+    n = -1;
 end
 
 global RR;
@@ -86,8 +87,6 @@ for i = 1:size(featuresets, 1)
     % one pixel in both dimensions.
     assert(all([size(A, 1) size(A, 2)] == board_size_px+1));
 
-    close(BoardFigure);
-    
     % extract the center tile without including grid lines
     offset = 1;
     % +1 for 1-based indexing, +1 for grid line, +1 for grid line
@@ -101,23 +100,21 @@ for i = 1:size(featuresets, 1)
         a = a - 1;
         b = b - 1;
     end
-    
-    if any(i == [3 5 7 9])
-        %figure; image(A(a:b, a:b, :));
-        i
-    end
-    
+
     % due to no identifiable cause, the image is sometimes shifted by three
     % pixels in a vertical direction. detect and adapt.
     d = weirdbrokenness(A, a, b);
-
-    % include the clean tile in the sample
-    tiles{i, 1} = A(a+d:b+d, a:b, :);
     
-    for j = 2:n
-        B = image_distort_slightly(A);
-        tiles{i, j} = B(a+d:b+d, a:b, :);
+    if n < 1
+        tiles{i} = A(a+d:b+d, a:b, :);
+    else
+        for j = 1:n
+            B = image_distort_slightly(A);
+            tiles{i, j} = B(a+d:b+d, a:b, :);
+        end
     end
+    
+    close(BoardFigure);
 end
 
 function [d] = weirdbrokenness(x, a, b)

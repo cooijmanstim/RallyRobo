@@ -1,7 +1,6 @@
 function [x] = image_blotch_slightly(x)
-if isinteger(x)
-    x = double(x)/255;
-end
+assert(isinteger(x));
+
 center = arrayfun(@(n) randi(n, 1), size(x));
 S = diag(1./(size(x).^2));
 
@@ -15,8 +14,8 @@ for i = 1:size(x, 1)
     end
 end
 
-blotch = blotch/max(blotch(:));
+blotch = uint8(blotch/max(blotch(:)) * 255);
 
 sign = randi(1, 1)*2 - 1;
 x = x + sign*blotch;
-x = max(0, min(1, x));
+x = max(0, min(255, x));
