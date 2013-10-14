@@ -1,4 +1,4 @@
-function [ts] = render_tile(featureset, gamestate, n)
+function [ts] = render_tile(featureset, robotid, robotdir, checkpointid, n)
 % renders a tile with given featureset and gamestate, returning the
 % rendered tile if n is not passed or returning n distorted samples if it
 % is.
@@ -18,9 +18,16 @@ board_size = 3;
 
 game = game_create(board_size, board_size, 0, 0);
 game.board = board_enable_feature(game.board, [2 2], featureset);
+if ~isempty(robotid) && ~isempty(robotdir)
+    game.state.robots.position(robotid, :) = [2 2];
+    game.state.robots.direction(robotid, :) = robotdir;
+end
+if ~isempty(checkpointid)
+    game.state.checkpoints(checkpointid, :) = [2 2];
+end
 
 initBoardFigure(game);
-refreshBoard(game.board, gamestate.robots, gamestate.checkpoints);
+refreshBoard(game.board, game.state.robots, game.state.checkpoints);
 axes = get(BoardFigure, 'CurrentAxes');
 % make sure the tiles as displayed have the right width and height
 % and a comfortable offset so nothing is obscured by window chrome.
