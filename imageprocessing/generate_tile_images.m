@@ -1,4 +1,4 @@
-function [tiles,featuresets, gamestatesets] = generate_tile_images(n)
+function [tiles,featuresets, gamestates] = generate_tile_images(n)
 % n is sample size; positivity implies that distorted images should be
 % generated
 if nargin < 1
@@ -55,11 +55,8 @@ featuresets(end+1, :) = featureset;
 assert(all(featuresets(:) == 0 | featuresets(:) == 1));
 featuresets = logical(featuresets);
 
-tiles = cell(size(featuresets, 1), n);
-
 %% for robot and checkpoint generation
-gamestatesets = {};
-counter = 1;
+gamestates = cell(0, 1);
 % 4 checkpoints
 for i = 1: 4
     gamestate = [];
@@ -67,21 +64,17 @@ for i = 1: 4
     gamestate.checkpoints(i,:) = [2,2];
     gamestate.robots.position = zeros(0, 2);
     gamestate.robots.direction = repmat(RR.directions.byname.east, [0 1]);
-    gamestatesets{counter} = gamestate;
-    counter = counter +1;
+    gamestates{end+1, :} = gamestate;
 end
 
 %robot in 4 directions
-directions = fieldnames(RR.directions.byname);
-for i = 1:  length(directions)
+for i = 1:size(RR.directions.asrows, 1)
     gamestate = [];
     gamestate.checkpoints = zeros(0, 2);
     gamestate.robots.position = [2,2];
-    gamestate.robots.direction = repmat(RR.directions.asrows(i,:), [1 1]);
-    gamestatesets{counter} = gamestate;
-    counter = counter +1;
+    gamestate.robots.direction = repmat(RR.directions.asrows(i, :), [1 1]);
+    gamestates{end+1, :} = gamestate;
 end
-
 
 %% make placeholders for gamestates/features
 zerofeatureset = false(1, RR.nfeatures);
@@ -92,76 +85,12 @@ zerogamestate.checkpoints = zeros(ncheckpoints, 2);
 zerogamestate.robots.position = zeros(nrobots, 2);
 zerogamestate.robots.direction = repmat(RR.directions.byname.east, [nrobots 1]);
 %%
-global BoardFigure;
-for i = 1:size(featuresets, 1) + size(gamestatesets,2)
-    if i <= size(featuresets, 1)
-        featureset = featuresets(i, :);
-        gamestate = zerogamestate;
-    else
-        featureset = zerofeatureset;
-        gamestate = gamestatesets{i - size(featuresets, 1)};
-    end
-    
-    % make it three by three to have some tiles around it; when we distort
-    % the image later this will introduce some additional realistic noise
-    board_size = 3;
-    game = game_create(board_size, board_size, 0, 0);
-    
-    game.board = board_enable_feature(game.board, [2 2], featureset);
-    
-    initBoardFigure(game);
-    refreshBoard(game.board, gamestate.robots, gamestate.checkpoints);
-    axes = get(BoardFigure, 'CurrentAxes');
-    % make sure the tiles as displayed have the right width and height
-    % and a comfortable offset so nothing is obscured by window chrome.
-    board_size_px = board_size*(RR.tile_size+1); % +1 to include grid line
-    set(axes, 'Units', 'pixels');
-    set(axes, 'Position', [10 10 board_size_px board_size_px]);
-    % if we don't refresh, matlab will capture whatever is *behind* where
-    % the figure should be. zzz
-    refresh(BoardFigure);
-    
-    % grab the image
-    A = frame2im(getframe(axes));
-    
-    % the image contains the outer gridlines and is therefore too large by
-    % one pixel in both dimensions.
-    assert(all([size(A, 1) size(A, 2)] == board_size_px+1));
 
-    % extract the center tile without including grid lines
-    offset = 1;
-    % +1 for 1-based indexing, +1 for grid line, +1 for grid line
-    a = 1+1+offset*(RR.tile_size+1);
-    % -1 for halfopen interval
-    b = a+RR.tile_size-1;
-    
-    % somehow, the presence of a conveyor belt changes the position and/or
-    % scale of the whole image ever so slightly.
-    if any(featureset(RR.features.conveyor_east:RR.features.conveyor_south))
-        a = a - 1;
-        b = b - 1;
-    end
+tiles = cell(size(featuresets, 1) + size(gamestates, 1), 1+max(0, n));
 
-    % due to no identifiable cause, the image is sometimes shifted by three
-    % pixels in a vertical direction. detect and adapt.
-    d = weirdbrokenness(A, a, b);
-    
-    if n < 1
-        tiles{i} = A(a+d:b+d, a:b, :);
-    else
-        for j = 1:n
-            B = image_distort_slightly(A);
-            tiles{i, j} = B(a+d:b+d, a:b, :);
-        end
-    end
-    
-    close(BoardFigure);
+for i = 1:size(featuresets, 1)
+    tiles(i, :) = render_tile(featuresets(i, :), zerogamestate, n);
 end
-
-function [d] = weirdbrokenness(x, a, b)
-d = 0;
-if all(all(all(x(a:a+1, a:b, :) > 250))) && all(all(all(x(a+2, a:b, :) < 5)))
-    d = +3;
-elseif all(all(all(x(b-1:b, a:b, :) > 250))) && all(all(all(x(b-2, a:b, :) < 5)))
-    d = -3;
+for i = 1:size(gamestates, 1)
+    tiles(size(featuresets, 1) + i, :) = render_tile(zerofeatureset, gamestates{i}, n);
 end
