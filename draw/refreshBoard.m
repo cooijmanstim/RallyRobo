@@ -3,7 +3,7 @@ function [ ] = refreshBoard(board,robots, checkpoints)
 [m,n,nFeatures] = size(board);
 
 drawGrid(m,n);
-drawCheckpoints(checkpoints);
+drawCheckpoints(checkpoints,n);
 drawObjects(board);
 drawRobots(robots);
 

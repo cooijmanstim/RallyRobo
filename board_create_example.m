@@ -22,7 +22,7 @@ for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
     % the first dimension of board is the vertical one, i.e., y.  the
     % coordinates above are all in [x y] order.
     xs = fliplr(xs);
-        
+    board = board_enable_feature(board, [12,12], [true false false false false false false false false false false false;]);
     for i = 1:size(xs, 1)
         board = board_enable_feature(board, xs(i, :), feature);
     end

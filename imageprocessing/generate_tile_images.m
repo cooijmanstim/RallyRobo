@@ -1,4 +1,4 @@
-function [tiles,featuresets] = generate_tile_images(n)
+function [tiles,featuresets, gamestatesets] = generate_tile_images(n)
 % n is sample size; positivity implies that distorted images should be
 % generated
 if nargin < 1
@@ -57,19 +57,60 @@ featuresets = logical(featuresets);
 
 tiles = cell(size(featuresets, 1), n);
 
+%% for robot and checkpoint generation
+gamestatesets = {};
+counter = 1;
+% 4 checkpoints
+for i = 1: 4
+    gamestate = [];
+    gamestate.checkpoints = zeros(i, 2);
+    gamestate.checkpoints(i,:) = [2,2];
+    gamestate.robots.position = zeros(0, 2);
+    gamestate.robots.direction = repmat(RR.directions.byname.east, [0 1]);
+    gamestatesets{counter} = gamestate;
+    counter = counter +1;
+end
+
+%robot in 4 directions
+directions = fieldnames(RR.directions.byname);
+for i = 1:  length(directions)
+    gamestate = [];
+    gamestate.checkpoints = zeros(0, 2);
+    gamestate.robots.position = [2,2];
+    gamestate.robots.direction = repmat(RR.directions.asrows(i,:), [1 1]);
+    gamestatesets{counter} = gamestate;
+    counter = counter +1;
+end
+
+
+%% make placeholders for gamestates/features
+zerofeatureset = false(1, RR.nfeatures);
+zerogamestate = [];
+nrobots = 0;
+ncheckpoints = 0;
+zerogamestate.checkpoints = zeros(ncheckpoints, 2);
+zerogamestate.robots.position = zeros(nrobots, 2);
+zerogamestate.robots.direction = repmat(RR.directions.byname.east, [nrobots 1]);
+%%
 global BoardFigure;
-for i = 1:size(featuresets, 1)
-    featureset = featuresets(i, :);
+for i = 1:size(featuresets, 1) + size(gamestatesets,2)
+    if i <= size(featuresets, 1)
+        featureset = featuresets(i, :);
+        gamestate = zerogamestate;
+    else
+        featureset = zerofeatureset;
+        gamestate = gamestatesets{i - size(featuresets, 1)};
+    end
     
     % make it three by three to have some tiles around it; when we distort
     % the image later this will introduce some additional realistic noise
     board_size = 3;
     game = game_create(board_size, board_size, 0, 0);
-
+    
     game.board = board_enable_feature(game.board, [2 2], featureset);
-
+    
     initBoardFigure(game);
-    refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+    refreshBoard(game.board, gamestate.robots, gamestate.checkpoints);
     axes = get(BoardFigure, 'CurrentAxes');
     % make sure the tiles as displayed have the right width and height
     % and a comfortable offset so nothing is obscured by window chrome.
