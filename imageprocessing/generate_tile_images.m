@@ -1,4 +1,11 @@
-function [tiles,featuresets,gamestates] = generate_tile_images(n)
+function [tiles,featuresets,gamestates] = generate_tile_images(n, postprocessfn)
+% for postprocessing the tiles (e.g. grayscaling and thresholding). can be
+% useful for converting the image to a less memory-intensive format before
+% storing it.
+if nargin < 2
+    postprocessfn = @identity;
+end
+
 % n is sample size; positivity implies that distorted images should be
 % generated
 if nargin < 1
@@ -72,10 +79,10 @@ gamestates = gamestates';
 
 zerofeatureset = false(1, RR.nfeatures);
 
-tiles = cell(size(featuresets, 1) + size(gamestates, 1), 1+max(0, n));
+tiles = cell(size(featuresets, 1) + size(gamestates, 1), max(1, n));
 for i = 1:size(featuresets, 1)
-    tiles(i, :) = render_tile(featuresets(i, :), [], [], [], n);
+    tiles(i, :) = render_tile(featuresets(i, :), [], [], [], n, postprocessfn);
 end
 for i = 1:size(gamestates, 1)
-    tiles(size(featuresets, 1) + i, :) = render_tile(zerofeatureset, 1, gamestates(i).robotdir, gamestates(i).checkpointid, n);
+    tiles(size(featuresets, 1) + i, :) = render_tile(zerofeatureset, 1, gamestates(i).robotdir, gamestates(i).checkpointid, n, postprocessfn);
 end

@@ -1,9 +1,13 @@
-function [ts] = render_tile(featureset, robotid, robotdir, checkpointid, n)
+function [ts] = render_tile(featureset, robotid, robotdir, checkpointid, n, postprocessfn)
 % renders a tile with given featureset and gamestate, returning the
 % rendered tile if n is not passed or returning n distorted samples if it
 % is.
 % has the side-effect of opening and closing a figure window. :/
 % TODO: replace gamestate by more specialized parameters
+if ~exist('postprocessfn', 'var')
+    postprocessfn = @identity;
+end
+
 if isempty(n)
     n = -1;
 end
@@ -64,11 +68,11 @@ end
 d = weirdbrokenness(A, a, b);
 
 if n < 1
-    ts{1} = A(a+d:b+d, a:b, :);
+    ts{1} = postprocessfn(A(a+d:b+d, a:b, :));
 else
     for j = 1:n
         B = image_distort_slightly(A);
-        ts{1, j} = B(a+d:b+d, a:b, :);
+        ts{1, j} = postprocessfn(B(a+d:b+d, a:b, :));
     end
 end
 
