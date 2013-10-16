@@ -1,4 +1,7 @@
 % run all automated tests
+clear; clc;
+
+init();
 
 files = what('test');
 for i = 1:length(files.m)

@@ -1,4 +1,4 @@
-function [success] = test_game_move_robot_maybe()
+function [success] = test_500_game_move_robot_maybe()
 global RR;
 
 game = game_create_example();

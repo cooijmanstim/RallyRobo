@@ -1,4 +1,4 @@
-function [success] = test_robot_can_leave()
+function [success] = test_200_robot_can_leave()
 global RR;
 
 game = game_create_example();
