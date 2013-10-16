@@ -22,9 +22,9 @@ end
 % which robots are at xnew?
 irobot2 = find(all(bsxfun(@eq, game.state.robots.position, xnew), 2), 1);
 % assume that at most one robot is there (otherwise we have a bug)
-assert(length(irobot2 < 2));
+assert(length(irobot2) < 2);
 % if there is a robot there
-if ~empty(irobot2)
+if ~isempty(irobot2)
     % maybe move it recursively.  this means the pushed robot may push
     % another robot.
     [game, moved] = game_move_robot_maybe(game, irobot2, dx);
@@ -34,3 +34,4 @@ if ~empty(irobot2)
 end
 
 game.state.robots.position(irobot, :) = xnew;
+moved = true;
