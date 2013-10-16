@@ -18,3 +18,6 @@ RR.obstructions = precompute_obstructions();
 
 % width and height of tiles; used in image processing. subject to change.
 RR.tile_size = 64;
+
+% this is used to treat borders as pits
+RR.borderfeatureset = ismember(1:RR.nfeatures, [RR.features.pit]);
