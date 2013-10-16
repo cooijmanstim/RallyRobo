@@ -1,3 +1,3 @@
 function [p] = robot_can_enter(game, irobot, x, dx)
 global RR;
-p = any(game.board(x(1), x(2), RR.obstructions.enter(dx)));
+p = ~any(board_has_feature(game.board, x, RR.obstructions.enter(dx)));

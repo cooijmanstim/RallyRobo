@@ -15,3 +15,5 @@ for i = 1:RR.ndirections;
         return;
     end
 end
+
+success = true;
