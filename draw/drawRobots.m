@@ -3,8 +3,9 @@ colors = {'black','blue','red','green'};
 hold on;
 resize = 0.2;
 for i = 1:  size(robots.direction,1)
-    x = robots.position(i,1);
-    y = robots.position(i,2);
+    y = robots.position(i,1);
+    x = robots.position(i,2);
+    % TODO: transparancy, flip vertically
     file = strcat('images/',colors{i},'.png');
     image = imread(file);
     rotated = imrotate(image,radtodeg(direction_get_angle(robots.direction(i, :))));
