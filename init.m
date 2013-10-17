@@ -21,3 +21,10 @@ RR.tile_size = 64;
 
 % this is used to treat borders as pits
 RR.borderfeatureset = ismember(1:RR.nfeatures, [RR.features.pit]);
+
+global TFM;
+TFM = load('tile_featureset_map');
+for i = 1:size(TFM.tiles);
+TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
+end
+
