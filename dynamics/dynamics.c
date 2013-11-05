@@ -4,15 +4,23 @@
 
 #include <stdbool.h>
 
+/* hardcoded in this way for optimization */
 #define BOARD_SIZE 12
+#define NROBOTS 4
+#define NCHECKPOINTS 4
+
+/* need only one byte for distances etc */
+typedef char ordinate;
+typedef unsigned char ICheckpoint;
+typedef unsigned char IRobot;
 
 typedef struct {
-  short x[2];
+  ordinate x[2];
 } Point;
 
 #define SUBSCRIPT(a, x) (a[x.x[0]][x.x[1]])
 
-inline Point make_point(int y, int x) {
+inline Point make_point(ordinate y, ordinate x) {
   Point p = {{y, x}};
   return p;
 }
@@ -60,21 +68,19 @@ typedef struct {
 typedef struct {
   Point position;
   Direction direction;
-  unsigned short last_checkpoint;
+  ICheckpoint next_checkpoint;
 } Robot;
 
 typedef struct {
-  unsigned short nrobots;
-  Robot *robots;
-  unsigned short ncheckpoints;
-  Point *checkpoints;
+  Robot robots[NROBOTS];
+  Point checkpoints[NCHECKPOINTS];
   Tile board[BOARD_SIZE][BOARD_SIZE];
 } Game;
 
 #define SUCCESS 0
 #define OBSTRUCTED 1
 
-bool robot_can_leave(const Game *game, int irobot, Point x, Direction dir) {
+bool robot_can_leave(const Game *game, IRobot irobot, Point x, Direction dir) {
   assert(game != NULL);
 
   const Tile tile = SUBSCRIPT(game->board, x);
@@ -91,7 +97,7 @@ bool robot_can_leave(const Game *game, int irobot, Point x, Direction dir) {
   }
 }
 
-bool robot_can_enter(const Game *game, int irobot, Point x, Direction dir) {
+bool robot_can_enter(const Game *game, IRobot irobot, Point x, Direction dir) {
   assert(game != NULL);
 
   const Tile tile = SUBSCRIPT(game->board, x);
@@ -111,7 +117,7 @@ bool robot_can_enter(const Game *game, int irobot, Point x, Direction dir) {
  * Returns SUCCESS if successful, otherwise returns an error code.
  * Modifies game.
  */
-int robot_move_maybe(Game *game, int irobot, Direction dir) {
+int robot_move_maybe(Game *game, IRobot irobot, Direction dir) {
   assert(game != NULL);
 
   Point x = game->robots[irobot].position;
@@ -123,7 +129,7 @@ int robot_move_maybe(Game *game, int irobot, Direction dir) {
   }
 
   /* if there is a robot at the destination, try to push it */
-  for (int jrobot = 0; jrobot < game->nrobots; jrobot++) {
+  for (IRobot jrobot = 0; jrobot < NROBOTS; jrobot++) {
     if (point_equal(game->robots[jrobot].position, xnew)) {
       int ret = robot_move_maybe(game, jrobot, dir);
       if (ret != SUCCESS) {
