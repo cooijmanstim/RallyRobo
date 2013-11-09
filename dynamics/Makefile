@@ -1,1 +1,5 @@
-CFLAGS=-std=c99 -pedantic-errors -Wall -O
+CFLAGS=-std=c++98 -pedantic-errors -Wall -O
+
+all: dynamics clean
+
+dynamics: dynamics.o
