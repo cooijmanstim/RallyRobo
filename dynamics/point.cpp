@@ -1,9 +1,15 @@
+#include <boost/array.hpp>
+#include <boost/assign/list_of.hpp>
+
+using namespace boost;
+using namespace boost::assign;
+
 #include "point.hpp"
 
-Point::Point(Ordinate x1, Ordinate x2) : x{x1, x2} {
+Point::Point(Ordinate x1, Ordinate x2) : x(list_of(x1)(x2)) {
 }
 
-Point::Point(const Point &that) : x{that.x[0], that.x[1]} {
+Point::Point(const Point &that) : x(that.x) {
 }
 
 Point::~Point() {

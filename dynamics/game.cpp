@@ -1,30 +1,37 @@
 #include "game.hpp"
 #include <assert.h>
 
+Game::Game(vector<Robot> robots, vector<Point> checkpoints) : robots(robots), checkpoints(checkpoints) {
+}
+
 inline bool Game::has_feature(Point x, FeatureIndex i) {
   return board[x[0]][x[1]][i];
 }
 
+inline void Game::set_feature(Point x, FeatureIndex i) {
+  board[x[0]][x[1]][i] = 1;
+}
+
 #define HF(FEATURE) has_feature(x, FEATURE)
 bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
-  if (HF(Pit))
+  if (HF(Feature::Pit))
     return false;
 
   switch (dir) {
-  case Direction::East:  return HF(WallEast);
-  case Direction::North: return HF(WallNorth);
-  case Direction::West:  return HF(WallWest);
-  case Direction::South: return HF(WallSouth);
+  case Direction::East:  return HF(Feature::WallEast);
+  case Direction::North: return HF(Feature::WallNorth);
+  case Direction::West:  return HF(Feature::WallWest);
+  case Direction::South: return HF(Feature::WallSouth);
   default: assert(false);
   }
 }
 
 bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir) {
   switch (dir) {
-  case Direction::East:  return HF(WallWest);
-  case Direction::North: return HF(WallSouth);
-  case Direction::West:  return HF(WallEast);
-  case Direction::South: return HF(WallNorth);
+  case Direction::East:  return HF(Feature::WallWest);
+  case Direction::North: return HF(Feature::WallSouth);
+  case Direction::West:  return HF(Feature::WallEast);
+  case Direction::South: return HF(Feature::WallNorth);
   default: assert(false);
   }
 }

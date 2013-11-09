@@ -1,9 +1,13 @@
 #pragma once
 
+#include <boost/array.hpp>
+
+using namespace boost;
+
 typedef int Ordinate;
 class Point {
 public:
-  Ordinate x[2];
+  array<Ordinate,2> x;
 
   Point(Ordinate x1, Ordinate x2);
   Point(const Point &that);

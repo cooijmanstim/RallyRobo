@@ -12,13 +12,9 @@ using namespace std;
 typedef unsigned char CheckpointIndex;
 typedef unsigned char RobotIndex;
 
-typedef struct {
-  Point position;
-  DirectionIndex direction;
-  CheckpointIndex next_checkpoint;
-} Robot;
+#include "robot.hpp"
 
-class Game {
+namespace Feature {
   enum FeatureIndex {
     Pit,
     Repair,
@@ -34,8 +30,11 @@ class Game {
     ConveyorTurningCcw,
     NFeatures,
   };
+}
+typedef Feature::FeatureIndex FeatureIndex;
 
-  char board[BOARD_SIZE][BOARD_SIZE][NFeatures];
+class Game {
+  char board[BOARD_SIZE][BOARD_SIZE][Feature::NFeatures];
   vector<Robot> robots;
   vector<Point> checkpoints;
 
@@ -44,6 +43,7 @@ public:
 
   Point robot_position(RobotIndex i);
   bool has_feature(Point x, FeatureIndex i);
+  void set_feature(Point x, FeatureIndex i);
   bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);
   bool robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir);
   bool robot_move_maybe(RobotIndex irobot, DirectionIndex dir);
