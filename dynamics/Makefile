@@ -1,5 +1,4 @@
-CFLAGS=-std=c++98 -pedantic-errors -Wall -O
+CPPFLAGS=-std=c++0x -Wall -O
 
-all: dynamics clean
+all: point game test clean
 
-dynamics: dynamics.o
