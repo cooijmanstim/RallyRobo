@@ -39,6 +39,8 @@ class Game {
   vector<Point> checkpoints;
 
 public:
+  static Game example_game();
+
   Game(vector<Robot> robots, vector<Point> checkpoints);
 
   Point robot_position(RobotIndex i);

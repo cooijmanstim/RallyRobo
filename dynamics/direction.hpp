@@ -10,6 +10,10 @@ namespace Direction {
   enum DirectionIndex {
     East, North, West, South,
   };
+
+  const DirectionIndex indices[] = {
+    East, North, West, South,
+  };
   
   const Point asPoints[] = {
     Point( 0,  1),

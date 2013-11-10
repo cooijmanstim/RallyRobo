@@ -1,7 +1,42 @@
 #include "game.hpp"
 #include <assert.h>
 
+#include <vector>
+#include <algorithm>
+#include <boost/assign/list_of.hpp>
+
+using namespace std;
+using namespace boost::assign;
+
 Game::Game(vector<Robot> robots, vector<Point> checkpoints) : robots(robots), checkpoints(checkpoints) {
+}
+
+Game Game::example_game() {
+  Game game(list_of<Robot>(Point(3, 1), Direction::North, 0),
+            list_of<Point>(12, 1) (8, 9) (2, 8) (9, 5));
+
+  // set feature at points
+  auto sfap = [&game](FeatureIndex fi, vector<Point> points) {
+    for_each(points.begin(), points.end(),
+             [&game, &fi] (Point x) {
+               game.set_feature(x, fi);
+             });
+  };
+
+  sfap(Feature::Pit,                list_of<Point>(8, 5) (9, 5) (3, 7) (6, 10));
+  sfap(Feature::Repair,             list_of<Point>(2,1) (2,5) (5,3) (9,3) (5,8) (1,10));
+  sfap(Feature::ConveyorNorth,      list_of<Point>(3,1) (3,2) (3,3) (7,4) (7,5));
+  sfap(Feature::ConveyorEast,       list_of<Point>(3,4) (4,4) (5,4) (6,4) (7,6) (8,6) (9,6) (10,6) (11,6) (12,6));
+  sfap(Feature::ConveyorWest,       list_of<Point>(1,6) (2,6) (3,6) (4,6) (5,7) (6,7) (7,7) (8,7) (9,7) (10,7) (11,7) (12,7));
+  sfap(Feature::ConveyorSouth,      list_of<Point>(4,7));
+  sfap(Feature::ConveyorTurningCcw, list_of<Point>(7,4) (4,7));
+  sfap(Feature::ConveyorTurningCw,  list_of<Point>(7,6) (3,4) (4,6));
+  sfap(Feature::WallEast,           list_of<Point>(4,5));
+  sfap(Feature::WallNorth,          list_of<Point>(10,2) (4,5) (7,7) (3,10));
+  sfap(Feature::WallWest,           list_of<Point>(4,1) (10,2) (7,3) (1,5) (11,9) (5,12));
+  sfap(Feature::WallSouth,          list_of<Point>(6,1));
+
+  return game;
 }
 
 inline bool Game::has_feature(Point x, FeatureIndex i) {
