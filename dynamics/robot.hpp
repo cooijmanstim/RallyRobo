@@ -2,7 +2,7 @@
 
 #include "point.hpp"
 #include "direction.hpp"
-#include "game.hpp"
+#include "checkpoint.hpp"
 
 class Robot {
 public:

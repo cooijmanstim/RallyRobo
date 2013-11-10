@@ -4,15 +4,14 @@
 
 #include "point.hpp"
 #include "direction.hpp"
+#include "checkpoint.hpp"
+#include "robot.hpp"
 
 #define BOARD_SIZE 12
 
 using namespace std;
 
-typedef unsigned char CheckpointIndex;
 typedef unsigned char RobotIndex;
-
-#include "robot.hpp"
 
 namespace Feature {
   enum FeatureIndex {
