@@ -11,6 +11,32 @@ using namespace boost::assign;
 Game::Game(vector<Robot> robots, vector<Point> checkpoints) : robots(robots), checkpoints(checkpoints) {
 }
 
+Game::Game(const Game& that) : robots(that.robots), checkpoints(that.checkpoints) {
+  this->copy_board_from(that);
+}
+
+Game::~Game() {
+}
+
+Game& Game::operator=(const Game &that) {
+  this->robots = that.robots;
+  this->checkpoints = that.checkpoints;
+  this->copy_board_from(that);
+  return *this;
+}
+
+// TODO: use boost::multi_array
+void Game::copy_board_from(const Game &that) {
+  for (Ordinate i = 0; i < BOARD_SIZE; i++) {
+    for (Ordinate j = 0; j < BOARD_SIZE; j++) {
+      for_each(begin(Feature::features), end(Feature::features),
+               [this, &that, &i, &j](FeatureIndex fi) {
+        this->board[i][j][fi] = that.board[i][j][fi];
+      });
+    }
+  }
+}
+
 Game Game::example_game() {
   Game game(list_of<Robot>(Point(3, 1), Direction::North, 0),
             list_of<Point>(12, 1) (8, 9) (2, 8) (9, 5));
@@ -39,12 +65,16 @@ Game Game::example_game() {
   return game;
 }
 
-const inline bool Game::has_feature(Point x, FeatureIndex i) {
+const bool Game::has_feature(Point x, FeatureIndex i) {
   return board[x[0]][x[1]][i];
 }
 
-inline void Game::set_feature(Point x, FeatureIndex i) {
+void Game::set_feature(Point x, FeatureIndex i) {
   board[x[0]][x[1]][i] = 1;
+}
+
+const Point Game::robot_position(RobotIndex irobot) {
+  return robots[irobot].position;
 }
 
 const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {

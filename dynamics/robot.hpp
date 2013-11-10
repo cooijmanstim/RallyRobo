@@ -11,4 +11,7 @@ public:
   CheckpointIndex next_checkpoint;
 
   Robot(Point position, DirectionIndex direction, CheckpointIndex next_checkpoint);
+  Robot(const Robot& that);
+  ~Robot();
+  Robot& operator=(const Robot& that);
 };

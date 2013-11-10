@@ -12,21 +12,18 @@
 typedef unsigned char RobotIndex;
 
 namespace Feature {
+#define FEATURES Pit, Repair, WallEast, WallNorth, WallWest, WallSouth, \
+                 ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth, \
+                 ConveyorTurningCw, ConveyorTurningCcw
   enum FeatureIndex {
-    Pit,
-    Repair,
-    WallEast,
-    WallNorth,
-    WallWest,
-    WallSouth,
-    ConveyorEast,
-    ConveyorNorth,
-    ConveyorWest,
-    ConveyorSouth,
-    ConveyorTurningCw,
-    ConveyorTurningCcw,
+    FEATURES,
     NFeatures,
   };
+
+  FeatureIndex features[] = {
+    FEATURES
+  };
+#undef FEATURES
 }
 typedef Feature::FeatureIndex FeatureIndex;
 
@@ -35,10 +32,16 @@ class Game {
   std::vector<Robot> robots;
   std::vector<Point> checkpoints;
 
+  void copy_board_from(const Game &that);
+
 public:
   static Game example_game();
 
   Game(std::vector<Robot> robots, std::vector<Point> checkpoints);
+
+  Game(const Game& that);
+  ~Game();
+  Game &operator=(const Game &that);
 
   const Point robot_position(RobotIndex i);
   const bool has_feature(Point x, FeatureIndex i);
