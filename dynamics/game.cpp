@@ -39,7 +39,7 @@ Game Game::example_game() {
   return game;
 }
 
-inline bool Game::has_feature(Point x, FeatureIndex i) {
+const inline bool Game::has_feature(Point x, FeatureIndex i) {
   return board[x[0]][x[1]][i];
 }
 
@@ -47,30 +47,28 @@ inline void Game::set_feature(Point x, FeatureIndex i) {
   board[x[0]][x[1]][i] = 1;
 }
 
-#define HF(FEATURE) has_feature(x, FEATURE)
-bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
-  if (HF(Feature::Pit))
+const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
+  if (has_feature(x, Feature::Pit))
     return false;
 
   switch (dir) {
-  case Direction::East:  return HF(Feature::WallEast);
-  case Direction::North: return HF(Feature::WallNorth);
-  case Direction::West:  return HF(Feature::WallWest);
-  case Direction::South: return HF(Feature::WallSouth);
+  case Direction::East:  return has_feature(x, Feature::WallEast);
+  case Direction::North: return has_feature(x, Feature::WallNorth);
+  case Direction::West:  return has_feature(x, Feature::WallWest);
+  case Direction::South: return has_feature(x, Feature::WallSouth);
   default: assert(false);
   }
 }
 
-bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir) {
+const bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir) {
   switch (dir) {
-  case Direction::East:  return HF(Feature::WallWest);
-  case Direction::North: return HF(Feature::WallSouth);
-  case Direction::West:  return HF(Feature::WallEast);
-  case Direction::South: return HF(Feature::WallNorth);
+  case Direction::East:  return has_feature(x, Feature::WallWest);
+  case Direction::North: return has_feature(x, Feature::WallSouth);
+  case Direction::West:  return has_feature(x, Feature::WallEast);
+  case Direction::South: return has_feature(x, Feature::WallNorth);
   default: assert(false);
   }
 }
-#undef HF
 
 /* Move the indicated robot in the direction 'dx', pushing other robots
  * if they are in the way.  Does not move if the move is obstructed or

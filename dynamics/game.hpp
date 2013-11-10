@@ -43,10 +43,10 @@ public:
 
   Game(vector<Robot> robots, vector<Point> checkpoints);
 
-  Point robot_position(RobotIndex i);
-  bool has_feature(Point x, FeatureIndex i);
+  const Point robot_position(RobotIndex i);
+  const bool has_feature(Point x, FeatureIndex i);
   void set_feature(Point x, FeatureIndex i);
-  bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);
-  bool robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir);
+  const bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);
+  const bool robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir);
   bool robot_move_maybe(RobotIndex irobot, DirectionIndex dir);
 };
