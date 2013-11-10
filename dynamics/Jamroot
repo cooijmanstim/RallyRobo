@@ -1,0 +1,9 @@
+import testing ;
+
+lib point : point.cpp ;
+lib robot : robot.cpp point ;
+lib game : game.cpp point robot ;
+
+for test in [ glob tests/*.cpp ] {
+    unit-test $(test:B) : $(test) game ;
+}
