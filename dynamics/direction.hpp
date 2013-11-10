@@ -4,8 +4,6 @@
 
 #include <vector>
 
-using namespace std;
-
 namespace Direction {
   enum DirectionIndex {
     East, North, West, South,

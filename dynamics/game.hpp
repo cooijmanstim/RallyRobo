@@ -9,8 +9,6 @@
 
 #define BOARD_SIZE 12
 
-using namespace std;
-
 typedef unsigned char RobotIndex;
 
 namespace Feature {
@@ -34,13 +32,13 @@ typedef Feature::FeatureIndex FeatureIndex;
 
 class Game {
   char board[BOARD_SIZE][BOARD_SIZE][Feature::NFeatures];
-  vector<Robot> robots;
-  vector<Point> checkpoints;
+  std::vector<Robot> robots;
+  std::vector<Point> checkpoints;
 
 public:
   static Game example_game();
 
-  Game(vector<Robot> robots, vector<Point> checkpoints);
+  Game(std::vector<Robot> robots, std::vector<Point> checkpoints);
 
   const Point robot_position(RobotIndex i);
   const bool has_feature(Point x, FeatureIndex i);
