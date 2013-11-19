@@ -2,12 +2,15 @@
 
 #include <vector>
 
+#include <boost/multi_array.hpp>
+
 #include "point.hpp"
 #include "direction.hpp"
 #include "checkpoint.hpp"
 #include "robot.hpp"
 
-#define BOARD_SIZE 12
+#define BOARD_WIDTH 12
+#define BOARD_HEIGHT 12
 
 typedef unsigned char RobotIndex;
 
@@ -27,12 +30,13 @@ namespace Feature {
 }
 typedef Feature::FeatureIndex FeatureIndex;
 
+typedef boost::multi_array<char, 3> Board;
+typedef Board::index BoardIndex;
+
 class Game {
-  char board[BOARD_SIZE][BOARD_SIZE][Feature::NFeatures];
   std::vector<Robot> robots;
   std::vector<Point> checkpoints;
-
-  void copy_board_from(const Game &that);
+  Board board;
 
 public:
   static Game example_game();

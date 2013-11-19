@@ -8,11 +8,22 @@
 using namespace std;
 using namespace boost::assign;
 
-Game::Game(vector<Robot> robots, vector<Point> checkpoints) : robots(robots), checkpoints(checkpoints) {
+Game::Game(vector<Robot> robots, vector<Point> checkpoints)
+  : robots(robots), checkpoints(checkpoints),
+    board(boost::extents[BOARD_WIDTH+2][BOARD_HEIGHT+2][Feature::NFeatures]) {
+  // add a border of pits around the board.  this obviates the need to deal with bounds explicitly.
+  // the coordinates for the interior of the board are now 1-based.
+  for (int i = 0; i < BOARD_HEIGHT+2; i++) {
+    board[i][0][Feature::Pit] = 1;
+    board[i][BOARD_HEIGHT+1][Feature::Pit] = 1;
+  }
+  for (int j = 0; j < BOARD_WIDTH+2; j++) {
+    board[0][j][Feature::Pit] = 1;
+    board[BOARD_WIDTH+1][j][Feature::Pit] = 1;
+  }
 }
 
-Game::Game(const Game& that) : robots(that.robots), checkpoints(that.checkpoints) {
-  this->copy_board_from(that);
+Game::Game(const Game& that) : robots(that.robots), checkpoints(that.checkpoints), board(that.board) {
 }
 
 Game::~Game() {
@@ -21,35 +32,26 @@ Game::~Game() {
 Game& Game::operator=(const Game &that) {
   this->robots = that.robots;
   this->checkpoints = that.checkpoints;
-  this->copy_board_from(that);
+  this->board = that.board;
   return *this;
 }
 
-// TODO: use boost::multi_array
-void Game::copy_board_from(const Game &that) {
-  for (Ordinate i = 0; i < BOARD_SIZE; i++) {
-    for (Ordinate j = 0; j < BOARD_SIZE; j++) {
-      for_each(begin(Feature::features), end(Feature::features),
-               [this, &that, &i, &j](FeatureIndex fi) {
-        this->board[i][j][fi] = that.board[i][j][fi];
-      });
-    }
-  }
-}
-
 Game Game::example_game() {
-  Game game(list_of<Robot>(Point(3, 1), Direction::North, 0),
+  Game game(list_of<Robot>(Point( 3,  1), Direction::East,  0)
+                          (Point( 4, 11), Direction::South, 0)
+                          (Point( 8,  1), Direction::South, 0)
+                          (Point(11,  9), Direction::West,  0),
             list_of<Point>(12, 1) (8, 9) (2, 8) (9, 5));
 
   // set feature at points
   auto sfap = [&game](FeatureIndex fi, vector<Point> points) {
     for_each(points.begin(), points.end(),
              [&game, &fi] (Point x) {
-               game.set_feature(x, fi);
+               game.set_feature(Point(x[1], x[0]), fi);
              });
   };
 
-  sfap(Feature::Pit,                list_of<Point>(8, 5) (9, 5) (3, 7) (6, 10));
+  sfap(Feature::Pit,                list_of<Point>(8,5) (9,5) (3,7) (6,10));
   sfap(Feature::Repair,             list_of<Point>(2,1) (2,5) (5,3) (9,3) (5,8) (1,10));
   sfap(Feature::ConveyorNorth,      list_of<Point>(3,1) (3,2) (3,3) (7,4) (7,5));
   sfap(Feature::ConveyorEast,       list_of<Point>(3,4) (4,4) (5,4) (6,4) (7,6) (8,6) (9,6) (10,6) (11,6) (12,6));
@@ -82,20 +84,20 @@ const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir)
     return false;
 
   switch (dir) {
-  case Direction::East:  return has_feature(x, Feature::WallEast);
-  case Direction::North: return has_feature(x, Feature::WallNorth);
-  case Direction::West:  return has_feature(x, Feature::WallWest);
-  case Direction::South: return has_feature(x, Feature::WallSouth);
+  case Direction::East:  return !has_feature(x, Feature::WallEast);
+  case Direction::North: return !has_feature(x, Feature::WallNorth);
+  case Direction::West:  return !has_feature(x, Feature::WallWest);
+  case Direction::South: return !has_feature(x, Feature::WallSouth);
   default: assert(false);
   }
 }
 
 const bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir) {
   switch (dir) {
-  case Direction::East:  return has_feature(x, Feature::WallWest);
-  case Direction::North: return has_feature(x, Feature::WallSouth);
-  case Direction::West:  return has_feature(x, Feature::WallEast);
-  case Direction::South: return has_feature(x, Feature::WallNorth);
+  case Direction::East:  return !has_feature(x, Feature::WallWest);
+  case Direction::North: return !has_feature(x, Feature::WallSouth);
+  case Direction::West:  return !has_feature(x, Feature::WallEast);
+  case Direction::South: return !has_feature(x, Feature::WallNorth);
   default: assert(false);
   }
 }
