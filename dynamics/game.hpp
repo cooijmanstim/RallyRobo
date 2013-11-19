@@ -8,6 +8,7 @@
 #include "direction.hpp"
 #include "checkpoint.hpp"
 #include "robot.hpp"
+#include "card.hpp"
 
 #define BOARD_WIDTH 12
 #define BOARD_HEIGHT 12
@@ -51,7 +52,9 @@ public:
   void set_robot_position(RobotIndex irobot, Point x);
   const bool has_feature(Point x, FeatureIndex i);
   void set_feature(Point x, FeatureIndex i);
+
   const bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);
   const bool robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir);
   bool robot_move_maybe(RobotIndex irobot, DirectionIndex dir);
+  void game_process_card(RobotIndex irobot, Card card);
 };

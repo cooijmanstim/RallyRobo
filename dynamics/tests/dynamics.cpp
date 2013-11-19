@@ -58,3 +58,4 @@ BOOST_AUTO_TEST_CASE(robot_move_maybe) {
   try_move(West,  false);
   try_move(South, false);
 }
+

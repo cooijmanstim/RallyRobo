@@ -1,16 +1,21 @@
 #pragma once
 
 #include "point.hpp"
+#include "card.hpp"
 
 #include <vector>
 
+// XXX: this is becoming a weird beast.
+
 namespace Direction {
+  #define DIRECTIONS East, North, West, South
   enum DirectionIndex {
-    East, North, West, South,
+    DIRECTIONS,
+    NDirections,
   };
 
   const DirectionIndex indices[] = {
-    East, North, West, South,
+    DIRECTIONS
   };
   
   const Point asPoints[] = {
@@ -19,6 +24,9 @@ namespace Direction {
     Point( 0, -1),
     Point(-1,  0),
   };
+
+  DirectionIndex rotate(DirectionIndex a, Rotation da);
+  DirectionIndex opposite(DirectionIndex a);
 }
 
 typedef Direction::DirectionIndex DirectionIndex;

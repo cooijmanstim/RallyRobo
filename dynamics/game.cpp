@@ -1,9 +1,10 @@
-#include "game.hpp"
 #include <assert.h>
-
 #include <vector>
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
+
+#include "card.hpp"
+#include "game.hpp"
 
 using namespace std;
 using namespace boost::assign;
@@ -23,7 +24,8 @@ Game::Game(vector<Robot> robots, vector<Point> checkpoints)
   }
 }
 
-Game::Game(const Game& that) : robots(that.robots), checkpoints(that.checkpoints), board(that.board) {
+Game::Game(const Game& that)
+  : robots(that.robots), checkpoints(that.checkpoints), board(that.board) {
 }
 
 Game::~Game() {
@@ -135,4 +137,19 @@ bool Game::robot_move_maybe(RobotIndex irobot, DirectionIndex dir) {
   /* finally, move irobot */
   robots[irobot].position = xnew;
   return true;
+}
+
+void Game::game_process_card(RobotIndex irobot, Card card) {
+  if (card.translation == 0) {
+    // rotation only
+    robots[irobot].direction = Direction::rotate(robots[irobot].direction, card.rotation);
+  } else {
+    // translation only, tile by tile
+    DirectionIndex di = card.translation >= 0 ? robots[irobot].direction : Direction::opposite(robots[irobot].direction);
+    for (int k = abs(card.translation); k >= 1; k--) {
+      bool moved = robot_move_maybe(irobot, di);
+      if (!moved)
+        break;
+    }
+  }
 }
