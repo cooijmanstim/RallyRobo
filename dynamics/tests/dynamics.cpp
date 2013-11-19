@@ -30,3 +30,31 @@ BOOST_AUTO_TEST_CASE(robot_can_leave) {
   BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::West));
   BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::South));
 }
+
+BOOST_AUTO_TEST_CASE(robot_move_maybe) {
+  Game game = Game::example_game();
+  RobotIndex irobot = 2;
+  game.set_robot_position(irobot, Point(5, 4));
+
+  auto try_move = [&game, irobot](DirectionIndex dir, bool expected) {
+    BOOST_CHECK(game.robot_move_maybe(irobot, dir) == expected);
+  };
+
+  using namespace Direction;
+
+  try_move(North, false); // wall inside
+  try_move(East,  false); // wall inside
+  try_move(South, true);
+  try_move(East,  true);
+  try_move(North, true);
+  try_move(West,  false); // wall outside
+  try_move(North, true);
+  try_move(West,  true);
+  try_move(South, false); // wall outside
+  try_move(North, true);
+  try_move(West,  true);  // into pit
+  try_move(East,  false);
+  try_move(North, false);
+  try_move(West,  false);
+  try_move(South, false);
+}

@@ -47,7 +47,8 @@ public:
   ~Game();
   Game &operator=(const Game &that);
 
-  const Point robot_position(RobotIndex i);
+  const Point robot_position(RobotIndex irobot);
+  void set_robot_position(RobotIndex irobot, Point x);
   const bool has_feature(Point x, FeatureIndex i);
   void set_feature(Point x, FeatureIndex i);
   const bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);

@@ -79,6 +79,10 @@ const Point Game::robot_position(RobotIndex irobot) {
   return robots[irobot].position;
 }
 
+void Game::set_robot_position(RobotIndex irobot, Point x) {
+  robots[irobot].position = x;
+}
+
 const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
   if (has_feature(x, Feature::Pit))
     return false;
