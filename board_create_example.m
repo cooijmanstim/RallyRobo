@@ -2,7 +2,7 @@ function [board] = board_create_example()
 global RR;
 board = false(12, 12, RR.nfeatures);
 
-for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
+for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10; 7 12; 11 11]
          RR.features.conveyor_north [repmat(3, [3 1]) (1:3)';
                                      repmat(7, [2 1]) (4:5)']
          RR.features.conveyor_east  [(3:6)'  repmat(4, [4 1]);
@@ -22,8 +22,8 @@ for o = {RR.features.repair         [2 1; 2 5; 5 3; 9 3; 5 8; 1 10]
     % the first dimension of board is the vertical one, i.e., y.  the
     % coordinates above are all in [x y] order.
     xs = fliplr(xs);
-    board = board_enable_feature(board, [12,12], [true false false false false false false false false false false false;]);
-    for i = 1:size(xs, 1)
-        board = board_enable_feature(board, xs(i, :), feature);
+    
+    for x = xs'
+        board = board_enable_feature(board, x', feature);
     end
 end

@@ -4,7 +4,7 @@ global BoardFigure;
 
 
 BoardFigure = figure('name','Robo Rally');
-axis ( [1, game.width+1, 1, game.height+1 ] );
+axis ( [0, game.width+2, 0, game.height+2 ] );
 axis image;
 set(gca, 'XTickLabelMode', 'manual', 'XTickLabel', [],'Visible','off');
 set(gca, 'YTickLabelMode', 'manual', 'YTickLabel', [],'Visible','off');
