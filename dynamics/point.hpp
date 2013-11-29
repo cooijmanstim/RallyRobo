@@ -13,7 +13,8 @@ public:
 
   Point &operator=(const Point &that);
   Point &operator+=(const Point &that);
-  bool operator==(const Point &that);
+  bool operator==(const Point &that) const;
   Ordinate operator[](unsigned int i);
 };
 
+std::ostream& operator <<(std::ostream& os, const Point& point);

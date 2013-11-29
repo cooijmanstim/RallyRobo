@@ -1,7 +1,7 @@
 #include "direction.hpp"
 
 DirectionIndex Direction::rotate(DirectionIndex a, Rotation da) {
-  return static_cast<DirectionIndex>((a + da) % Direction::NDirections);
+  return static_cast<DirectionIndex>((a + da + Direction::NDirections) % Direction::NDirections);
 }
 
 DirectionIndex Direction::opposite(DirectionIndex a) {

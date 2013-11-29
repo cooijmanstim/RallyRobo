@@ -27,10 +27,15 @@ Point &Point::operator+=(const Point &that) {
   return *this;
 }
 
-bool Point::operator==(const Point &that) {
+bool Point::operator==(const Point &that) const {
   return this->x[0] == that.x[0] && this->x[1] == that.x[1];
 }
 
 Ordinate Point::operator[](unsigned int i) {
   return this->x[i];
+}
+
+std::ostream& operator <<(std::ostream& os, const Point& point) {
+  os << "Point(" << point.x[0] << ", " << point.x[1] << ")";
+  return os;
 }

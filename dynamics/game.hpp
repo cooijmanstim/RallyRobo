@@ -27,6 +27,14 @@ namespace Feature {
   FeatureIndex features[] = {
     FEATURES
   };
+
+  FeatureIndex wallsByDirection[] = {
+    WallEast, WallNorth, WallWest, WallSouth,
+  };
+
+  FeatureIndex conveyorsByDirection[] = {
+    ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth,
+  };
 #undef FEATURES
 }
 typedef Feature::FeatureIndex FeatureIndex;
@@ -50,11 +58,16 @@ public:
 
   const Point robot_position(RobotIndex irobot);
   void set_robot_position(RobotIndex irobot, Point x);
+  const DirectionIndex robot_direction(RobotIndex irobot);
+  void set_robot_direction(RobotIndex irobot, DirectionIndex dir);
+
   const bool has_feature(Point x, FeatureIndex i);
   void set_feature(Point x, FeatureIndex i);
 
   const bool robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir);
   const bool robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir);
   bool robot_move_maybe(RobotIndex irobot, DirectionIndex dir);
-  void game_process_card(RobotIndex irobot, Card card);
+
+  void process_card(RobotIndex irobot, Card card);
+  void advance_conveyors();
 };

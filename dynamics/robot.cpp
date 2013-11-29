@@ -21,3 +21,7 @@ Robot& Robot::operator=(const Robot& that) {
   this->next_checkpoint = that.next_checkpoint;
   return *this;
 }
+
+void Robot::rotate(Rotation dd) {
+  this->direction = Direction::rotate(this->direction, dd);
+}

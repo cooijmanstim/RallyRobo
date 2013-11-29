@@ -14,4 +14,6 @@ public:
   Robot(const Robot& that);
   ~Robot();
   Robot& operator=(const Robot& that);
+
+  void rotate(Rotation dd);
 };

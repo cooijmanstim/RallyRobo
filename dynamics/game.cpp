@@ -85,6 +85,14 @@ void Game::set_robot_position(RobotIndex irobot, Point x) {
   robots[irobot].position = x;
 }
 
+const DirectionIndex Game::robot_direction(RobotIndex irobot) {
+  return robots[irobot].direction;
+}
+
+void Game::set_robot_direction(RobotIndex irobot, DirectionIndex dir) {
+  robots[irobot].direction = dir;
+}
+
 const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
   if (has_feature(x, Feature::Pit))
     return false;
@@ -139,7 +147,7 @@ bool Game::robot_move_maybe(RobotIndex irobot, DirectionIndex dir) {
   return true;
 }
 
-void Game::game_process_card(RobotIndex irobot, Card card) {
+void Game::process_card(RobotIndex irobot, Card card) {
   if (card.translation == 0) {
     // rotation only
     robots[irobot].direction = Direction::rotate(robots[irobot].direction, card.rotation);
@@ -152,4 +160,30 @@ void Game::game_process_card(RobotIndex irobot, Card card) {
         break;
     }
   }
+}
+
+void Game::advance_conveyors() {
+  // the project documentation guarantees that conveyor belt movement is never
+  // obstructed. so we can move each robot in parallel without worrying about
+  // what's on the tile it is moving to.
+  for_each(robots.begin(), robots.end(),
+           [this](Robot &robot) {
+      using namespace Feature;
+      using namespace Direction;
+
+      Point dx(0, 0);
+      for_each(std::begin(indices), std::end(indices),
+               [this, &robot, &dx](DirectionIndex dir) {
+          if (has_feature(robot.position, conveyorsByDirection[dir]))
+            dx = asPoints[dir];
+        });
+      robot.position += dx;
+
+      // this should only happen if the robot was moved, and it does.
+      if (has_feature(robot.position, ConveyorTurningCcw)) {
+        robot.rotate(1);
+      } else if (has_feature(robot.position, ConveyorTurningCw)) {
+        robot.rotate(-1);
+      }
+    });
 }
