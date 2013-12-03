@@ -31,7 +31,15 @@ bool Point::operator==(const Point &that) const {
   return this->x[0] == that.x[0] && this->x[1] == that.x[1];
 }
 
-Ordinate Point::operator[](unsigned int i) {
+bool Point::operator!=(const Point &that) const {
+  return this->x[0] != that.x[0] || this->x[1] != that.x[1];
+}
+
+Ordinate& Point::operator[](std::size_t i) {
+  return this->x[i];
+}
+
+const Ordinate& Point::operator[](std::size_t i) const {
   return this->x[i];
 }
 

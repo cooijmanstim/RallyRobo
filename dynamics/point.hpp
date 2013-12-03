@@ -14,7 +14,9 @@ public:
   Point &operator=(const Point &that);
   Point &operator+=(const Point &that);
   bool operator==(const Point &that) const;
-  Ordinate operator[](unsigned int i);
+  bool operator!=(const Point &that) const;
+  const Ordinate& operator[](std::size_t i) const;
+  Ordinate& operator[](std::size_t i);
 };
 
 std::ostream& operator <<(std::ostream& os, const Point& point);

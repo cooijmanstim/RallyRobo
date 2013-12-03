@@ -6,114 +6,108 @@
 #include "card.hpp"
 #include "game.hpp"
 
-using namespace std;
+using namespace boost;
 using namespace boost::assign;
 
-Game::Game(vector<Robot> robots, vector<Point> checkpoints)
-  : robots(robots), checkpoints(checkpoints),
-    board(boost::extents[BOARD_WIDTH+2][BOARD_HEIGHT+2][Feature::NFeatures]) {
+Game::Game() : board(boost::extents[BoardWidth+2][BoardHeight+2][Feature::NFeatures]) {
+  using namespace Feature;
   // add a border of pits around the board.  this obviates the need to deal with bounds explicitly.
   // the coordinates for the interior of the board are now 1-based.
-  for (int i = 0; i < BOARD_HEIGHT+2; i++) {
-    board[i][0][Feature::Pit] = 1;
-    board[i][BOARD_HEIGHT+1][Feature::Pit] = 1;
+  for (size_t i = 0; i < BoardHeight+2; i++) {
+    board[i][0][Pit] = 1;
+    board[i][BoardHeight+1][Pit] = 1;
   }
-  for (int j = 0; j < BOARD_WIDTH+2; j++) {
-    board[0][j][Feature::Pit] = 1;
-    board[BOARD_WIDTH+1][j][Feature::Pit] = 1;
+  for (size_t j = 0; j < BoardWidth+2; j++) {
+    board[0][j][Pit] = 1;
+    board[BoardWidth+1][j][Pit] = 1;
   }
 }
 
 Game::Game(const Game& that)
-  : robots(that.robots), checkpoints(that.checkpoints), board(that.board) {
+  : over(that.over), winner(that.winner),
+    robots(that.robots), checkpoints(that.checkpoints),
+    board(that.board) {
 }
 
 Game::~Game() {
 }
 
-Game& Game::operator=(const Game &that) {
+Game& Game::operator=(const Game& that) {
+  this->over = that.over;
+  this->winner = that.winner;
   this->robots = that.robots;
   this->checkpoints = that.checkpoints;
   this->board = that.board;
   return *this;
 }
 
+void Game::add_robot(Point initial_position, DirectionIndex initial_direction) {
+  RobotIndex identity = robots.size();
+  robots.push_back(shared_ptr<Robot>(new Robot(identity, initial_position, initial_direction)));
+}
+
+void Game::add_checkpoint(Point checkpoint) {
+  checkpoints.push_back(checkpoint);
+}
+
 Game Game::example_game() {
-  Game game(list_of<Robot>(Point( 3,  1), Direction::East,  0)
-                          (Point( 4, 11), Direction::South, 0)
-                          (Point( 8,  1), Direction::South, 0)
-                          (Point(11,  9), Direction::West,  0),
-            list_of<Point>(12, 1) (8, 9) (2, 8) (9, 5));
+  using namespace Feature;
+  using namespace Direction;
+
+  Game game;
+  game.add_checkpoint(Point(12, 1));
+  game.add_checkpoint(Point( 8, 9));
+  game.add_checkpoint(Point( 2, 8));
+  game.add_checkpoint(Point( 9, 5));
+
+  game.add_robot(Point( 3,  1), East);
+  game.add_robot(Point( 4, 11), South);
+  game.add_robot(Point( 8,  1), South);
+  game.add_robot(Point(11,  9), West);
 
   // set feature at points
-  auto sfap = [&game](FeatureIndex fi, vector<Point> points) {
-    for_each(points.begin(), points.end(),
-             [&game, &fi] (Point x) {
-               game.set_feature(Point(x[1], x[0]), fi);
-             });
+  auto sfap = [&game](FeatureIndex fi, std::vector<Point> points) {
+    std::for_each(points.begin(), points.end(), [&game, &fi] (Point x) {
+        game.set_feature(Point(x[0], x[1]), fi);
+      });
   };
 
-  sfap(Feature::Pit,                list_of<Point>(8,5) (9,5) (3,7) (6,10));
-  sfap(Feature::Repair,             list_of<Point>(2,1) (2,5) (5,3) (9,3) (5,8) (1,10));
-  sfap(Feature::ConveyorNorth,      list_of<Point>(3,1) (3,2) (3,3) (7,4) (7,5));
-  sfap(Feature::ConveyorEast,       list_of<Point>(3,4) (4,4) (5,4) (6,4) (7,6) (8,6) (9,6) (10,6) (11,6) (12,6));
-  sfap(Feature::ConveyorWest,       list_of<Point>(1,6) (2,6) (3,6) (4,6) (5,7) (6,7) (7,7) (8,7) (9,7) (10,7) (11,7) (12,7));
-  sfap(Feature::ConveyorSouth,      list_of<Point>(4,7));
-  sfap(Feature::ConveyorTurningCcw, list_of<Point>(7,4) (4,7));
-  sfap(Feature::ConveyorTurningCw,  list_of<Point>(7,6) (3,4) (4,6));
-  sfap(Feature::WallEast,           list_of<Point>(4,5));
-  sfap(Feature::WallNorth,          list_of<Point>(10,2) (4,5) (7,7) (3,10));
-  sfap(Feature::WallWest,           list_of<Point>(4,1) (10,2) (7,3) (1,5) (11,9) (5,12));
-  sfap(Feature::WallSouth,          list_of<Point>(6,1));
+  sfap(Pit,                list_of<Point>(5,8) (5,9) (7,3) (10,6));
+  sfap(Repair,             list_of<Point>(1,2) (5,2) (3,5) (3,9) (8,5) (10,1));
+  sfap(ConveyorNorth,      list_of<Point>(1,3) (2,3) (3,3) (4,7) (5,7));
+  sfap(ConveyorEast,       list_of<Point>(4,3) (4,4) (4,5) (4,6) (6,7) (6,8) (6,9) (6,10) (6,11) (6,12));
+  sfap(ConveyorWest,       list_of<Point>(6,1) (6,2) (6,3) (6,4) (7,5) (7,6) (7,7) (7,8) (7,9) (7,10) (7,11) (7,12));
+  sfap(ConveyorSouth,      list_of<Point>(7,4));
+  sfap(ConveyorTurningCcw, list_of<Point>(4,7) (7,4));
+  sfap(ConveyorTurningCw,  list_of<Point>(6,7) (4,3) (6,4));
+  sfap(WallEast,           list_of<Point>(5,4));
+  sfap(WallNorth,          list_of<Point>(2,10) (5,4) (7,7) (10,3));
+  sfap(WallWest,           list_of<Point>(1,4) (2,10) (3,7) (5,1) (9,11) (12,5));
+  sfap(WallSouth,          list_of<Point>(1,6));
 
   return game;
 }
 
-const bool Game::has_feature(Point x, FeatureIndex i) {
+bool Game::out_of_bounds(const Point &x) const {
+  return
+    0 <= x[0] && x[0] < BoardHeight+2 &&
+    0 <= x[1] && x[1] < BoardWidth +2;
+}
+
+bool Game::has_feature(const Point &x, FeatureIndex i) const {
   return board[x[0]][x[1]][i];
 }
 
-void Game::set_feature(Point x, FeatureIndex i) {
+void Game::set_feature(const Point &x, FeatureIndex i) {
   board[x[0]][x[1]][i] = 1;
 }
 
-const Point Game::robot_position(RobotIndex irobot) {
-  return robots[irobot].position;
+bool Game::robot_can_leave(Robot &robot, const Point &x, DirectionIndex dir) const {
+  return !has_feature(x, Feature::Pit) && !has_feature(x, Feature::lateWall(dir));
 }
 
-void Game::set_robot_position(RobotIndex irobot, Point x) {
-  robots[irobot].position = x;
-}
-
-const DirectionIndex Game::robot_direction(RobotIndex irobot) {
-  return robots[irobot].direction;
-}
-
-void Game::set_robot_direction(RobotIndex irobot, DirectionIndex dir) {
-  robots[irobot].direction = dir;
-}
-
-const bool Game::robot_can_leave(RobotIndex irobot, Point x, DirectionIndex dir) {
-  if (has_feature(x, Feature::Pit))
-    return false;
-
-  switch (dir) {
-  case Direction::East:  return !has_feature(x, Feature::WallEast);
-  case Direction::North: return !has_feature(x, Feature::WallNorth);
-  case Direction::West:  return !has_feature(x, Feature::WallWest);
-  case Direction::South: return !has_feature(x, Feature::WallSouth);
-  default: assert(false);
-  }
-}
-
-const bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir) {
-  switch (dir) {
-  case Direction::East:  return !has_feature(x, Feature::WallWest);
-  case Direction::North: return !has_feature(x, Feature::WallSouth);
-  case Direction::West:  return !has_feature(x, Feature::WallEast);
-  case Direction::South: return !has_feature(x, Feature::WallNorth);
-  default: assert(false);
-  }
+bool Game::robot_can_enter(Robot &robot, const Point &x, DirectionIndex dir) const {
+  return !has_feature(x, Feature::earlyWall(dir));
 }
 
 /* Move the indicated robot in the direction 'dx', pushing other robots
@@ -122,40 +116,35 @@ const bool Game::robot_can_enter(RobotIndex irobot, Point x, DirectionIndex dir)
  * returns true if anything was moved.
  * Modifies game.
  */
-bool Game::robot_move_maybe(RobotIndex irobot, DirectionIndex dir) {
-  Point x = robots[irobot].position;
-
-  Point xnew(x);
+bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
+  Point xold = robot.position;
+  Point xnew(xold);
   xnew += Direction::asPoints[dir];
 
-  if (!robot_can_leave(irobot, x,    dir) ||
-      !robot_can_enter(irobot, xnew, dir)) {
+  if (!robot_can_leave(robot, xold, dir) || !robot_can_enter(robot, xnew, dir))
     return false;
-  }
 
-  /* if there is a robot at the destination, try to push it */
-  for (RobotIndex jrobot = 0; jrobot < robots.size(); jrobot++) {
-    if (robots[jrobot].position == xnew) {
-      if (!robot_move_maybe(jrobot, dir))
-        return false;
-      break;
-    }
-  }
+  // if there is a robot at the destination, try to push it
+  auto pushee_it = find_if(robots.begin(), robots.end(), [&xnew](shared_ptr<Robot>& pushee) {
+      return !pushee->is_virtual && pushee->position == xnew;
+    });
+  if (pushee_it != robots.end() && !robot_move_maybe(**pushee_it, dir))
+    return false;
 
-  /* finally, move irobot */
-  robots[irobot].position = xnew;
+  // permission to land
+  robot.position = xnew;
   return true;
 }
 
-void Game::process_card(RobotIndex irobot, Card card) {
+void Game::process_card(Robot &robot, Card &card) {
   if (card.translation == 0) {
     // rotation only
-    robots[irobot].direction = Direction::rotate(robots[irobot].direction, card.rotation);
+    robot.rotate(card.rotation);
   } else {
     // translation only, tile by tile
-    DirectionIndex di = card.translation >= 0 ? robots[irobot].direction : Direction::opposite(robots[irobot].direction);
+    DirectionIndex di = card.translation >= 0 ? robot.direction : Direction::opposite(robot.direction);
     for (int k = abs(card.translation); k >= 1; k--) {
-      bool moved = robot_move_maybe(irobot, di);
+      bool moved = robot_move_maybe(robot, di);
       if (!moved)
         break;
     }
@@ -166,24 +155,160 @@ void Game::advance_conveyors() {
   // the project documentation guarantees that conveyor belt movement is never
   // obstructed. so we can move each robot in parallel without worrying about
   // what's on the tile it is moving to.
-  for_each(robots.begin(), robots.end(),
-           [this](Robot &robot) {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (robot->is_virtual)
+        return;
+
       using namespace Feature;
-      using namespace Direction;
-
+      
       Point dx(0, 0);
-      for_each(std::begin(indices), std::end(indices),
-               [this, &robot, &dx](DirectionIndex dir) {
-          if (has_feature(robot.position, conveyorsByDirection[dir]))
-            dx = asPoints[dir];
-        });
-      robot.position += dx;
-
+      std::for_each(std::begin(Direction::indices), std::end(Direction::indices),
+               [this, robot, &dx](DirectionIndex dir) {
+                 if (has_feature(robot->position, conveyorsByDirection[dir]))
+                   dx = Direction::asPoints[dir];
+               });
+      robot->position += dx;
+      
       // this should only happen if the robot was moved, and it does.
-      if (has_feature(robot.position, ConveyorTurningCcw)) {
-        robot.rotate(1);
-      } else if (has_feature(robot.position, ConveyorTurningCw)) {
-        robot.rotate(-1);
+      if (has_feature(robot->position, ConveyorTurningCcw)) {
+        robot->rotate(1);
+      } else if (has_feature(robot->position, ConveyorTurningCw)) {
+        robot->rotate(-1);
       }
     });
+}
+
+void Game::fire_robot_lasers() {
+  // many early exits if we handle it by searching for pairs of robots, one
+  // having the other in its line of sight.
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& shooter) {
+      FeatureIndex earlyWall = Feature::earlyWall(shooter->direction),
+                    lateWall = Feature:: lateWall(shooter->direction);
+
+      if (has_feature(shooter->position, lateWall))
+        return;
+
+      std::for_each(robots.begin(), robots.end(), [this, &shooter, earlyWall, lateWall](shared_ptr<Robot>& shootee) {
+          if (shooter == shootee)
+            return;
+
+          if (has_feature(shootee->position, earlyWall))
+            return;
+
+          if (!Direction::connects(shooter->position, shootee->direction, shooter->position))
+            return;
+
+          // require no obstructions in the way
+          Point x(shooter->position);
+          Point dx(Direction::asPoints[shooter->direction]);
+
+          x += dx;
+          while (x != shootee->position) {
+            // this would imply a bug, probably in Direction::connects
+            assert(!out_of_bounds(x));
+
+            if (has_feature(x, earlyWall))
+              return;
+            
+            if (has_feature(x, lateWall))
+              return;
+            
+            // if there is a robot in the way, it will be the shootee in another iteration
+            if (std::any_of(robots.begin(), robots.end(), [this, &x](shared_ptr<Robot>& robot) {
+                  return !robot->is_virtual && robot->position == x;
+                }))
+              return;
+            
+            x += dx;
+          }
+
+          shootee->take_damage();
+        });
+    });
+}
+
+void Game::remove_destroyed_robots() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (robot->is_destroyed())
+        robot->wait();
+    });
+}
+
+bool Game::any_robot_obstructing(const Point &x, optional<shared_ptr<Robot> > exception) const {
+  return std::any_of(robots.begin(), robots.end(), [this, &x, &exception](const shared_ptr<Robot>& robot) {
+      if (exception && robot == *exception)
+        return false;
+      return robot->obstructs() && robot->position == x;
+    });
+}
+
+void Game::respawn_waiting_robots() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (robot->is_waiting()) {
+        robot->respawn();
+        if (any_robot_obstructing(robot->position, robot))
+          robot->virtualize();
+      }
+    });
+}
+
+void Game::devirtualize_robots() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (robot->is_virtual) {
+        if (!std::any_of(robots.begin(), robots.end(), [this, &robot](shared_ptr<Robot>& robot2) {
+              return robot != robot2 && !robot2->is_waiting() && robot2->position == robot->position;
+            }))
+          robot->devirtualize();
+      }
+    });
+}
+
+void Game::promote_robots() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (!robot->is_virtual && robot->is_active() && checkpoints[robot->next_checkpoint] == robot->position) {
+        robot->respawn_position = robot->position;
+        robot->respawn_direction = robot->direction;
+        robot->next_checkpoint++;
+        if (robot->next_checkpoint >= checkpoints.size()) {
+          over = true;
+          winner = robot->identity;
+        }
+      }
+    });
+}
+
+void Game::repair_robots() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
+      if (!robot->is_virtual && robot->is_active() && has_feature(robot->position, Feature::Repair)) {
+        robot->repair();
+      }
+    });
+}
+
+void Game::perform_turn() {
+  // TODO: deal cards
+  // TODO: assign to registers
+
+  // grab a working copy that we can sort according to card priority
+  std::vector<shared_ptr<Robot> > robots(this->robots);
+
+  for (int i = 0; i < NRegisters; i++) {
+    std::sort(robots.begin(), robots.end(), [i](const shared_ptr<Robot>& a, const shared_ptr<Robot>& b) {
+        return a->registers[i]->priority > b->registers[i]->priority;
+      });
+
+    std::for_each(robots.begin(), robots.end(), [this, i](const shared_ptr<Robot>& robot) {
+        if (robot->is_active())
+          process_card(*robot, *robot->registers[i]);
+      });
+
+    devirtualize_robots();
+    advance_conveyors();
+    fire_robot_lasers();
+    promote_robots();
+    repair_robots();
+  }
+
+  respawn_waiting_robots();
+  remove_destroyed_robots();
 }

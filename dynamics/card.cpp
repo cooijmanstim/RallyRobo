@@ -15,13 +15,6 @@ Card::Card(const Card& that)
 Card::~Card() {
 }
 
-Card& Card::operator=(const Card& that) {
-  this->priority    = that.priority;
-  this->translation = that.translation;
-  this->rotation    = that.rotation;
-  return *this;
-}
-
 vector<Card> Card::generate_deck() {
   vector<Card> cards;
 

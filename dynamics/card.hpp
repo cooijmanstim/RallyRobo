@@ -18,6 +18,4 @@ public:
   Card(Priority priority, Translation translation, Rotation rotation);
   Card(const Card& that);
   ~Card();
-
-  Card& operator=(const Card& that);
 };
