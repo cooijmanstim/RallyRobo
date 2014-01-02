@@ -102,12 +102,13 @@ void Game::set_feature(const Point &x, FeatureIndex i) {
   board[x[0]][x[1]][i] = 1;
 }
 
-bool Game::robot_can_leave(Robot &robot, const Point &x, DirectionIndex dir) const {
-  return !has_feature(x, Feature::Pit) && !has_feature(x, Feature::lateWall(dir));
-}
-
-bool Game::robot_can_enter(Robot &robot, const Point &x, DirectionIndex dir) const {
-  return !has_feature(x, Feature::earlyWall(dir));
+bool Game::robot_can_move(Robot &robot, DirectionIndex dir) const {
+  Point &a = robot.position;
+  Point b(a);
+  b += Direction::asPoints[dir];
+  return !has_feature(a, Feature::Pit)
+    && !has_feature(a, Feature::lateWall(dir))
+    && !has_feature(b, Feature::earlyWall(dir));
 }
 
 /* Move the indicated robot in the direction 'dx', pushing other robots
@@ -117,22 +118,20 @@ bool Game::robot_can_enter(Robot &robot, const Point &x, DirectionIndex dir) con
  * Modifies game.
  */
 bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
-  Point xold = robot.position;
-  Point xnew(xold);
-  xnew += Direction::asPoints[dir];
-
-  if (!robot_can_leave(robot, xold, dir) || !robot_can_enter(robot, xnew, dir))
+  if (!robot_can_move(robot, dir))
     return false;
 
+  Point x = robot.position + Direction::asPoints[dir];
+
   // if there is a robot at the destination, try to push it
-  auto pushee_it = find_if(robots.begin(), robots.end(), [&xnew](shared_ptr<Robot>& pushee) {
-      return !pushee->is_virtual && pushee->position == xnew;
+  auto pushee_it = find_if(robots.begin(), robots.end(), [&x](shared_ptr<Robot>& pushee) {
+      return !pushee->is_virtual && pushee->position == x;
     });
   if (pushee_it != robots.end() && !robot_move_maybe(**pushee_it, dir))
     return false;
 
   // permission to land
-  robot.position = xnew;
+  robot.position = x;
   return true;
 }
 

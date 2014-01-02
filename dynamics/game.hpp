@@ -42,11 +42,9 @@ public:
   void set_feature(const Point &x, FeatureIndex i);
 
   bool any_robot_obstructing(const Point &x, boost::optional<boost::shared_ptr<Robot> > exception) const;
-  bool robot_can_leave(Robot &robot, const Point &x, DirectionIndex dir) const;
-  bool robot_can_enter(Robot &robot, const Point &x, DirectionIndex dir) const;
-
+  bool robot_can_move(Robot &robot, DirectionIndex dir) const;
   bool robot_move_maybe(Robot &robot, DirectionIndex dir);
-  void process_card(Robot &robot, Card &card);
+
   void advance_conveyors();
   void fire_robot_lasers();
   void remove_destroyed_robots();
@@ -54,5 +52,7 @@ public:
   void devirtualize_robots();
   void promote_robots();
   void repair_robots();
+
+  void process_card(Robot &robot, Card &card);
   void perform_turn();
 };
