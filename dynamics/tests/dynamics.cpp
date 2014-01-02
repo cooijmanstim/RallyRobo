@@ -11,7 +11,7 @@ using namespace boost::algorithm;
 
 BOOST_AUTO_TEST_CASE(example_game) {
   Game game = Game::example_game();
-  Point x = game.robot_position(2);
+  Point x(8, 1);
   BOOST_CHECK(!game.has_feature(x, Feature::Pit));
   BOOST_CHECK(!game.has_feature(x, Feature::WallEast));
   BOOST_CHECK(!game.has_feature(x, Feature::WallNorth));
