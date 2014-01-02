@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(direction_rotate) {
 
 BOOST_AUTO_TEST_CASE(robot_rotate) {
   using namespace Direction;
-  Robot robot(Point(0, 0), East, 0);
+  Robot robot(0, Point(0, 0), East);
   robot.rotate(-1);
   BOOST_CHECK(robot.direction == South);
   robot.rotate(2);
