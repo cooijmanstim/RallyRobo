@@ -24,8 +24,8 @@ namespace Feature {
     ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth,
   };
 
-  FeatureIndex earlyWall(DirectionIndex dir) { return wallsByDirection[dir]; }
-  FeatureIndex  lateWall(DirectionIndex dir) { return wallsByDirection[Direction::opposite(dir)]; }
+  FeatureIndex earlyWall(DirectionIndex dir) { return wallsByDirection[Direction::opposite(dir)]; }
+  FeatureIndex  lateWall(DirectionIndex dir) { return wallsByDirection[dir]; }
 }
 typedef Feature::FeatureIndex FeatureIndex;
 

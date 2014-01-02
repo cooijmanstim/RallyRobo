@@ -9,6 +9,19 @@
 using namespace boost;
 using namespace boost::algorithm;
 
+BOOST_AUTO_TEST_CASE(direction_rotate) {
+  using namespace Direction;
+  BOOST_CHECK(rotate(East, -1) == South);
+  BOOST_CHECK(rotate(South, 2) == North);
+}
+
+BOOST_AUTO_TEST_CASE(early_late_wall) {
+  using namespace Direction;
+  using namespace Feature;
+  BOOST_CHECK(earlyWall(East) == WallNorth);
+  BOOST_CHECK(lateWall(East) == WallEast);
+}
+
 BOOST_AUTO_TEST_CASE(example_game) {
   Game game = Game::example_game();
   Point x(8, 1);
@@ -17,17 +30,37 @@ BOOST_AUTO_TEST_CASE(example_game) {
   BOOST_CHECK(!game.has_feature(x, Feature::WallNorth));
   BOOST_CHECK(!game.has_feature(x, Feature::WallWest));
   BOOST_CHECK(!game.has_feature(x, Feature::WallSouth));
+
+  x = Point(5, 4);
+  BOOST_CHECK(game.has_feature(x, Feature::WallNorth));
+  BOOST_CHECK(game.has_feature(x, Feature::WallEast));
 }
 
-BOOST_AUTO_TEST_CASE(robot_can_leave) {
+BOOST_AUTO_TEST_CASE(robot_can_move) {
+  using namespace Direction;
+
   Game game = Game::example_game();
+
+#define expect(dir, able) \
+  BOOST_CHECK(game.robot_can_move(*robot, dir) == able);
+
   // the red robot
   shared_ptr<Robot> robot = game.get_robot(2);
   // should be able to move in any direction
-  BOOST_CHECK(game.robot_can_move(*robot, Direction::East));
-  BOOST_CHECK(game.robot_can_move(*robot, Direction::North));
-  BOOST_CHECK(game.robot_can_move(*robot, Direction::West));
-  BOOST_CHECK(game.robot_can_move(*robot, Direction::South));
+  expect(East,  true);
+  expect(North, true);
+  expect(West,  true);
+  expect(South, true);
+
+  // but if we put it here
+  robot->position = Point(5, 4);
+  // it should only be able to move west or south
+  expect(East,  false);
+  expect(North, false);
+  expect(West,  true);
+  expect(South, true);
+
+#undef expect
 }
 
 BOOST_AUTO_TEST_CASE(robot_move_maybe) {
@@ -35,27 +68,28 @@ BOOST_AUTO_TEST_CASE(robot_move_maybe) {
   shared_ptr<Robot> robot = game.get_robot(2);
   robot->position = Point(5, 4);
 
-  auto try_move = [&game, &robot](DirectionIndex dir, bool expected) {
-    BOOST_CHECK(game.robot_move_maybe(*robot, dir) == expected);
-  };
+#define expect(dir, success) \
+  BOOST_CHECK(game.robot_move_maybe(*robot, dir) == success);
 
   using namespace Direction;
 
-  try_move(North, false); // wall inside
-  try_move(East,  false); // wall inside
-  try_move(South, true);
-  try_move(East,  true);
-  try_move(North, true);
-  try_move(West,  false); // wall outside
-  try_move(North, true);
-  try_move(West,  true);
-  try_move(South, false); // wall outside
-  try_move(North, true);
-  try_move(West,  true);  // into pit
-  try_move(East,  false);
-  try_move(North, false);
-  try_move(West,  false);
-  try_move(South, false);
+  expect(North, false); // wall inside
+  expect(East,  false); // wall inside
+  expect(South, true);
+  expect(East,  true);
+  expect(North, true);
+  expect(West,  false); // wall outside
+  expect(North, true);
+  expect(West,  true);
+  expect(South, false); // wall outside
+  expect(North, true);
+  expect(West,  true);  // into pit
+  expect(East,  false);
+  expect(North, false);
+  expect(West,  false);
+  expect(South, false);
+
+#undef expect
 }
 
 BOOST_AUTO_TEST_CASE(process_card) {
@@ -97,12 +131,6 @@ BOOST_AUTO_TEST_CASE(process_card) {
     game.process_card(*robot, Card(0, 1, 0));
     BOOST_CHECK(robot->position == Point(5, 9));
   }
-}
-
-BOOST_AUTO_TEST_CASE(direction_rotate) {
-  using namespace Direction;
-  BOOST_CHECK(rotate(East, -1) == South);
-  BOOST_CHECK(rotate(South, 2) == North);
 }
 
 BOOST_AUTO_TEST_CASE(robot_rotate) {
