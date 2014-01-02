@@ -52,6 +52,6 @@ public:
   void promote_robots();
   void repair_robots();
 
-  void process_card(Robot &robot, Card &card);
+  void process_card(Robot &robot, const Card &card);
   void perform_turn();
 };

@@ -124,7 +124,7 @@ bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
   return true;
 }
 
-void Game::process_card(Robot &robot, Card &card) {
+void Game::process_card(Robot &robot, const Card &card) {
   if (card.translation == 0) {
     // rotation only
     robot.rotate(card.rotation);
