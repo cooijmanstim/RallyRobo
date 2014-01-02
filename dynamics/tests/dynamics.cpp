@@ -22,22 +22,21 @@ BOOST_AUTO_TEST_CASE(example_game) {
 BOOST_AUTO_TEST_CASE(robot_can_leave) {
   Game game = Game::example_game();
   // the red robot
-  RobotIndex irobot = 2;
-  Point x = game.robot_position(irobot);
-  // should be able to leave in any direction
-  BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::East));
-  BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::North));
-  BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::West));
-  BOOST_CHECK(game.robot_can_leave(irobot, x, Direction::South));
+  shared_ptr<Robot> robot = game.get_robot(2);
+  // should be able to move in any direction
+  BOOST_CHECK(game.robot_can_move(*robot, Direction::East));
+  BOOST_CHECK(game.robot_can_move(*robot, Direction::North));
+  BOOST_CHECK(game.robot_can_move(*robot, Direction::West));
+  BOOST_CHECK(game.robot_can_move(*robot, Direction::South));
 }
 
 BOOST_AUTO_TEST_CASE(robot_move_maybe) {
   Game game = Game::example_game();
-  RobotIndex irobot = 2;
-  game.set_robot_position(irobot, Point(5, 4));
+  shared_ptr<Robot> robot = game.get_robot(2);
+  robot->position = Point(5, 4);
 
-  auto try_move = [&game, irobot](DirectionIndex dir, bool expected) {
-    BOOST_CHECK(game.robot_move_maybe(irobot, dir) == expected);
+  auto try_move = [&game, &robot](DirectionIndex dir, bool expected) {
+    BOOST_CHECK(game.robot_move_maybe(*robot, dir) == expected);
   };
 
   using namespace Direction;
@@ -61,19 +60,20 @@ BOOST_AUTO_TEST_CASE(robot_move_maybe) {
 
 BOOST_AUTO_TEST_CASE(process_card) {
   Game game = Game::example_game();
-  RobotIndex irobot = 0, ipushedrobot = 1;
+  shared_ptr<Robot> robot = game.get_robot(0),
+                    pushed_robot = game.get_robot(1);
 
   using namespace Direction;
 
-  BOOST_CHECK(game.robot_position(irobot) == Point(3, 1));
-  BOOST_CHECK(game.robot_direction(irobot) == East);
+  BOOST_CHECK(robot->position == Point(3, 1));
+  BOOST_CHECK(robot->direction == East);
 
-  BOOST_CHECK(game.robot_position(ipushedrobot) == Point(4, 11));
+  BOOST_CHECK(pushed_robot->position == Point(4, 11));
   
-  auto after_card = [irobot, &game](Card card, Point position, DirectionIndex direction) {
-    game.process_card(irobot, card);
-    BOOST_CHECK(game.robot_position(irobot) == position);
-    BOOST_CHECK(game.robot_direction(irobot) == direction);
+  auto after_card = [&robot, &game](Card card, Point position, DirectionIndex direction) {
+    game.process_card(*robot, card);
+    BOOST_CHECK(robot->position  == position);
+    BOOST_CHECK(robot->direction == direction);
   };
 
   after_card(Card(0,  2,  0), Point(3,  3), East);
@@ -85,17 +85,17 @@ BOOST_AUTO_TEST_CASE(process_card) {
   after_card(Card(0,  0, -1), Point(4,  6), East);
   after_card(Card(0,  3,  0), Point(4,  9), East);
   after_card(Card(0,  3,  0), Point(4, 12), East); // push other robot off the board
-  BOOST_CHECK(game.robot_position(ipushedrobot) == Point(4, 13));
+  BOOST_CHECK(pushed_robot->position == Point(4, 13));
   after_card(Card(0,  0,  2), Point(4, 12), West);
   after_card(Card(0,  3,  0), Point(4,  9), West);
   after_card(Card(0,  0, -1), Point(4,  9), North);
   after_card(Card(0,  3,  0), Point(5,  9), North); // fell into a pit
 
-  // can't leave pit
+  // can't leave pit in any direction
   for (int i = 0; i < 4; i++) {
-    game.process_card(irobot, Card(0, 0, 1));
-    game.process_card(irobot, Card(0, 1, 0));
-    BOOST_CHECK(game.robot_position(irobot) == Point(5, 9));
+    game.process_card(*robot, Card(0, 0, 1));
+    game.process_card(*robot, Card(0, 1, 0));
+    BOOST_CHECK(robot->position == Point(5, 9));
   }
 }
 
