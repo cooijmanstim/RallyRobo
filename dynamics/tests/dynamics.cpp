@@ -116,16 +116,16 @@ BOOST_AUTO_TEST_CASE(robot_rotate) {
 
 BOOST_AUTO_TEST_CASE(advance_conveyors) {
   Game game = Game::example_game();
-  RobotIndex irobot = 0;
+  shared_ptr<Robot> robot = game.get_robot(0);
 
   using namespace Direction;
 
 #define expect(x, dir) \
-    BOOST_CHECK(game.robot_position(irobot) == x); \
-    BOOST_CHECK(game.robot_direction(irobot) == dir);
+    BOOST_CHECK(robot->position  == x); \
+    BOOST_CHECK(robot->direction == dir);
 
   // get on the conveyor belt
-  game.process_card(irobot, Card(0, 2, 0));
+  game.process_card(*robot, Card(0, 2, 0));
 
   expect(Point(3, 3), East);
   game.advance_conveyors();
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(advance_conveyors) {
   expect(Point(4, 5), South);
   game.advance_conveyors();
   expect(Point(4, 6), South);
-  BOOST_CHECK(game.has_feature(game.robot_position(irobot), Feature::ConveyorEast));
+  BOOST_CHECK(game.has_feature(robot->position, Feature::ConveyorEast));
   game.advance_conveyors();
   expect(Point(4, 7), East);
   game.advance_conveyors();

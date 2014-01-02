@@ -18,8 +18,6 @@ public:
   bool operator!=(const Point &that) const;
 
   Point &operator=(const Point &that);
-
-  Point operator+(const Point &that) const;
   Point &operator+=(const Point &that);
 };
 

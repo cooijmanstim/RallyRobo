@@ -110,7 +110,8 @@ bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
   if (!robot_can_move(robot, dir))
     return false;
 
-  Point x = robot.position + Direction::asPoints[dir];
+  Point x(robot.position);
+  x += Direction::asPoints[dir];
 
   // if there is a robot at the destination, try to push it
   auto pushee_it = find_if(robots.begin(), robots.end(), [&x](shared_ptr<Robot>& pushee) {
