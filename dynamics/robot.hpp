@@ -31,9 +31,7 @@ public:
   boost::array<boost::optional<Card>, NRegisters> registers;
 
   Robot(RobotIndex identity, Point position, DirectionIndex direction);
-  Robot(const Robot& that);
   ~Robot();
-  Robot& operator=(const Robot& that);
 
   bool is_active();
   bool is_waiting();

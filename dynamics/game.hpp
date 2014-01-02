@@ -29,12 +29,11 @@ public:
   static Game example_game();
 
   Game();
-
-  Game(const Game& that);
   ~Game();
-  Game &operator=(const Game &that);
 
   void add_robot(Point initial_position, DirectionIndex initial_direction);
+  boost::shared_ptr<Robot> get_robot(RobotIndex i) const;
+
   void add_checkpoint(Point checkpoint);
 
   bool out_of_bounds(const Point &x) const;

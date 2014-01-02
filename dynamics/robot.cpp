@@ -13,32 +13,7 @@ Robot::Robot(RobotIndex identity, Point position, DirectionIndex direction)
 {
 }
 
-Robot::Robot(const Robot& that)
-  : identity(that.identity),
-    position(that.position),
-    direction(that.direction),
-    respawn_position(that.respawn_position),
-    respawn_direction(that.respawn_direction),
-    next_checkpoint(that.next_checkpoint),
-    damage(that.damage), state(that.state), is_virtual(that.is_virtual),
-    registers(that.registers) {
-}
-
 Robot::~Robot() {
-}
-
-Robot& Robot::operator=(const Robot& that) {
-  this->identity = that.identity;
-  this->position = that.position;
-  this->direction = that.direction;
-  this->respawn_position = that.respawn_position;
-  this->respawn_direction = that.respawn_direction;
-  this->next_checkpoint = that.next_checkpoint;
-  this->damage = that.damage;
-  this->state = that.state;
-  this->is_virtual = that.is_virtual;
-  this->registers = that.registers;
-  return *this;
 }
 
 bool Robot::is_active() { return state == Active; }

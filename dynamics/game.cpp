@@ -23,27 +23,16 @@ Game::Game() : board(boost::extents[BoardWidth+2][BoardHeight+2][Feature::NFeatu
   }
 }
 
-Game::Game(const Game& that)
-  : over(that.over), winner(that.winner),
-    robots(that.robots), checkpoints(that.checkpoints),
-    board(that.board) {
-}
-
 Game::~Game() {
-}
-
-Game& Game::operator=(const Game& that) {
-  this->over = that.over;
-  this->winner = that.winner;
-  this->robots = that.robots;
-  this->checkpoints = that.checkpoints;
-  this->board = that.board;
-  return *this;
 }
 
 void Game::add_robot(Point initial_position, DirectionIndex initial_direction) {
   RobotIndex identity = robots.size();
   robots.push_back(shared_ptr<Robot>(new Robot(identity, initial_position, initial_direction)));
+}
+
+shared_ptr<Robot> Game::get_robot(RobotIndex i) const {
+  return robots[i];
 }
 
 void Game::add_checkpoint(Point checkpoint) {
