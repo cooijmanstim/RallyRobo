@@ -274,10 +274,8 @@ void Game::repair_robots() {
     });
 }
 
+// the cards have been assigned to the registers; now go through them
 void Game::perform_turn() {
-  // TODO: deal cards
-  // TODO: assign to registers
-
   // grab a working copy that we can sort according to card priority
   std::vector<shared_ptr<Robot> > robots(this->robots);
 
