@@ -9,7 +9,8 @@
 using namespace boost;
 using namespace boost::assign;
 
-Game::Game() : board(boost::extents[BoardWidth+2][BoardHeight+2][Feature::NFeatures]) {
+Game::Game() : board(boost::extents[BoardWidth+2][BoardHeight+2][Feature::NFeatures]),
+               deck(Card::generate_deck()) {
   using namespace Feature;
   // add a border of pits around the board.  this obviates the need to deal with bounds explicitly.
   // the coordinates for the interior of the board are now 1-based.
@@ -33,6 +34,10 @@ void Game::add_robot(Point initial_position, DirectionIndex initial_direction) {
 
 shared_ptr<Robot> Game::get_robot(RobotIndex i) const {
   return robots[i];
+}
+
+std::vector<shared_ptr<Robot> > Game::get_robots() const {
+  return robots;
 }
 
 void Game::add_checkpoint(Point checkpoint) {
@@ -274,12 +279,14 @@ void Game::repair_robots() {
     });
 }
 
-// the cards have been assigned to the registers; now go through them
+// before calling this, make sure the registers are filled
+// after calling this, make sure the registers are vacated
+// TODO: make sure locked registers are properly vacated once a destroyed robot comes back into play
 void Game::perform_turn() {
   // grab a working copy that we can sort according to card priority
   std::vector<shared_ptr<Robot> > robots(this->robots);
 
-  for (int i = 0; i < NRegisters; i++) {
+  for (size_t i = 0; i < NRegisters; i++) {
     std::sort(robots.begin(), robots.end(), [i](const shared_ptr<Robot>& a, const shared_ptr<Robot>& b) {
         return a->registers[i]->priority > b->registers[i]->priority;
       });
@@ -298,4 +305,20 @@ void Game::perform_turn() {
 
   respawn_waiting_robots();
   remove_destroyed_robots();
+}
+
+void Game::vacate_registers() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot> robot) {
+      Deck cards = robot->vacate_registers();
+      deck.insert(cards.begin(), cards.end());
+    });
+}
+
+void Game::fill_empty_registers_randomly() {
+  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot> robot) {
+      std::for_each(robot->registers.begin(), robot->registers.end(), [this](optional<Card> card) {
+          if (!card)
+            card = Card::draw_card(deck);
+        });
+    });
 }

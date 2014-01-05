@@ -10,7 +10,8 @@
 typedef unsigned char RobotIndex;
 
 // TODO move this somewhere
-#define NRegisters 5
+const size_t NRegisters = 5;
+const unsigned int MaximumDamage = 9;
 
 class Robot {
 public:
@@ -47,4 +48,6 @@ public:
   void devirtualize();
   void take_damage();
   void repair();
+
+  Deck vacate_registers();
 };

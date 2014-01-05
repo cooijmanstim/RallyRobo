@@ -1,8 +1,14 @@
 #include <vector>
 
-#include "card.hpp"
+#include <boost/functional/hash.hpp>
 
-using namespace std;
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+
+// TODO: move this somewhere sensible
+boost::mt19937 generator;
+
+#include "card.hpp"
 
 Card::Card(Priority priority, Translation translation, Rotation rotation)
   : priority(priority), translation(translation), rotation(rotation) {
@@ -15,13 +21,19 @@ Card::Card(const Card& that)
 Card::~Card() {
 }
 
-vector<Card> Card::generate_deck() {
-  vector<Card> cards;
+bool Card::operator==(const Card& that) const {
+  return this->priority    == that.priority    &&
+         this->translation == that.translation &&
+         this->rotation    == that.rotation;
+}
 
-  auto f = [&cards](Priority a, Priority b, Priority stride,
-                    Translation translation, Rotation rotation) {
+Deck Card::generate_deck() {
+  Deck deck;
+
+  auto f = [&deck](Priority a, Priority b, Priority stride,
+                   Translation translation, Rotation rotation) {
     for (Priority priority = a; priority <= b; priority += stride)
-      cards.push_back(Card(priority, translation, rotation));
+      deck.insert(Card(priority, translation, rotation));
   };
 
   f( 10, 10,  60,  0,  2); // u-turn
@@ -32,8 +44,37 @@ vector<Card> Card::generate_deck() {
   f(670, 10, 780,  2,  0); // two forward
   f(790, 10, 840,  3,  0); // three forward
 
+  return deck;
+}
+
+Card Card::draw_card(Deck& deck) {
+  assert(!deck.empty());
+  boost::random::uniform_int_distribution<> dist(1, deck.size() - 1);
+  size_t i = dist(generator);
+  auto it = deck.begin();
+  advance(it, i);
+  Card card = *it;
+  deck.erase(card);
+  return card;
+}
+
+// XXX: this could be sped up
+Deck Card::draw_cards(size_t n, Deck& deck) {
+  Deck cards;
+  for (size_t i = 0; i < n; i++)
+    cards.insert(draw_card(deck));
   return cards;
 }
 
-const vector<Card> Card::deck = Card::generate_deck();
+std::ostream& operator <<(std::ostream& os, const Card& card) {
+  os << "Card(" << card.priority << ", " << card.translation << ", " << card.rotation << ")";
+  return os;
+}
 
+std::size_t hash_value(const Card& card) {
+  std::size_t hash = 0;
+  boost::hash_combine(hash, card.priority);
+  boost::hash_combine(hash, card.translation);
+  boost::hash_combine(hash, card.rotation);
+  return hash;
+}

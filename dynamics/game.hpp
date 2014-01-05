@@ -25,6 +25,8 @@ class Game {
   std::vector<Point> checkpoints;
   Board board;
 
+  Deck deck;
+
 public:
   static Game example_game();
 
@@ -33,6 +35,7 @@ public:
 
   void add_robot(Point initial_position, DirectionIndex initial_direction);
   boost::shared_ptr<Robot> get_robot(RobotIndex i) const;
+  std::vector<boost::shared_ptr<Robot> > get_robots() const;
 
   void add_checkpoint(Point checkpoint);
 
@@ -54,4 +57,7 @@ public:
 
   void process_card(Robot &robot, const Card &card);
   void perform_turn();
+
+  void fill_empty_registers_randomly();
+  void vacate_registers();
 };

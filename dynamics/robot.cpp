@@ -1,5 +1,7 @@
 #include <algorithm>
 
+#include <boost/none.hpp>
+
 #include "point.hpp"
 #include "direction.hpp"
 #include "robot.hpp"
@@ -30,7 +32,7 @@ void Robot::rotate(Rotation dd) {
 
 void Robot::take_damage() {
   damage++;
-  if (damage >= 10)
+  if (damage > MaximumDamage)
     state = Destroyed;
 }
 
@@ -55,4 +57,14 @@ void Robot::devirtualize() {
 
 void Robot::repair() {
   damage = std::max(0U, damage - 1);
+}
+
+Deck Robot::vacate_registers() {
+  Deck cards;
+  int ni = std::min(NRegisters, MaximumDamage - damage);
+  for (int i = 0; i < ni; i++) {
+    cards.insert(*registers[i]);
+    registers[i] = boost::none;
+  }
+  return cards;
 }

@@ -2,6 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/algorithm/cxx11/all_of.hpp>
 
+#include "util.hpp"
 #include "point.hpp"
 #include "robot.hpp"
 #include "game.hpp"
@@ -18,7 +19,7 @@ BOOST_AUTO_TEST_CASE(direction_rotate) {
 BOOST_AUTO_TEST_CASE(early_late_wall) {
   using namespace Direction;
   using namespace Feature;
-  BOOST_CHECK(earlyWall(East) == WallNorth);
+  BOOST_CHECK(earlyWall(East) == WallWest);
   BOOST_CHECK(lateWall(East) == WallEast);
 }
 
@@ -183,4 +184,15 @@ BOOST_AUTO_TEST_CASE(advance_conveyors) {
   game.advance_conveyors();
   expect(Point(6, 13), South);
 #undef expect
+}
+
+BOOST_AUTO_TEST_CASE(perform_turn) {
+  Game game = Game::example_game();
+  // TODO: damage robots so that destructions can happen and be tested
+  game.fill_empty_registers_randomly();
+  std::vector<shared_ptr<Robot> > robots = game.get_robots();
+  std::for_each(robots.begin(), robots.end(), [](shared_ptr<Robot> robot) {
+      std::cout << robot->registers << std::endl;
+    });
+  //game.perform_turn();
 }
