@@ -34,11 +34,12 @@ public:
   Robot(RobotIndex identity, Point position, DirectionIndex direction);
   ~Robot();
 
-  bool is_active();
-  bool is_waiting();
-  bool is_destroyed();
+  bool is_active() const;
+  bool is_waiting() const;
+  bool is_destroyed() const;
 
-  bool obstructs();
+  bool obstructs() const;
+  bool can_take_damage() const;
   
   void rotate(Rotation dd);
   

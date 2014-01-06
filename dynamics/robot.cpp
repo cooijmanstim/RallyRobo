@@ -18,11 +18,11 @@ Robot::Robot(RobotIndex identity, Point position, DirectionIndex direction)
 Robot::~Robot() {
 }
 
-bool Robot::is_active() { return state == Active; }
-bool Robot::is_waiting() { return state == Waiting; }
-bool Robot::is_destroyed() { return state == Destroyed; }
+bool Robot::is_active()    const { return state == Active; }
+bool Robot::is_waiting()   const { return state == Waiting; }
+bool Robot::is_destroyed() const { return state == Destroyed; }
 
-bool Robot::obstructs() {
+bool Robot::obstructs() const {
   return !is_virtual && state != Waiting;
 }
 
