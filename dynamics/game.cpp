@@ -56,9 +56,9 @@ Game Game::example_game() {
   game.add_checkpoint(Point( 9, 5));
 
   game.add_robot(Point( 3,  1), East);
-  game.add_robot(Point( 4, 11), South);
-  game.add_robot(Point( 8,  1), South);
-  game.add_robot(Point(11,  9), West);
+  game.add_robot(Point( 4, 11), North);
+  game.add_robot(Point( 8,  1), North);
+  game.add_robot(Point(11,  9), South);
 
   // set feature at points
   auto sfap = [&game](FeatureIndex fi, std::vector<Point> points) {
