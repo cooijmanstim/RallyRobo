@@ -256,11 +256,8 @@ bool Game::any_robot_obstructing(const Point &x, optional<shared_ptr<Robot> > ex
 
 void Game::respawn_waiting_robots() {
   std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
-      if (robot->is_waiting()) {
+      if (robot->is_waiting())
         robot->respawn();
-        if (any_robot_obstructing(robot->position, robot))
-          robot->virtualize();
-      }
     });
 }
 
