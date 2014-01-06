@@ -203,6 +203,53 @@ BOOST_AUTO_TEST_CASE(generate_deck) {
   BOOST_CHECK(deck.size() == 84);
 }
 
+BOOST_AUTO_TEST_CASE(push_many) {
+  Game game = Game::example_game();
+  std::vector<shared_ptr<Robot> > robots = game.get_robots();
+
+  using namespace Direction;
+
+  robots[0]->position = Point( 9, 9);
+  robots[0]->direction = North;
+  robots[2]->position = Point(10, 9);
+  robots[2]->direction = West;
+  robots[3]->position = Point(11, 9);
+  robots[3]->direction = South;
+
+  robots[2]->destroy();
+
+  game.process_card(*robots[3], Card(0, 1, 0));
+
+  BOOST_CHECK_EQUAL(robots[0]->position, Point( 8, 9));
+  BOOST_CHECK_EQUAL(robots[2]->position, Point( 9, 9));
+  BOOST_CHECK_EQUAL(robots[3]->position, Point(10, 9));
+}
+
+BOOST_AUTO_TEST_CASE(fire_robot_lasers) {
+  Game game = Game::example_game();
+  std::vector<shared_ptr<Robot> > robots = game.get_robots();
+
+  using namespace Direction;
+
+  robots[0]->position  = Point( 9, 9);
+  robots[0]->direction = North;
+  robots[1]->position  = Point(10, 6);
+  robots[1]->direction = East;
+  robots[2]->position  = Point(10, 9);
+  robots[2]->direction = West;
+  robots[3]->position  = Point(11, 9);
+  robots[3]->direction = South;
+
+  robots[1]->destroy();
+
+  game.fire_robot_lasers();
+
+  BOOST_CHECK_EQUAL(robots[0]->damage, 0);
+  BOOST_CHECK_EQUAL(robots[1]->damage, 0);
+  BOOST_CHECK_EQUAL(robots[2]->damage, 2);
+  BOOST_CHECK_EQUAL(robots[3]->damage, 0);
+}
+
 BOOST_AUTO_TEST_CASE(perform_turn) {
   Game game = Game::example_game();
 
