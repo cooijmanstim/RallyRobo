@@ -10,7 +10,7 @@ Robot::Robot(RobotIndex identity, Point position, DirectionIndex direction)
   : identity(identity),
     position(position), direction(direction),
     respawn_position(position), respawn_direction(direction),
-    next_checkpoint(0),
+    next_checkpoint(1),
     damage(0), state(Active), is_virtual(false)
 {
 }

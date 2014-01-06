@@ -23,6 +23,10 @@ Game::Game() : board(boost::extents[BoardWidth+2][BoardHeight+2][Feature::NFeatu
     board[0][j][Pit] = 1;
     board[BoardWidth+1][j][Pit] = 1;
   }
+
+  // checkpoint labels are 1-based, put a dummy 0th checkpoint in our vector
+  // to keep the correspondence
+  checkpoints.push_back(Point(-1, -1));
 }
 
 Game::~Game() {
