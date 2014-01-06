@@ -26,6 +26,10 @@ bool Robot::obstructs() const {
   return !is_virtual && state != Waiting;
 }
 
+bool Robot::can_take_damage() const {
+  return is_active() && !is_virtual;
+}
+
 void Robot::rotate(Rotation dd) {
   direction = Direction::rotate(direction, dd);
 }

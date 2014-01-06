@@ -201,6 +201,9 @@ void Game::fire_robot_lasers() {
           if (shooter == shootee)
             return;
 
+          if (!shootee->can_take_damage())
+            return;
+
           if (has_feature(shootee->position, earlyWall))
             return;
 
@@ -224,7 +227,7 @@ void Game::fire_robot_lasers() {
             
             // if there is a robot in the way, it will be the shootee in another iteration
             if (std::any_of(robots.begin(), robots.end(), [this, &x](shared_ptr<Robot>& robot) {
-                  return !robot->is_virtual && robot->position == x;
+                  return !robot->obstructs() && robot->position == x;
                 }))
               return;
             
