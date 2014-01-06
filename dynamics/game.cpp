@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
 
+#include "util.hpp"
 #include "card.hpp"
 #include "game.hpp"
 

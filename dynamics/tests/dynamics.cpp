@@ -186,6 +186,12 @@ BOOST_AUTO_TEST_CASE(advance_conveyors) {
 #undef expect
 }
 
+BOOST_AUTO_TEST_CASE(generate_deck) {
+  Deck deck = Card::generate_deck();
+  BOOST_CHECK(!deck.empty());
+  BOOST_CHECK(deck.size() == 84);
+}
+
 BOOST_AUTO_TEST_CASE(perform_turn) {
   Game game = Game::example_game();
   // TODO: damage robots so that destructions can happen and be tested

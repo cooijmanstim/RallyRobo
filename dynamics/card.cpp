@@ -30,10 +30,10 @@ bool Card::operator==(const Card& that) const {
 Deck Card::generate_deck() {
   Deck deck;
 
-  auto f = [&deck](Priority a, Priority b, Priority stride,
+  auto f = [&deck](Priority a, Priority stride, Priority b,
                    Translation translation, Rotation rotation) {
     for (Priority priority = a; priority <= b; priority += stride)
-      deck.insert(Card(priority, translation, rotation));
+      deck.emplace(priority, translation, rotation);
   };
 
   f( 10, 10,  60,  0,  2); // u-turn
@@ -49,7 +49,7 @@ Deck Card::generate_deck() {
 
 Card Card::draw_card(Deck& deck) {
   assert(!deck.empty());
-  boost::random::uniform_int_distribution<> dist(1, deck.size() - 1);
+  boost::random::uniform_int_distribution<> dist(0, deck.size() - 1);
   size_t i = dist(generator);
   auto it = deck.begin();
   advance(it, i);
