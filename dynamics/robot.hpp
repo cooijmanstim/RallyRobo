@@ -7,7 +7,7 @@
 #include "direction.hpp"
 #include "checkpoint.hpp"
 
-typedef unsigned char RobotIndex;
+typedef size_t RobotIndex;
 
 // TODO move this somewhere
 const size_t NRegisters = 5;
