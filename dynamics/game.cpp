@@ -201,7 +201,7 @@ void Game::fire_robot_lasers() {
           if (has_feature(shootee->position, earlyWall))
             return;
 
-          if (!Direction::connects(shooter->position, shootee->direction, shooter->position))
+          if (!Direction::in_line_of_sight(shooter->position, shootee->direction, shooter->position))
             return;
 
           // require no obstructions in the way
@@ -210,7 +210,7 @@ void Game::fire_robot_lasers() {
 
           x += dx;
           while (x != shootee->position) {
-            // this would imply a bug, probably in Direction::connects
+            // this would imply a bug, probably in Direction::in_line_of_sight
             assert(!out_of_bounds(x));
 
             if (has_feature(x, earlyWall))

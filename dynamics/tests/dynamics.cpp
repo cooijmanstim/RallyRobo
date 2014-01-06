@@ -5,6 +5,7 @@
 
 #include "util.hpp"
 #include "point.hpp"
+#include "direction.hpp"
 #include "robot.hpp"
 #include "game.hpp"
 
@@ -16,6 +17,14 @@ BOOST_AUTO_TEST_CASE(direction_rotate) {
   using namespace Direction;
   BOOST_CHECK(rotate(East, -1) == South);
   BOOST_CHECK(rotate(South, 2) == North);
+}
+
+BOOST_AUTO_TEST_CASE(in_line_of_sight) {
+  using namespace Direction;
+  BOOST_CHECK( Direction::in_line_of_sight(Point(0, 0), East,  Point( 0, 3)));
+  BOOST_CHECK( Direction::in_line_of_sight(Point(0, 0), South, Point(-3, 0)));
+  BOOST_CHECK(!Direction::in_line_of_sight(Point(0, 0), East,  Point(-3, 0)));
+  BOOST_CHECK(!Direction::in_line_of_sight(Point(0, 0), South, Point(0, -3)));
 }
 
 BOOST_AUTO_TEST_CASE(early_late_wall) {

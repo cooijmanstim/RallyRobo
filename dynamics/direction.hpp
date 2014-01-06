@@ -27,7 +27,7 @@ namespace Direction {
 
   DirectionIndex rotate(DirectionIndex a, Rotation da);
   DirectionIndex opposite(DirectionIndex a);
-  bool connects(const Point& a, DirectionIndex dir, const Point& b);
+  bool in_line_of_sight(const Point& a, DirectionIndex dir, const Point& b);
 }
 
 typedef Direction::DirectionIndex DirectionIndex;

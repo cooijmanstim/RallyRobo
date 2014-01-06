@@ -9,7 +9,7 @@ DirectionIndex Direction::opposite(DirectionIndex a) {
 }
 
 // true if one or more steps in direction dir from point a lead to point b
-bool Direction::connects(const Point& a, DirectionIndex dir, const Point& b) {
+bool Direction::in_line_of_sight(const Point& a, DirectionIndex dir, const Point& b) {
   const Point& dx = Direction::asPoints[dir];
   return
     (a[0] == b[0] && dx[0] == 0 && (b[1] - a[1])/dx[1] > 0) ||
