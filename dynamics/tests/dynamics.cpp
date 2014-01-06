@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE dynamics test
 #include <boost/test/included/unit_test.hpp>
 #include <boost/algorithm/cxx11/all_of.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "util.hpp"
 #include "point.hpp"
@@ -9,6 +10,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
+using namespace boost::assign;
 
 BOOST_AUTO_TEST_CASE(direction_rotate) {
   using namespace Direction;
@@ -194,11 +196,41 @@ BOOST_AUTO_TEST_CASE(generate_deck) {
 
 BOOST_AUTO_TEST_CASE(perform_turn) {
   Game game = Game::example_game();
-  // TODO: damage robots so that destructions can happen and be tested
+
+  /* get a random register assignment to use as a test case
   game.fill_empty_registers_randomly();
   std::vector<shared_ptr<Robot> > robots = game.get_robots();
   std::for_each(robots.begin(), robots.end(), [](shared_ptr<Robot> robot) {
-      std::cout << robot->registers << std::endl;
+      std::for_each(robot->registers.begin(), robot->registers.end(), [](optional<Card> card) {
+          std::cout << *card << ", ";
+        });
+      std::cout << std::endl;
+    }); //*/
+
+  std::vector<shared_ptr<Robot> > robots = game.get_robots();
+  robots[0]->registers = list_of<optional<Card>>(Card(180, 0,-1))(Card(630, 1, 0))(Card(310, 0, 1))(Card(350, 0, 1))(Card(640, 1, 0));
+  robots[1]->registers = list_of<optional<Card>>(Card(440,-1, 0))(Card(100, 0,-1))(Card(570, 1, 0))(Card( 10, 0, 2))(Card(480,-1, 0));
+  robots[2]->registers = list_of<optional<Card>>(Card(700, 2, 0))(Card(110, 0, 1))(Card(150, 0, 1))(Card(590, 1, 0))(Card(620, 1, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card( 60, 0, 2))(Card(230, 0, 1))(Card( 90, 0, 1))(Card(650, 1, 0))(Card(460,-1, 0));
+
+  // let's see some destruction
+  std::for_each(robots.begin(), robots.end(), [](shared_ptr<Robot> robot) {
+      robot->damage = 8;
     });
-  //game.perform_turn();
+
+  game.perform_turn();
+  game.vacate_registers();
+
+  using namespace Direction;
+#define foo(robot, p, d, s, v) \
+  BOOST_CHECK(robot->position == p); \
+  BOOST_CHECK(robot->direction == d); \
+  BOOST_CHECK(robot->state == s); \
+  BOOST_CHECK(robot->is_virtual == v);
+
+  foo(robots[0], Point( 2,  1), North, Robot::Waiting,   false);
+  foo(robots[1], Point( 3, 13), West,  Robot::Destroyed, false);
+  foo(robots[2], Point( 8,  1), South, Robot::Active,    false);
+  foo(robots[3], Point(11,  9), South, Robot::Active,    false);
+#undef foo
 }
