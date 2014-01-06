@@ -46,6 +46,7 @@ public:
   bool any_robot_obstructing(const Point &x, boost::optional<boost::shared_ptr<Robot> > exception) const;
   bool robot_can_move(Robot &robot, DirectionIndex dir) const;
   bool robot_move_maybe(Robot &robot, DirectionIndex dir);
+  void translate_robot(Robot &robot, const Point &dx);
 
   void advance_conveyors();
   void fire_robot_lasers();

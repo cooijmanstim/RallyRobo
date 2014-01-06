@@ -121,12 +121,11 @@ bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
     return false;
 
   Point x(robot.position);
-  x += Direction::asPoints[dir];
-
-  bool into_pit = has_feature(x, Feature::Pit);
+  Point dx(Direction::asPoints[dir]);
+  x += dx;
 
   // it is assumed that pits are bottomless; occupied pits don't obstruct
-  if (!into_pit) {
+  if (!has_feature(x, Feature::Pit)) {
     // if there is a robot at the destination, try to push it
     auto pushee_it = find_if(robots.begin(), robots.end(), [&x](shared_ptr<Robot>& pushee) {
         return !pushee->is_virtual && pushee->position == x;
@@ -136,10 +135,14 @@ bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
   }
 
   // permission to land
-  robot.position = x;
-  if (into_pit)
-    robot.destroy();
+  translate_robot(robot, dx);
   return true;
+}
+
+void Game::translate_robot(Robot &robot, const Point &dx) {
+  robot.position += dx;
+  if (has_feature(robot.position, Feature::Pit))
+    robot.destroy();
 }
 
 void Game::process_card(Robot &robot, const Card &card) {
@@ -162,7 +165,7 @@ void Game::advance_conveyors() {
   // obstructed. so we can move each robot in parallel without worrying about
   // what's on the tile it is moving to.
   std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& robot) {
-      if (robot->is_virtual)
+      if (robot->is_virtual || robot->is_waiting())
         return;
 
       using namespace Feature;
@@ -173,7 +176,7 @@ void Game::advance_conveyors() {
                  if (has_feature(robot->position, conveyorsByDirection[dir]))
                    dx = Direction::asPoints[dir];
                });
-      robot->position += dx;
+      translate_robot(*robot, dx);
       
       // this should only happen if the robot was moved, and it does.
       if (has_feature(robot->position, ConveyorTurningCcw)) {
