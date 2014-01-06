@@ -282,7 +282,6 @@ void Game::repair_robots() {
 
 // before calling this, make sure the registers are filled
 // after calling this, make sure the registers are vacated
-// TODO: make sure locked registers are properly vacated once a destroyed robot comes back into play
 void Game::perform_turn() {
   // grab a working copy that we can sort according to card priority
   std::vector<shared_ptr<Robot> > robots(this->robots);
@@ -306,6 +305,7 @@ void Game::perform_turn() {
 
   respawn_waiting_robots();
   remove_destroyed_robots();
+  devirtualize_robots(); 
 }
 
 void Game::vacate_registers() {

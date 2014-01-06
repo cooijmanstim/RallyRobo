@@ -45,6 +45,10 @@ void Robot::respawn() {
   direction = respawn_direction;
   damage = 0;
   state = Active;
+  // always respawn as virtual; the robot will be devirtualized if necessary
+  // after all respawns are complete.  this way simultaneous respawns can be
+  // handled independently.
+  virtualize();
 }
 
 void Robot::virtualize() {
