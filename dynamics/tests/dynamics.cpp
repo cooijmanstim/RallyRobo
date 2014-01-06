@@ -225,6 +225,31 @@ BOOST_AUTO_TEST_CASE(push_many) {
   BOOST_CHECK_EQUAL(robots[3]->position, Point(10, 9));
 }
 
+BOOST_AUTO_TEST_CASE(push_many_into_pit) {
+  Game game = Game::example_game();
+  std::vector<shared_ptr<Robot> > robots = game.get_robots();
+
+  using namespace Direction;
+
+  robots[0]->position = Point(10, 8);
+  robots[0]->direction = West;
+  robots[1]->position = Point(10, 7);
+  robots[1]->direction = East;
+  robots[2]->position = Point(10, 6);
+  robots[2]->direction = North;
+  robots[2]->destroy();
+
+  game.process_card(*robots[0], Card(0, 3, 0));
+
+  BOOST_CHECK_EQUAL(robots[0]->position, Point(10, 6));
+  BOOST_CHECK_EQUAL(robots[1]->position, Point(10, 6));
+  BOOST_CHECK_EQUAL(robots[2]->position, Point(10, 6));
+
+  BOOST_CHECK(robots[0]->is_destroyed());
+  BOOST_CHECK(robots[1]->is_destroyed());
+  BOOST_CHECK(robots[2]->is_destroyed());
+}
+
 BOOST_AUTO_TEST_CASE(fire_robot_lasers) {
   Game game = Game::example_game();
   std::vector<shared_ptr<Robot> > robots = game.get_robots();
