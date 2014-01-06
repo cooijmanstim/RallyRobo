@@ -316,15 +316,15 @@ void Game::perform_turn() {
 }
 
 void Game::vacate_registers() {
-  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot> robot) {
+  std::for_each(robots.begin(), robots.end(), [this](const shared_ptr<Robot>& robot) {
       Deck cards = robot->vacate_registers();
       deck.insert(cards.begin(), cards.end());
     });
 }
 
 void Game::fill_empty_registers_randomly() {
-  std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot> robot) {
-      std::for_each(robot->registers.begin(), robot->registers.end(), [this](optional<Card> card) {
+  std::for_each(robots.begin(), robots.end(), [this](const shared_ptr<Robot>& robot) {
+      std::for_each(robot->registers.begin(), robot->registers.end(), [this](optional<Card>& card) {
           if (!card)
             card = Card::draw_card(deck);
         });
