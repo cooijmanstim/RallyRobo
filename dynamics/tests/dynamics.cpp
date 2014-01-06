@@ -278,40 +278,90 @@ BOOST_AUTO_TEST_CASE(fire_robot_lasers) {
 BOOST_AUTO_TEST_CASE(perform_turn) {
   Game game = Game::example_game();
 
-  /* get a random register assignment to use as a test case
-  game.fill_empty_registers_randomly();
   std::vector<shared_ptr<Robot> > robots = game.get_robots();
-  std::for_each(robots.begin(), robots.end(), [](shared_ptr<Robot> robot) {
-      std::for_each(robot->registers.begin(), robot->registers.end(), [](optional<Card> card) {
-          std::cout << *card << ", ";
-        });
-      std::cout << std::endl;
-    }); //*/
-
-  std::vector<shared_ptr<Robot> > robots = game.get_robots();
-  robots[0]->registers = list_of<optional<Card>>(Card(180, 0,-1))(Card(630, 1, 0))(Card(310, 0, 1))(Card(350, 0, 1))(Card(640, 1, 0));
-  robots[1]->registers = list_of<optional<Card>>(Card(440,-1, 0))(Card(100, 0,-1))(Card(570, 1, 0))(Card( 10, 0, 2))(Card(480,-1, 0));
-  robots[2]->registers = list_of<optional<Card>>(Card(700, 2, 0))(Card(110, 0, 1))(Card(150, 0, 1))(Card(590, 1, 0))(Card(620, 1, 0));
-  robots[3]->registers = list_of<optional<Card>>(Card( 60, 0, 2))(Card(230, 0, 1))(Card( 90, 0, 1))(Card(650, 1, 0))(Card(460,-1, 0));
-
-  // let's see some destruction
-  std::for_each(robots.begin(), robots.end(), [](shared_ptr<Robot> robot) {
-      robot->damage = 8;
-    });
-
-  game.perform_turn();
-  game.vacate_registers();
 
   using namespace Direction;
-#define foo(robot, p, d, s, v) \
-  BOOST_CHECK(robot->position == p); \
-  BOOST_CHECK(robot->direction == d); \
-  BOOST_CHECK(robot->state == s); \
-  BOOST_CHECK(robot->is_virtual == v);
+#define check_robot(robot, p, d, c) \
+  BOOST_CHECK_EQUAL(robot->position, p); \
+  BOOST_CHECK_EQUAL(robot->direction, d); \
+  BOOST_CHECK_EQUAL(robot->next_checkpoint, c);
 
-  foo(robots[0], Point( 2,  1), North, Robot::Waiting,   false);
-  foo(robots[1], Point( 3, 13), West,  Robot::Destroyed, false);
-  foo(robots[2], Point( 8,  1), South, Robot::Active,    false);
-  foo(robots[3], Point(11,  9), South, Robot::Active,    false);
-#undef foo
+  // NOTE: we don't interact with the game deck, so don't bother checking its integrity
+
+  robots[0]->registers = list_of<optional<Card>>(Card(110, 0, 1))(Card(630, 1, 0))(Card(780, 2, 0))(Card(350, 0, 1))(Card(640, 1, 0));
+  robots[1]->registers = list_of<optional<Card>>(Card(810, 3, 0))(Card(100, 0,-1))(Card(430,-1, 0))(Card(450,-1, 0))(Card(120, 0,-1));
+  robots[2]->registers = list_of<optional<Card>>(Card(700, 2, 0))(Card(490, 1, 0))(Card(440,-1, 0))(Card(670, 2, 0))(Card(460,-1, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card( 80, 0,-1))(Card(680, 2, 0))(Card(830, 3, 0))(Card(460,-1, 0))(Card(470,-1, 0));
+
+  game.perform_turn();
+
+  BOOST_CHECK(robots[0]->is_waiting());
+
+  check_robot(robots[1], Point( 7,  4), East,  1);
+  check_robot(robots[2], Point(11,  1), North, 2);
+  check_robot(robots[3], Point(11,  6), West,  1);
+
+
+  robots[0]->registers = list_of<optional<Card>>(Card(110, 0, 1))(Card(630, 1, 0))(Card(770, 2, 0))(Card(350, 0, 1))(Card(640, 1, 0));
+  robots[1]->registers = list_of<optional<Card>>(Card(490, 1, 0))(Card(800, 3, 0))(Card(780, 2, 0))(Card( 70, 0, 1))(Card(430,-1, 0));
+  robots[2]->registers = list_of<optional<Card>>(Card(100, 0,-1))(Card(840, 3, 0))(Card(680, 2, 0))(Card(120, 0,-1))(Card(830, 3, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card(670, 2, 0))(Card(500, 1, 0))(Card( 10, 0, 2))(Card(460,-1, 0))(Card(470,-1, 0));
+
+  game.perform_turn();
+
+  BOOST_CHECK(robots[0]->is_active());
+  BOOST_CHECK(robots[3]->is_waiting());
+
+  check_robot(robots[0], Point( 3,  1), East,  1);
+  check_robot(robots[1], Point(12,  4), West,  1);
+  check_robot(robots[2], Point( 8,  5), South, 2);
+
+
+  robots[0]->registers = list_of<optional<Card>>(Card(670, 2, 0))(Card( 70, 0, 1))(Card(790, 3, 0))(Card(170, 0, 1))(Card(190, 0, 2));
+  robots[1]->registers = list_of<optional<Card>>(Card(820, 3, 0))(Card( 90, 0, 1))(Card(680, 2, 0))(Card(110, 0, 1))(Card(490, 1, 0));
+  robots[2]->registers = list_of<optional<Card>>(Card(710, 2, 0))(Card(130, 0, 1))(Card(720, 2, 0))(Card(150, 0, 1))(Card(730, 2, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card(670, 2, 0))(Card(500, 1, 0))(Card( 10, 0, 2))(Card(460,-1, 0))(Card(470,-1, 0));
+
+  game.perform_turn();
+
+  BOOST_CHECK(robots[3]->is_active());
+
+  check_robot(robots[0], Point( 6,  8), West,  1);
+  check_robot(robots[1], Point(10,  2), East,  2);
+  check_robot(robots[2], Point( 8,  9), North, 3);
+  check_robot(robots[3], Point(11,  9), South, 1);
+
+
+  robots[0]->registers = list_of<optional<Card>>(Card( 90, 0,-1))(Card(680, 2, 0))(Card(590, 1, 0))(Card(440,-1, 0))(Card( 90, 0, 1));
+  robots[1]->registers = list_of<optional<Card>>(Card(550, 1, 0))(Card(560, 1, 0))(Card(570, 1, 0))(Card(580, 1, 0))(Card(840, 3, 0));
+  robots[2]->registers = list_of<optional<Card>>(Card(670, 2, 0))(Card(500, 1, 0))(Card( 70, 0, 1))(Card(530, 1, 0))(Card(540, 1, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card(490, 1, 0))(Card(430,-1, 0))(Card(510, 1, 0))(Card(520, 1, 0))(Card( 80, 0,-1));
+
+  game.perform_turn();
+
+  BOOST_CHECK(robots[1]->is_waiting());
+  BOOST_CHECK(robots[2]->is_waiting());
+
+  check_robot(robots[0], Point( 7,  7), West, 1);
+  check_robot(robots[3], Point(10,  9), West, 1);
+
+
+  robots[0]->registers = list_of<optional<Card>>(Card( 80, 0,-1))(Card(490, 1, 0))(Card(100, 0,-1))(Card(790, 3, 0))(Card(120, 0,-1));
+  robots[1]->registers = list_of<optional<Card>>(Card(550, 1, 0))(Card(560, 1, 0))(Card(570, 1, 0))(Card(580, 1, 0))(Card(840, 3, 0));
+  robots[2]->registers = list_of<optional<Card>>(Card(670, 2, 0))(Card(500, 1, 0))(Card( 70, 0, 1))(Card(530, 1, 0))(Card(540, 1, 0));
+  robots[3]->registers = list_of<optional<Card>>(Card(500, 1, 0))(Card(440,-1, 0))(Card(680, 2, 0))(Card(450,-1, 0))(Card(460,-1, 0));
+
+  game.perform_turn();
+
+  BOOST_CHECK(robots[1]->is_active());
+  BOOST_CHECK(robots[2]->is_active());
+
+  check_robot(robots[0], Point( 8,  9), South, 1);
+  check_robot(robots[1], Point(12,  1), West,  2);
+  check_robot(robots[2], Point( 8,  9), North, 3);
+  check_robot(robots[3], Point(10,  9), West,  1);
+
+  BOOST_CHECK( robots[2]->is_virtual);
+  BOOST_CHECK(!robots[0]->is_virtual);
+#undef check_robot
 }
