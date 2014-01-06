@@ -39,6 +39,7 @@ public:
   bool is_destroyed() const;
 
   bool obstructs() const;
+  bool can_shoot() const;
   bool can_take_damage() const;
   
   void rotate(Rotation dd);

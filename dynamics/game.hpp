@@ -39,7 +39,7 @@ public:
 
   void add_checkpoint(Point checkpoint);
 
-  bool out_of_bounds(const Point &x) const;
+  bool within_bounds(const Point &x) const;
   bool has_feature(const Point &x, FeatureIndex i) const;
   void set_feature(const Point &x, FeatureIndex i);
 

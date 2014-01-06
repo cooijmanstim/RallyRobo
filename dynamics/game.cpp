@@ -87,7 +87,7 @@ Game Game::example_game() {
   return game;
 }
 
-bool Game::out_of_bounds(const Point &x) const {
+bool Game::within_bounds(const Point &x) const {
   return
     0 <= x[0] && x[0] < BoardHeight+2 &&
     0 <= x[1] && x[1] < BoardWidth +2;
@@ -191,6 +191,9 @@ void Game::fire_robot_lasers() {
   // many early exits if we handle it by searching for pairs of robots, one
   // having the other in its line of sight.
   std::for_each(robots.begin(), robots.end(), [this](shared_ptr<Robot>& shooter) {
+      if (!shooter->can_shoot())
+        return;
+
       FeatureIndex earlyWall = Feature::earlyWall(shooter->direction),
                     lateWall = Feature:: lateWall(shooter->direction);
 
@@ -207,30 +210,27 @@ void Game::fire_robot_lasers() {
           if (has_feature(shootee->position, earlyWall))
             return;
 
-          if (!Direction::in_line_of_sight(shooter->position, shootee->direction, shooter->position))
+          if (!Direction::in_line_of_sight(shooter->position, shooter->direction, shootee->position))
             return;
 
-          // require no obstructions in the way
+          // if there is a robot in the way, it will be the shootee in another iteration, so here it
+          // acts only as an obstruction.
+          if (std::any_of(robots.begin(), robots.end(), [&shooter, &shootee](shared_ptr<Robot>& obstructor) {
+                return obstructor->obstructs()
+                  && Direction::in_line_of_sight(   shooter->position, shooter->direction, obstructor->position)
+                  && Direction::in_line_of_sight(obstructor->position, shooter->direction,    shootee->position);
+              }))
+            return;
+
+          // trace line of sight to check for obstructing walls
           Point x(shooter->position);
           Point dx(Direction::asPoints[shooter->direction]);
-
           x += dx;
           while (x != shootee->position) {
             // this would imply a bug, probably in Direction::in_line_of_sight
-            assert(!out_of_bounds(x));
-
-            if (has_feature(x, earlyWall))
-              return;
-            
-            if (has_feature(x, lateWall))
-              return;
-            
-            // if there is a robot in the way, it will be the shootee in another iteration
-            if (std::any_of(robots.begin(), robots.end(), [this, &x](shared_ptr<Robot>& robot) {
-                  return !robot->obstructs() && robot->position == x;
-                }))
-              return;
-            
+            assert(within_bounds(x));
+            if (has_feature(x, earlyWall)) return;
+            if (has_feature(x,  lateWall)) return;
             x += dx;
           }
 
