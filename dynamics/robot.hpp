@@ -42,12 +42,13 @@ public:
   
   void rotate(Rotation dd);
   
+  void take_damage();
+  void repair();
+  void destroy();
   void wait();
   void respawn();
   void virtualize();
   void devirtualize();
-  void take_damage();
-  void repair();
 
   Deck vacate_registers();
 };

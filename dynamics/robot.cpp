@@ -33,7 +33,15 @@ void Robot::rotate(Rotation dd) {
 void Robot::take_damage() {
   damage++;
   if (damage > MaximumDamage)
-    state = Destroyed;
+    destroy();
+}
+
+void Robot::repair() {
+  damage = std::max(0U, damage - 1);
+}
+
+void Robot::destroy() {
+  state = Destroyed;
 }
 
 void Robot::wait() {
@@ -57,10 +65,6 @@ void Robot::virtualize() {
 
 void Robot::devirtualize() {
   is_virtual = false;
-}
-
-void Robot::repair() {
-  damage = std::max(0U, damage - 1);
 }
 
 Deck Robot::vacate_registers() {

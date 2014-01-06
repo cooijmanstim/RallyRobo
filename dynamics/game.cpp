@@ -119,15 +119,22 @@ bool Game::robot_move_maybe(Robot &robot, DirectionIndex dir) {
   Point x(robot.position);
   x += Direction::asPoints[dir];
 
-  // if there is a robot at the destination, try to push it
-  auto pushee_it = find_if(robots.begin(), robots.end(), [&x](shared_ptr<Robot>& pushee) {
-      return !pushee->is_virtual && pushee->position == x;
-    });
-  if (pushee_it != robots.end() && !robot_move_maybe(**pushee_it, dir))
-    return false;
+  bool into_pit = has_feature(x, Feature::Pit);
+
+  // it is assumed that pits are bottomless; occupied pits don't obstruct
+  if (!into_pit) {
+    // if there is a robot at the destination, try to push it
+    auto pushee_it = find_if(robots.begin(), robots.end(), [&x](shared_ptr<Robot>& pushee) {
+        return !pushee->is_virtual && pushee->position == x;
+      });
+    if (pushee_it != robots.end() && !robot_move_maybe(**pushee_it, dir))
+      return false;
+  }
 
   // permission to land
   robot.position = x;
+  if (into_pit)
+    robot.destroy();
   return true;
 }
 
