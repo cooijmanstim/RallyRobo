@@ -42,21 +42,20 @@ for i=1:size(x,1)
 end
 
 
-
-%top left
+%angolo in alto
 corner (1,1) =x(xminIndex,1);
-corner (1,2) =x(yminIndex,2);
+corner (1,2) =x(xminIndex,2);
 
-%top right
-corner (2,1) =x(xmaxIndex,1);
+%angolo a sinistra
+corner (2,1) =x(yminIndex,1);
 corner (2,2) =x(yminIndex,2);
 
-%bottom left
-corner (3,1) =x(xminIndex,1);
+%angolo a destra
+corner (3,1) =x(ymaxIndex,1);
 corner (3,2) =x(ymaxIndex,2);
 
-%bottom right
+%angolo in basso
 corner (4,1) =x(xmaxIndex,1);
-corner (4,2) =x(ymaxIndex,2);
+corner (4,2) =x(xmaxIndex,2);
 
 end

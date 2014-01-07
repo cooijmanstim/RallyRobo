@@ -6,11 +6,6 @@ close all ; clear all;
 figure, imshow(im);
 title('the original image');
 
-%% crop the image to quadratic
-
-% im = cropToQuadratic(im);
-% figure,imshow(im);
-% title('the original image');
 
 %% convert to gray scale
 
@@ -21,11 +16,10 @@ title('convert to gray scale');
 
 %% tresholding
 
-
 threshold =135; 
 im3 = relativeScaling(im2,2);
 
-% im3 = makeLogicalOfImage(im2,threshold);
+% im3 = makeLogicalOfImageWithTreshold(im2,threshold);
 figure, imshow(im3);
 title('thresholding');
 
@@ -41,26 +35,36 @@ imshow(im2);
 
 
 %% finding corners
+R = regionprops(im2,'Area','BoundingBox','PixelList');
+NR = numel(R);
 
-corners = corner(im2,1000);
+maxArea = 0;
+for x = 1:NR
+    A(x) = prod(R(x).BoundingBox(3:4));
+    if R(x).Area > maxArea
+        maxArea = R(x).Area;
+        kmax = x;
+    end
+end
+DIAG1 = sum(R(kmax).PixelList,2);
+DIAG2 = diff(R(kmax).PixelList,[],2);
+
+[m,dUL] = min(DIAG1);    [m,dDR] = max(DIAG1);
+[m,dDL] = min(DIAG2);    [m,dUR] = max(DIAG2);
+
+extcorner = R(kmax).PixelList([dUL dDL dDR dUR dUL],:);
+
 figure, imshow(im2);
 title('Looking for corners');
 hold on
-plot(corners(:,1), corners(:,2), 'g*');
-
-%% search for external corners
-% extcorner = ExternalCorners(corners);
-extcorner = ExternalCornersHorizontal(corners);
-figure, imshow(im2);
-title('Looking for external corners');
-hold on
 plot(extcorner(:,1), extcorner(:,2), 'g*');
+
 
 %% selcting the starting points
 input_points =[extcorner(1,1) extcorner(1,2);...
                extcorner(2,1) extcorner(2,2);...
-               extcorner(3,1) extcorner(3,2);...
-               extcorner(4,1) extcorner(4,2)];
+               extcorner(4,1) extcorner(4,2);...
+               extcorner(3,1) extcorner(3,2)];
 
 %% selcting the ending points
 base_points=[10 10; 610 10;10 610; 610 610 ] ;
@@ -90,7 +94,7 @@ title('grayscaling the transformed image');
  
 
 %%
-y = makeLogicalOfImage(y,110);
+y = makeLogicalOfImageWithThreshold(y,threshold);
 figure, imshow(y);
 %% remove the noise from the new image / GOD function
 y = bwareaopen(y, 30);
