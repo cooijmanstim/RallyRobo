@@ -1,34 +1,35 @@
-%% Read In a File / ‰æ‘œƒtƒ@ƒCƒ‹“Ç‚Ý?ž‚Ý
-I_cam = imread('test.bmp');
+%% Read In a File
+I_cam = imread('Unbenannt.png');
 imshow(I_cam);
 
+I = I_cam;
 boardsizeX = 12;
 boardsizeY = 12;
-%% Crop the Image (1) / ‰æ‘œƒtƒ@ƒCƒ‹“Ç‚Ý?ž‚Ý
-hold on
-x = 550;
-h_g = plot(175+[0 x x 0 0],80+[0 0 x x 0],'g');
-hold off
+% %% Crop the Image (1) 
+% hold on
+% x = 550;
+% h_g = plot(175+[0 x x 0 0],80+[0 0 x x 0],'g');
+% hold off
+% 
+% %% Crop the Image (2) 
+% 
+% I = I_cam(80+(1:x),175+(1:x));
+% imshow(I);
 
-%% Crop the Image (2) / ‰æ‘œƒtƒ@ƒCƒ‹“Ç‚Ý?ž‚Ý
-
-I = I_cam(80+(1:x),175+(1:x));
-imshow(I);
-
-%% Convert to Black and White / ‚Q’l‰»?ˆ—?
+%% Convert to Black and White 
 makebw = @(I) im2bw(I.data,median(double(I.data(:)))/1.2/255);
-I = ~blockproc(I,[92 92],makebw);
+I = ~blockproc(I,[size(I,1),size(I,2)],makebw);
 
 imshow(I);
 
-%% Remove Noise / ƒmƒCƒY?œ‹Ž
+%% Remove Noise 
 I = bwareaopen(I,30);
 imshow(I);
-%% Clear the border / ŠO‚Æ‚Â‚È‚ª‚Á‚Ä‚¢‚é•”•ª‚ð?œ‹Ž
+%% Clear the border
 I = imclearborder(I);
 imshow(I);
 
-%% Find the largest box / ˆê”Ô‘å‚«‚¢˜g‚ð’T‚·
+%% Find the largest box 
 hold on;
 R = regionprops(I,'Area','BoundingBox','PixelList');
 NR = numel(R);
@@ -55,7 +56,7 @@ h_pts = plot(pts(:,1),pts(:,2),'m','linewidth',3);
 
 XYLIMS = [BBmax(1) + [0 BBmax(3)] BBmax(2) + [0 BBmax(4)]];
 
-%% Identify tiles inside the box /?@˜g“à‚ÌƒIƒuƒWƒFƒNƒg‚ð’T‚·
+%% Identify tiles inside the box 
 
 
 %corners of tiles
@@ -70,12 +71,12 @@ end
 
 
 
-%% Draw the grid based on the corners / Šp‚©‚çƒOƒŠƒbƒh‚ð?ì?¬
+%% Draw the grid based on the corners
 
 T = cp2tform(pts(1:4,:),0.5 + [0 0; boardsize 0; boardsize boardsize; 0 boardsize],'projective');
 for n = 0.5 + 0:boardsize, [x,y] = tforminv(T,[n n],[0.5 boardsize+0.5]); plot(x,y,'g'); end
 for n = 0.5 + 0:boardsize, [x,y] = tforminv(T,[0.5 boardsize+0.5],[n n]); plot(x,y,'g'); end
-%% Only keep elements in the boxes / ‚Ü‚·‚É“ü‚Á‚Ä‚¢‚é—v‘f‚Ì‚ÝƒL?[ƒv
+%% Only keep elements in the boxes 
 T = cp2tform(pts(1:4,:),[0.5 0.5; boardsize+0.5 0.5; boardsize+0.5 boardsize+0.5; 0.5 boardsize+0.5],'projective');
 Plocal = (tformfwd(T,Tiles));
 Plocal = round(2*Plocal)/2;
@@ -85,19 +86,19 @@ Tiles(del,:) = [];
 
 delete(nonzeros(h_digitcircles(del)));
 
-%% Show the coordinate transforms / ?À•W•ÏŠ·‚ÌŒ‹‰Ê
+%% Show the coordinate transforms 
 figure;
 T = cp2tform(pts(1:4,:),500*[0 0; 1 0; 1 1; 0 1],'projective');
 IT = imtransform(double(I),T);
 imshow(IT);
-%% Show the template data / ƒeƒ“ƒvƒŒ?[ƒgƒf?[ƒ^‚ð•\Ž¦
+%% Show the template data 
 % figure;
 % 
 % for n = 1:9
 %     subplot(3,3,n),imagesc(NT{n});
 % end
 % colormap gray;
-%% Calculate the Solution / ƒ\ƒŠƒ…?[ƒVƒ‡ƒ“‚ðŒvŽZ‚·‚é
+%% Calculate the Solution
 
 
 Plocal = identifynumbers_fun(pts,Tiles,NT,I);
