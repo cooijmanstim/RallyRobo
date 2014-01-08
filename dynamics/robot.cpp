@@ -6,8 +6,6 @@
 #include "direction.hpp"
 #include "robot.hpp"
 
-#include "matlab.hpp"
-
 Robot::Robot(RobotIndex identity, Point position, DirectionIndex direction)
   : identity(identity),
     position(position), direction(direction),
@@ -85,77 +83,4 @@ Deck Robot::vacate_registers() {
     registers[i] = boost::none;
   }
   return cards;
-}
-
-Robot Robot::from_mxStruct(mxArray* mrobots, RobotIndex i) {
-  Robot robot;
-
-  auto registers_from_mxArray = [](mxArray* mregisters) {
-    if (!mxIsStruct(mregisters))
-      throw std::runtime_error("expected a structure array");
-
-    if (mxGetNumberOfElements(mregisters) != NRegisters)
-      throw std::runtime_error(format("expected %1% registers") % NRegisters);
-
-    boost::array<boost::optional<Card>, NRegisters> registers;
-    for (size_t i = 0; i < NRegisters; i++) {
-      mxArray* mpriority = mxGetField(mregisters, i, "priority");
-      if (!mpriority)
-        continue;
-
-      mxArray* mtranslation = mxGetField(mregisters, i, "translation");
-      mxArray* mrotation    = mxGetField(mregisters, i, "rotation");
-      registers[i] = Card(int_from_mxArray(mpriority),
-                          int_from_mxArray(mtranslation),
-                          int_from_mxArray(mrotation));
-    }
-    return registers;
-  };
-
-  #define kak(key, processor)                                   \
-    try {                                                       \
-      robot. ## key = processor(mxGetField(mrobots, i, #key));  \
-    } catch (std::exception e) {                                \
-      mexErrMsgIdAndTxt("RR:BadArgument", format("failed to process state.robots(%1%)." #key ": %2%") % i % e); \
-    }
-
-  kak(position, Point::from_mxArray);
-  kak(direction, mex::uint_from_mxArray);
-  kak(respawn_position, Point::from_mxArray);
-  kak(respawn_direction, mex::uint_from_mxArray);
-  kak(next_checkpoint, mex::uint_from_mxArray);
-  kak(state, mex::uint_from_mxArray);
-  kak(is_virtual, mex::bool_from_mxArray);
-  kak(registers, registers_from_mxArray);
-
-  #undef kak
-
-  return robot;
-}
-
-void Robot::into_mxStruct(mxArray* mrobots, RobotIndex i) {
-  auto registers_to_mxArray = [](boost::array<boost::optional<Card>, NRegisters>& registers) {
-    char *augh[] = {"priority", "translation", "rotation"};
-    mxArray* mregisters = mxCreateStructArray(NRegisters, 1, 3, augh);
-    
-    for (int i = 0; i < NRegisters; i++) {
-      if (!registers[i])
-        continue;
-
-      mxSetField(mregisters, i, "priority",    int_to_mxArray(registers[i]->priority));
-      mxSetField(mregisters, i, "translation", int_to_mxArray(registers[i]->translation));
-      mxSetField(mregisters, i, "rotation",    int_to_mxArray(registers[i]->rotation));
-    }
-  };
-
-  #define kak(key, processor) mxSetField(mrobots, i, #key, processor(this->key));
-  kak(position, Point::to_mxArray);
-  kak(direction, mex::uint_to_mxArray);
-  kak(respawn_position, Point::to_mxArray);
-  kak(respawn_direction, mex::uint_to_mxArray);
-  kak(next_checkpoint, mex::uint_to_mxArray);
-  kak(state, mex::uint_to_mxArray);
-  kak(is_virtual, mex::bool_to_mxArray);
-  kak(registers, registers_to_mxArray);
-  #undef kak
 }

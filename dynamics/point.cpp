@@ -6,8 +6,6 @@ using namespace boost::assign;
 
 #include "point.hpp"
 
-#include "matlab.hpp"
-
 Point::Point(Ordinate x1, Ordinate x2) : x(list_of(x1)(x2)) {
 }
 
@@ -15,15 +13,6 @@ Point::Point(const Point &that) : x(that.x) {
 }
 
 Point::~Point() {
-}
-
-Point Point::from_mxArray(const mxArray* m) {
-  if (!mex::is_int(m))
-    throw std::runtime_error("bad data type");
-  if (mxGetNumberOfElements(m) != 2)
-    throw std::runtime_error("bad shape");
-  mex::int_t* d = (mex::int_t*)mxGetData(m);
-  return Point(d[0], d[1]);
 }
 
 Ordinate& Point::operator[](std::size_t i) {

@@ -17,6 +17,7 @@ typedef boost::multi_array<byte, 3> Board;
 typedef Board::index BoardIndex;
 
 class Game {
+public:
   static const unsigned int BoardWidth = 12, BoardHeight = 12;
 
   bool over;
@@ -28,7 +29,6 @@ class Game {
 
   Deck deck;
 
-public:
   static Game example_game();
 
   Game();
@@ -62,7 +62,4 @@ public:
 
   void fill_empty_registers_randomly();
   void vacate_registers();
-
-  static void from_mxArray(const mxArray*);
-  mxArray* to_mxArray();
 };

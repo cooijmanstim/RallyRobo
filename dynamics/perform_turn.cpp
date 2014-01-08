@@ -2,10 +2,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "mex.h"
-#include "matrix.h"
-
 #include "game.hpp"
+
+#include "matlab.hpp"
 
 /* for windows */
 #ifndef snprintf
@@ -26,7 +25,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mexErrMsgIdAndTxt("RR:BadArgument", "only one output argument (a game structure) returned");
 
   Game game;
-  game.from_mxArray(prhs[0]);
+  game_from_mxArray(prhs[0], game);
   game.perform_turn();
-  plhs[0] = game.to_mxArray();
+  plhs[0] = game_to_mxArray(game);
 }
+
