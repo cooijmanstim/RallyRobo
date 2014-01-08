@@ -2,7 +2,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "game.hpp"
+#include "../game.hpp"
 
 #include "matlab.hpp"
 

@@ -3,7 +3,7 @@
 #include "mex.h"
 #include "matrix.h"
 
-#include "game.hpp"
+#include "../game.hpp"
 
 namespace mex {
   typedef  int16_T  int_t;
