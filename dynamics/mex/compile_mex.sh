@@ -13,7 +13,7 @@ CXXDEBUGFLAGS='-g'
 STATICDIR=../bin/gcc-std0x/debug/link-static
 
 # build libgame.a
-PREVWD=pwd
+PREVWD=`pwd`
 cd ..
 b2
 cd $PREVWD
