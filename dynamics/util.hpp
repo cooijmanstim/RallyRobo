@@ -1,5 +1,9 @@
 #pragma once
 
+#include "boost/format.hpp"
+
+using boost::format;
+
 #include "prettyprint.hpp"
 
 template<typename T, std::size_t N>
