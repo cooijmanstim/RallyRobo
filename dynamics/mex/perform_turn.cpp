@@ -25,8 +25,8 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
     mexErrMsgIdAndTxt("RR:BadArgument", "only one output argument (a game structure) returned");
 
   Game game;
-  game_from_mxArray(prhs[0], game);
+  mex::game_from_mxArray(prhs[0], game);
   game.perform_turn();
-  plhs[0] = game_to_mxArray(game);
+  plhs[0] = mex::game_to_mxArray(game);
 }
 
