@@ -3,9 +3,9 @@
 #include <boost/unordered_set.hpp>
 #include <boost/functional/hash.hpp>
 
-typedef unsigned int Priority;
-typedef short Translation;
-typedef short Rotation;
+typedef int Priority;
+typedef Ordinate Translation;
+typedef int Rotation;
 
 class Card;
 

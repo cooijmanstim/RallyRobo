@@ -5,6 +5,7 @@
 #include <boost/multi_array.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "util.hpp"
 #include "point.hpp"
 #include "direction.hpp"
 #include "features.hpp"
@@ -12,7 +13,7 @@
 #include "robot.hpp"
 #include "card.hpp"
 
-typedef boost::multi_array<char, 3> Board;
+typedef boost::multi_array<byte, 3> Board;
 typedef Board::index BoardIndex;
 
 class Game {
@@ -61,4 +62,7 @@ public:
 
   void fill_empty_registers_randomly();
   void vacate_registers();
+
+  static void from_mxArray(const mxArray*);
+  mxArray* to_mxArray();
 };

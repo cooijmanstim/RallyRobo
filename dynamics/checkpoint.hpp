@@ -1,3 +1,3 @@
 #pragma once
 
-typedef unsigned char CheckpointIndex;
+typedef size_t CheckpointIndex;
