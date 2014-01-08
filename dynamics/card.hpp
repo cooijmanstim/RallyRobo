@@ -3,6 +3,8 @@
 #include <boost/unordered_set.hpp>
 #include <boost/functional/hash.hpp>
 
+#include "point.hpp"
+
 typedef int Priority;
 typedef Ordinate Translation;
 typedef int Rotation;
