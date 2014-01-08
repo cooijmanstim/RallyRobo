@@ -12,4 +12,8 @@ CXXDEBUGFLAGS='-g'
 
 STATICDIR=bin/gcc-std0x/debug/link-static
 
+# build libgame.a
+b2
+
+# build perform_turn.mexglx
 $CXX $CXXFLAGS $CXXDEBUGFLAGS $CXXINCLUDE $CXXLIBS perform_turn.cpp $STATICDIR/libgame.a -o perform_turn.mexglx
