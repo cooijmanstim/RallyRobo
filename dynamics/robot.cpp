@@ -84,3 +84,6 @@ Deck Robot::vacate_registers() {
   }
   return cards;
 }
+
+// http://stackoverflow.com/a/4891102
+const size_t Robot::NRegisters;

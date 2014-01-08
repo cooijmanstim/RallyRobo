@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#define __STDC_UTF_16__
 #include "mex.h"
 #include "matrix.h"
 

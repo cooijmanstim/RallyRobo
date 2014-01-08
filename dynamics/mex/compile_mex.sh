@@ -1,10 +1,10 @@
 MATLAB='/home/tim/install/MATLAB/R2011a'
 MFLAGS="-DMATLAB_MEX_FILE"
 MINCLUDE="-I$MATLAB/extern/include"
-MLIBS="-L$TMW_ROOT/bin/$Arch -lmx -lmex -lmat"
+MLIBS="-L$MATLAB/bin/glnx86 -lmx -lmex -lmat"
 
 CXX='g++'
-CXXFLAGS="-std=gnu++0x -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -pthread -O $MFLAGS"
+CXXFLAGS="-std=gnu++0x -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -fPIC -pthread -O $MFLAGS -shared"
 CXXINCLUDE="$MINCLUDE"
 CXXLIBS="$RPATH $MLIBS -lm"
 CXXOPTIMFLAGS='-DNDEBUG'
