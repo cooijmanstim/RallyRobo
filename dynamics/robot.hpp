@@ -9,12 +9,11 @@
 
 typedef size_t RobotIndex;
 
-// TODO move this somewhere
-const size_t NRegisters = 5;
-const unsigned int MaximumDamage = 9;
-
 class Robot {
 public:
+  static const size_t NRegisters = 5;
+  static const unsigned int MaximumDamage = 9;
+
   RobotIndex identity;
   Point position;
   DirectionIndex direction;
@@ -23,7 +22,7 @@ public:
   CheckpointIndex next_checkpoint;
   unsigned int damage;
 
-  typedef enum State { Active, Destroyed, Waiting } State;
+  typedef enum State { Active, Destroyed, Waiting, NStates } State;
   State state;
 
   // virtuality is orthogonal to state
@@ -31,6 +30,7 @@ public:
 
   boost::array<boost::optional<Card>, NRegisters> registers;
 
+  Robot();
   Robot(RobotIndex identity, Point position, DirectionIndex direction);
   ~Robot();
 

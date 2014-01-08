@@ -300,7 +300,7 @@ void Game::perform_turn() {
   // grab a working copy that we can sort according to card priority
   std::vector<shared_ptr<Robot> > robots(this->robots);
 
-  for (size_t i = 0; i < NRegisters; i++) {
+  for (size_t i = 0; i < Robot::NRegisters; i++) {
     std::sort(robots.begin(), robots.end(), [i](const shared_ptr<Robot>& a, const shared_ptr<Robot>& b) {
         return a->registers[i]->priority > b->registers[i]->priority;
       });
