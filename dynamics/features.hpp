@@ -3,29 +3,21 @@
 #include "direction.hpp"
 
 namespace Feature {
-#define FEATURES Pit, Repair, WallEast, WallNorth, WallWest, WallSouth, \
-                 ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth, \
-                 ConveyorTurningCw, ConveyorTurningCcw
   enum FeatureIndex {
-    FEATURES,
+    Pit, Repair,
+    WallEast, WallNorth, WallWest, WallSouth,
+    ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth,
+    ConveyorTurningCw, ConveyorTurningCcw,
     NFeatures,
   };
 
-  FeatureIndex features[] = {
-    FEATURES
-  };
-#undef FEATURES
+  extern FeatureIndex features[NFeatures];
+  extern FeatureIndex wallsByDirection[Direction::NDirections];
+  extern FeatureIndex conveyorsByDirection[Direction::NDirections];
 
-  FeatureIndex wallsByDirection[] = {
-    WallEast, WallNorth, WallWest, WallSouth,
-  };
-
-  FeatureIndex conveyorsByDirection[] = {
-    ConveyorEast, ConveyorNorth, ConveyorWest, ConveyorSouth,
-  };
-
-  FeatureIndex earlyWall(DirectionIndex dir) { return wallsByDirection[Direction::opposite(dir)]; }
-  FeatureIndex  lateWall(DirectionIndex dir) { return wallsByDirection[dir]; }
+  FeatureIndex earlyWall(DirectionIndex dir);
+  FeatureIndex  lateWall(DirectionIndex dir);
 }
+
 typedef Feature::FeatureIndex FeatureIndex;
 
