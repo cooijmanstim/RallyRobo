@@ -3,9 +3,9 @@ grayscale_east = rgb2gray(rgbdata_east);
 alphadata_east = ones(size(grayscale_east));
 alphadata_east(grayscale_east > 0.9) = 0;
 
-os = cell(3, 3);
-for dx = directions'
-    angle = direction_get_angle(dx);
+os = cell(size(directions));
+for i = 1:length(directions)
+    angle = direction_get_angle(directions(i));
     
     rgbdata = imrotate(rgbdata_east, 360*angle/2/pi);
     alphadata = imrotate(alphadata_east, 360*angle/2/pi);
@@ -22,5 +22,5 @@ for dx = directions'
     o.height = height;
     o.width = width;
     
-    os{2+dx(1), 2+dx(2)} = o;
+    os{i} = o;
 end

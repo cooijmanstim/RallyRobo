@@ -9,12 +9,15 @@ RR = [];
 RR.features = generate_features();
 RR.nfeatures = length(fieldnames(RR.features));
 
-RR.cards = generate_cards();
-
 RR.directions = generate_directions();
 RR.ndirections = size(RR.directions.asrows, 1);
 
-RR.obstructions = precompute_obstructions();
+RR.states = [];
+RR.states.active = 0;
+RR.states.destroyed = 1;
+RR.states.waiting = 2;
+
+RR.nregisters = 5;
 
 % width and height of tiles; used in image processing. subject to change.
 RR.tile_size = 64;

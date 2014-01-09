@@ -1,6 +1,12 @@
 function [game] = game_create_example()
-game = game_create(12, 12, 4, 4);
+game = game_create(0, 0);
 game.board = board_create_example();
-game.state.checkpoints = [12 1; 8 9; 2 8; 9 5];
-game.state.robots.position = [3 1; 4 11; 8 1; 11 9];
-game.state.robots.direction = [0 1; -1 0; -1 0; 1 0];
+for x = [12 1; 8 9; 2 8; 9 5]'
+    game = game_add_checkpoint(game, x');
+end
+
+xs = [3 1; 4 11; 8 1; 11 9];
+dirs = [0 3 3 1];
+for i = 1:length(dirs)
+    game = game_add_robot(game, robot_create(i, xs(i, :), dirs(i)));
+end

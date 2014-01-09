@@ -20,18 +20,19 @@ ts = cell(1, n);
 % the image later this will introduce some additional realistic noise
 board_size = 3;
 
-game = game_create(board_size, board_size, 0, 0);
+game = game_create();
+game.board = board_create(board_size, board_size);
 game.board = board_enable_feature(game.board, [2 2], featureset);
 if ~isempty(robotid) && ~isempty(robotdir)
-    game.state.robots.position(robotid, :) = [2 2];
-    game.state.robots.direction(robotid, :) = robotdir;
+    game.robots(robotid).position = [2 2];
+    game.robots(robotid).direction = robotdir;
 end
 if ~isempty(checkpointid)
-    game.state.checkpoints(checkpointid, :) = [2 2];
+    game.checkpoints(checkpointid, :) = [2 2];
 end
 
 initBoardFigure(game);
-refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+refreshBoard(game.board, game.robots, game.checkpoints);
 axes = get(BoardFigure, 'CurrentAxes');
 % make sure the tiles as displayed have the right width and height
 % and a comfortable offset so nothing is obscured by window chrome.

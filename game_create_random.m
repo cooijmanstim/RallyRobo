@@ -1,19 +1,16 @@
 function [game] = game_create_random(m, n, nrobots, ncheckpoints)
 global RR;
 
-game = game_create(m, n, nrobots, ncheckpoints);
+game = game_create(m, n);
 game.board = board_create_random(m, n);
 
 % assume square so both coordinates can have the same distribution
 assert(m == n);
 
-game.state.checkpoints = randi(m, ncheckpoints, 2);
-
-% ensure no two robots end up on the same tile
-assert(m * n >= nrobots);
-game.state.robots.position = randi(m, nrobots, 2);
-while has_duplicate_rows(game.state.robots)
-    game.state.robots.position = randi(m, nrobots, 2);
+for i = 1:ncheckpoints
+    game = game_add_checkpoint(game, game_randx(game));
 end
 
-game.state.robots.direction = RR.directions.asrows(randi(RR.ndirections, nrobots, 1), :);
+for i = 1:nrobots
+    game = game_add_robot(game, robot_create(i, game_randx(game), randi(RR.ndirections)));
+end

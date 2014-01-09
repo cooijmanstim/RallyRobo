@@ -114,7 +114,7 @@ plot(tiles(:,9), tiles(:,10), 'g*');
 %% create board from tiles
 global RR;
 init();
-game = game_create(12, 12, 0, 0);
+game = game_create(12, 12);
 rotatedimage = y;
 for tile = tiles'
     % tile contains corner point coordinates
@@ -134,4 +134,4 @@ for tile = tiles'
     board_enable_feature(game.board, [y x], identifyTileFeatures(imdfs));
 end
 initBoardFigure(game);
-refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+refreshBoard(game.board, game.robots, game.checkpoints);
