@@ -34,8 +34,8 @@ game = game_create(height, width);
 checkpoints = {};
 
 for i=1:height
-    for j = 1:width
-        x = DataStructure(i,j);
+    for j=1:width
+        x = DataStructure(height-i+1,j);
         nobjects = ceil((1 + floor(log10(abs(x)))) / 2);
         for k = 1:nobjects
             if((1 + floor(log10(abs(x)))) > 2)
@@ -69,6 +69,9 @@ for s=1:length(PlayersPos)
     if(j==0)
         j = width;
     end
+    
+    % flip vertical axis
+    i = height - i + 1;
     
     game = game_add_robot(game, robot_create(s, [i j], direction));
 end
