@@ -1,5 +1,5 @@
 function [game] = Backupfunction( DataStructure, PlayersPos )
-
+global RR;
 featuresets = {};
 featuresets{5} = RR.features.pit;
 featuresets{6} = RR.features.wall_west;
@@ -48,14 +48,14 @@ for i=1:height
             if y < 5
                 checkpoints{y} = [i j];
             else
-                board_enable_feature(game.board, [i j], featuresets{y});
+                game.board = board_enable_feature(game.board, [i j], featuresets{y});
             end
         end                    
     end
 end
 
 for checkpoint = checkpoints
-    game = game_add_checkpoint(game, checkpoint);
+    game = game_add_checkpoint(game, cell2mat(checkpoint));
 end
 
 for s=1:length(PlayersPos)
