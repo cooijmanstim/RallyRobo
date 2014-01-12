@@ -35,14 +35,20 @@ class Board {
 				0 <= x[1] && x[1] < Width;
 	}
 
-	void set_feature(int i, int j, Feature feature) {
-		int k = feature.ordinal();
+	void set_feature(int i, int j, int k) {
 		features[(i*Width+j)*Feature.cardinality+k] = true;
 	}
 
-	boolean has_feature(int i, int j, Feature feature) {
-		int k = feature.ordinal();
+	boolean has_feature(int i, int j, int k) {
 		return features[(i*Width+j)*Feature.cardinality+k];
+	}
+
+	void set_feature(int i, int j, Feature feature) {
+		set_feature(i, j, feature.ordinal());
+	}
+	
+	boolean has_feature(int i, int j, Feature feature) {
+		return has_feature(i, j, feature.ordinal());
 	}
 
 	void set_feature(int[] x, Feature feature) {

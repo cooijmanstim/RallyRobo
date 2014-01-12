@@ -1,6 +1,8 @@
 function [] = init()
 % gets the environment in order
 
+javaaddpath('dynamics/java/bin');
+
 % for constants and other things we need in many places
 global RR;
 RR = [];

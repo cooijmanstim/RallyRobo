@@ -14,13 +14,15 @@ class Game {
 		board = new Board();
 	}
 	
-	void add_robot(int[] position, Direction direction) {
+	Robot add_robot(int[] position, Direction direction) {
 		int identity = robots.size();
-		robots.add(new Robot(identity, position, direction));
+		Robot robot = new Robot(identity, position, direction);
+		robots.add(robot);
+		return robot;
 	}
 	
-	void add_robot(int i, int j, Direction dir) {
-		add_robot(Point.make(i, j), dir);
+	Robot add_robot(int i, int j, Direction dir) {
+		return add_robot(Point.make(i, j), dir);
 	}
 	
 	private void add_features(Feature feature, int points[][]) {
