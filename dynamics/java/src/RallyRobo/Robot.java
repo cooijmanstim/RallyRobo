@@ -4,19 +4,26 @@ class Robot {
 	static final int NRegisters = 5;
 	static final int MaximumDamage = 9;
 
-	final int identity;
+	public final int identity;
 
-	int[] position, respawn_position;
-	Direction direction, respawn_direction;
+	public int[] position, respawn_position;
+	public Direction direction, respawn_direction;
 
-	int next_checkpoint = 1;
-	int damage = 0;
-	boolean is_virtual = false;
+	public int next_checkpoint = 1;
+	public int damage = 0;
+	public boolean is_virtual = false;
 
-	enum State { Active, Destroyed, Waiting }
-	State state = State.Active;
+	static enum State { Active, Destroyed, Waiting }
+	public State state = State.Active;
 
-	int registers[] = new int[NRegisters];
+	// this would be in State except that Matlab can't traverse inner classes
+	private static final State[] states = State.values();
+	public static State stateFromOrdinal(int i) {
+		return states[i];
+	}
+
+	
+	public int registers[] = new int[NRegisters];
 	{
 		for (int i = 0; i < NRegisters; i++)
 			registers[i] = Card.None;

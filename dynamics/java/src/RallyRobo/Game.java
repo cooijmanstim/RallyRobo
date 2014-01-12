@@ -5,23 +5,23 @@ import java.util.Collections;
 import java.util.Comparator;
 
 class Game {
-	Board board;
-	ArrayList<Robot> robots = new ArrayList<Robot>();
+	public Board board;
+	public ArrayList<Robot> robots = new ArrayList<Robot>();
 	boolean over = false;
 	Robot winner = null;
 	
-	Game() {
+	public Game() {
 		board = new Board();
 	}
 	
-	Robot add_robot(int[] position, Direction direction) {
+	public Robot add_robot(int[] position, Direction direction) {
 		int identity = robots.size();
 		Robot robot = new Robot(identity, position, direction);
 		robots.add(robot);
 		return robot;
 	}
 	
-	Robot add_robot(int i, int j, Direction dir) {
+	public Robot add_robot(int i, int j, Direction dir) {
 		return add_robot(Point.make(i, j), dir);
 	}
 	
@@ -30,7 +30,7 @@ class Game {
 			board.set_feature(x[0], x[1], feature);
 	}
 	
-	static Game example_game() {
+	public static Game example_game() {
 		Game game = new Game();
 		game.board.add_checkpoint(12, 1);
 		game.board.add_checkpoint( 8, 9);
@@ -225,7 +225,7 @@ class Game {
 	}
 
 	// before calling this, make sure the registers are filled
-	void perform_turn() {
+	public void perform_turn() {
 		// grab a working copy that we can sort according to card priority
 		ArrayList<Robot> robots = new ArrayList<Robot>(this.robots);
 

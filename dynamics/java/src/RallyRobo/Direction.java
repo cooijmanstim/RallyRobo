@@ -29,6 +29,9 @@ enum Direction {
 		return rotate(2);
 	}
 
+	public static Direction fromOrdinal(int i) {
+		return values[i];
+	}
 
 	static void test() {
 		assert(East.rotate(-1) == South);

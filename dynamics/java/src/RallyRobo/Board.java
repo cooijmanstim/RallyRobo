@@ -3,8 +3,8 @@ package RallyRobo;
 import java.util.ArrayList;
 
 class Board {
-	static final int InteriorHeight = 12, InteriorWidth = 12;
-	static final int Height = InteriorHeight+2, Width = InteriorWidth+2;
+	public static final int InteriorHeight = 12, InteriorWidth = 12;
+	public static final int Height = InteriorHeight+2, Width = InteriorWidth+2;
 
 	boolean features[] = new boolean[Height*Width*Feature.cardinality];
 	ArrayList<int[]> checkpoints = new ArrayList<int[]>();
@@ -26,7 +26,7 @@ class Board {
 		add_checkpoint(Point.make(-1, -1));
 	}
 
-	void add_checkpoint(int... checkpoint) {
+	public void add_checkpoint(int... checkpoint) {
 		checkpoints.add(checkpoint);
 	}
 
@@ -35,28 +35,27 @@ class Board {
 				0 <= x[1] && x[1] < Width;
 	}
 
-	void set_feature(int i, int j, int k) {
+	public void set_feature(int i, int j, int k) {
 		features[(i*Width+j)*Feature.cardinality+k] = true;
 	}
 
-	boolean has_feature(int i, int j, int k) {
+	public boolean has_feature(int i, int j, int k) {
 		return features[(i*Width+j)*Feature.cardinality+k];
 	}
 
-	void set_feature(int i, int j, Feature feature) {
+	public void set_feature(int i, int j, Feature feature) {
 		set_feature(i, j, feature.ordinal());
 	}
 	
-	boolean has_feature(int i, int j, Feature feature) {
+	public boolean has_feature(int i, int j, Feature feature) {
 		return has_feature(i, j, feature.ordinal());
 	}
 
-	void set_feature(int[] x, Feature feature) {
+	public void set_feature(int[] x, Feature feature) {
 		set_feature(x[0], x[1], feature);
 	}
 
-	boolean has_feature(int[] x, Feature feature) {
+	public boolean has_feature(int[] x, Feature feature) {
 		return has_feature(x[0], x[1], feature);
 	}
 }
-
