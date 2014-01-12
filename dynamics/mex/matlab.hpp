@@ -61,6 +61,8 @@ namespace mex {
   }
 
 
+  typedef boost::array<boost::optional<Card>, Robot::NRegisters> Registers;
+
 
   Point point_from_mxArray(const mxArray* m) {
     if (!is_int(m))
@@ -71,45 +73,45 @@ namespace mex {
     return Point(d[0], d[1]);
   }
 
+  DirectionIndex direction_from_mxArray(mxArray* mdirection) {
+    uint_t direction = uint_from_mxArray(mdirection);
+    if (direction >= Direction::NDirections)
+      throw std::runtime_error("invalid direction specifier");
+    return static_cast<DirectionIndex>(direction);
+  }
+
+  Robot::State state_from_mxArray(mxArray* mstate) {
+    uint_t state = uint_from_mxArray(mstate);
+    if (state >= Robot::NStates)
+      throw std::runtime_error("invalid state specifier");
+    return static_cast<Robot::State>(state);
+  }
+
+  Registers registers_from_mxArray(mxArray* mregisters) {
+    if (!mxIsStruct(mregisters))
+      throw std::runtime_error("expected a structure array");
+    
+    if (mxGetNumberOfElements(mregisters) != Robot::NRegisters)
+      throw std::runtime_error(str(format("expected %1% registers") % Robot::NRegisters));
+    
+    Registers registers;
+    for (size_t i = 0; i < Robot::NRegisters; i++) {
+      mxArray* mpriority = mxGetField(mregisters, i, "priority");
+      if (!mpriority)
+        continue;
+      
+      mxArray* mtranslation = mxGetField(mregisters, i, "translation");
+      mxArray* mrotation    = mxGetField(mregisters, i, "rotation");
+      registers[i] = Card(int_from_mxArray(mpriority),
+                          int_from_mxArray(mtranslation),
+                          int_from_mxArray(mrotation));
+    }
+    return registers;
+  }
+  
   Robot robot_from_mxStruct(const mxArray* mrobots, RobotIndex i) {
     Robot robot;
     robot.identity = i;
-  
-    auto direction_from_mxArray = [](mxArray* mdirection) {
-      uint_t direction = uint_from_mxArray(mdirection);
-      if (direction >= Direction::NDirections)
-        throw std::runtime_error("invalid direction specifier");
-      return static_cast<DirectionIndex>(direction);
-    };
-
-    auto state_from_mxArray = [](mxArray* mstate) {
-      uint_t state = uint_from_mxArray(mstate);
-      if (state >= Robot::NStates)
-        throw std::runtime_error("invalid state specifier");
-      return static_cast<Robot::State>(state);
-    };
-
-    auto registers_from_mxArray = [](mxArray* mregisters) {
-      if (!mxIsStruct(mregisters))
-        throw std::runtime_error("expected a structure array");
-  
-      if (mxGetNumberOfElements(mregisters) != Robot::NRegisters)
-        throw std::runtime_error(str(format("expected %1% registers") % Robot::NRegisters));
-  
-      boost::array<boost::optional<Card>, Robot::NRegisters> registers;
-      for (size_t i = 0; i < Robot::NRegisters; i++) {
-        mxArray* mpriority = mxGetField(mregisters, i, "priority");
-        if (!mpriority)
-          continue;
-  
-        mxArray* mtranslation = mxGetField(mregisters, i, "translation");
-        mxArray* mrotation    = mxGetField(mregisters, i, "rotation");
-        registers[i] = Card(int_from_mxArray(mpriority),
-                            int_from_mxArray(mtranslation),
-                            int_from_mxArray(mrotation));
-      }
-      return registers;
-    };
   
     #define kak(key, processor)                                   \
       try {                                                       \
@@ -198,25 +200,25 @@ namespace mex {
     return m;
   }
 
-  void robot_into_mxStruct(mxArray* mrobots, RobotIndex i, const Robot& robot) {
-    auto registers_to_mxArray = [](const boost::array<boost::optional<Card>, Robot::NRegisters>& registers) {
-      const char *augh[] = {"priority", "translation", "rotation"};
-      mwSize ndims = 1;
-      mwSize dims[] = {Robot::NRegisters};
-      mxArray* mregisters = mxCreateStructArray(ndims, dims, 3, augh);
+  mxArray* registers_to_mxArray(const Registers& registers) {
+    const char *augh[] = {"priority", "translation", "rotation"};
+    mwSize ndims = 1;
+    mwSize dims[] = {Robot::NRegisters};
+    mxArray* mregisters = mxCreateStructArray(ndims, dims, 3, augh);
+    
+    for (std::size_t i = 0; i < Robot::NRegisters; i++) {
+      if (!registers[i])
+        continue;
       
-      for (std::size_t i = 0; i < Robot::NRegisters; i++) {
-        if (!registers[i])
-          continue;
+      mxSetField(mregisters, i, "priority",    int_to_mxArray(registers[i]->priority));
+      mxSetField(mregisters, i, "translation", int_to_mxArray(registers[i]->translation));
+      mxSetField(mregisters, i, "rotation",    int_to_mxArray(registers[i]->rotation));
+    }
+    
+    return mregisters;
+  }
   
-        mxSetField(mregisters, i, "priority",    int_to_mxArray(registers[i]->priority));
-        mxSetField(mregisters, i, "translation", int_to_mxArray(registers[i]->translation));
-        mxSetField(mregisters, i, "rotation",    int_to_mxArray(registers[i]->rotation));
-      }
-
-      return mregisters;
-    };
-  
+  void robot_into_mxStruct(mxArray* mrobots, RobotIndex i, const Robot& robot) {
     #define kak(key, processor) mxSetField(mrobots, i, #key, processor(robot.key));
     kak(position, point_to_mxArray);
     kak(direction, uint_to_mxArray);

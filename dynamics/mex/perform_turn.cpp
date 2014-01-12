@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "../prettyprint98.hpp"
 #include "../game.hpp"
 
 #include "matlab.hpp"
