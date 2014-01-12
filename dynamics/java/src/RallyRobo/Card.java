@@ -1,15 +1,17 @@
 package RallyRobo;
 
+import java.util.Arrays;
+
 class Card {
 	static final int None = 0; // used to specify absence of card in registers
 
 	static final int cardinality = 84;
-	static final int[cardinality] priorities;
-	static final int[cardinality] translations;
-	static final int[cardinality] rotations;
+	static final int[] priorities   = new int[cardinality];
+	static final int[] translations = new int[cardinality];
+	static final int[] rotations    = new int[cardinality];
 
 	static void specifyCards(int a, int da, int b, int translation, int rotation) {
-		for (; a += da; a <= b) {
+		for (; a <= b; a += da) {
 			priorities[a-1]   = a*10;
 			translations[a-1] = translation;
 			rotations[a-1]    = rotation;
@@ -30,7 +32,7 @@ class Card {
 	static int translation (int card) { return translations[card-1]; }
 	static int rotation    (int card) { return rotations   [card-1]; }
 
-	void apply(Game game, Robot robot, int card) {
+	static void apply(Game game, Robot robot, int card) {
 		int translation = translation(card), rotation = rotation(card);
 		if (translation == 0) {
 			// rotation only
@@ -38,8 +40,8 @@ class Card {
 		} else {
 			// translation only, tile by tile
 			Direction di = translation >= 0 ? robot.direction : robot.direction.opposite();
-			for (int k = abs(translation); k >= 1; k--) {
-				bool moved = robot_move_maybe(robot, di);
+			for (int k = Math.abs(translation); k >= 1; k--) {
+				boolean moved = game.robot_move_maybe(robot, di);
 				if (!moved)
 					break;
 			}
@@ -50,7 +52,7 @@ class Card {
 	// reservoir sampling on a set represented by a bit vector
 	// http://en.wikipedia.org/wiki/Reservoir_sampling
 	int[] take(int k, boolean deck[]) {
-		int cards[k];
+		int[] cards = new int[k];
 		int m = cardinality;
 
 		int j = 0;
@@ -69,20 +71,22 @@ class Card {
 				cards[i] = j+1;
 			} else {
 				// replace reservoir items
-				int h = generator.nextInt(k);
+				int h = Util.generator.nextInt(k);
 				if (h < k)
 					cards[h] = j+1;
 			}
 		}
+		
+		return cards;
 	}
 
 	// this is gross
-	void fill_empty_registers_randomly() {
-		boolean deck[cardinality];
+	void fill_empty_registers_randomly(Game game) {
+		boolean deck[] = new boolean[cardinality];
 		Arrays.fill(deck, true);
 
 		int ncards = cardinality;
-		for (Robot robot: robots) {
+		for (Robot robot: game.robots) {
 			for (int i = 0; i < Robot.NRegisters; i++) {
 				if (robot.registers[i] != Card.None) {
 					deck[robot.registers[i]-1] = false;
@@ -92,12 +96,12 @@ class Card {
 		}
 
 		int cards[] = take(ncards, deck);
-		int i = 0;
-		for (Robot robot: robots) {
+		int j = 0;
+		for (Robot robot: game.robots) {
 			for (int i = 0; i < Robot.NRegisters; i++) {
 				if (robot.registers[i] == Card.None) {
-					robot.registers[i] = cards[i];
-					i++;
+					robot.registers[i] = cards[j];
+					j++;
 				}
 			}
 		}
@@ -110,10 +114,10 @@ class Card {
 
 	static void test() {
 		final Game game = Game.example_game();
-		final Robot robot = game.robots[0], pushed_robot = game.robots[1];
+		final Robot robot = game.robots.get(0), pushed_robot = game.robots.get(1);
 		
 		assert(Point.equals(robot.position, Point.make(3, 1)));
-		assert(robot.direction == East);
+		assert(robot.direction == Direction.East);
 		
 		assert(Point.equals(pushed_robot.position, Point.make(4, 11)));
 		

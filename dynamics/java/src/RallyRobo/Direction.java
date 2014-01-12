@@ -6,8 +6,8 @@ enum Direction {
 	West ( 0,-1),
 	South(-1, 0);
 
-	final Point vector;
-	final static Feature earlyWall, lateWall, conveyor;
+	final int[] vector;
+	final Feature earlyWall, lateWall, conveyor;
 
 	private final static Direction[] values = values();
 	final static int cardinality = values().length;
@@ -16,23 +16,23 @@ enum Direction {
 		vector = dx;
 		Feature[] walls = {Feature.WallEast, Feature.WallNorth, Feature.WallWest, Feature.WallSouth};
 		Feature[] conveyors = {Feature.ConveyorEast, Feature.ConveyorNorth, Feature.ConveyorWest, Feature.ConveyorSouth};
-		earlyWall = wallsByDirection[ordinal()];
-		lateWall = wallsByDirection[ordinal()];
+		earlyWall = walls[ordinal()];
+		lateWall = walls[ordinal()];
 		conveyor = conveyors[ordinal()];
 	}
 
-	Direction rotate(Direction a, int da) {
-		return Direction.values[((a + da + cardinality) % cardinality)];
+	Direction rotate(int d) {
+		return Direction.values[((ordinal() + d + cardinality) % cardinality)];
 	}
 
-	Direction opposite(Direction a) {
-		return rotate(a, 2);
+	Direction opposite() {
+		return rotate(2);
 	}
 
 
 	static void test() {
-		assert(rotate(East, -1) == South);
-		assert(rotate(South, 2) == North);
+		assert(East.rotate(-1) == South);
+		assert(South.rotate(2) == North);
 
 		assert(East.earlyWall == Feature.WallWest);
 		assert(East. lateWall == Feature.WallEast);

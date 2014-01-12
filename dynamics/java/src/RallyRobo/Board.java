@@ -1,11 +1,13 @@
 package RallyRobo;
 
+import java.util.ArrayList;
+
 class Board {
 	static final int InteriorHeight = 12, InteriorWidth = 12;
 	static final int Height = InteriorHeight+2, Width = InteriorWidth+2;
 
-	bool features[Height*Width*Feature.cardinality];
-	ArrayList<int[Point.dimensionality]> checkpoints;
+	boolean features[] = new boolean[Height*Width*Feature.cardinality];
+	ArrayList<int[]> checkpoints = new ArrayList<int[]>();
 
 	Board() {
 		// add a border of pits around the board.  this obviates the need to deal with bounds explicitly.
@@ -24,16 +26,21 @@ class Board {
 		add_checkpoint(Point.make(-1, -1));
 	}
 
-	void add_checkpoint(int[Point.dimensionality] checkpoint) {
+	void add_checkpoint(int... checkpoint) {
 		checkpoints.add(checkpoint);
 	}
 
+	boolean within_bounds(int[] x) {
+		return 0 <= x[0] && x[0] < Height &&
+				0 <= x[1] && x[1] < Width;
+	}
+	
 	void set_feature(int i, int j, Feature feature) {
 		int k = feature.ordinal();
 		features[(i*Width+j)*Height+k] = true;
 	}
 
-	void has_feature(int i, int j, Feature feature) {
+	boolean has_feature(int i, int j, Feature feature) {
 		int k = feature.ordinal();
 		return features[(i*Width+j)*Height+k];
 	}
@@ -42,7 +49,7 @@ class Board {
 		set_feature(x[0], x[1], feature);
 	}
 
-	void has_feature(int[] x, Feature feature) {
+	boolean has_feature(int[] x, Feature feature) {
 		return has_feature(x[0], x[1], feature);
 	}
 }

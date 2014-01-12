@@ -6,44 +6,44 @@ class Robot {
 
 	final int identity;
 
-	int[Point.dimensionality] position, respawn_position;
+	int[] position, respawn_position;
 	Direction direction, respawn_direction;
 
 	int next_checkpoint = 1;
 	int damage = 0;
-	bool is_virtual = false;
+	boolean is_virtual = false;
 
 	enum State { Active, Destroyed, Waiting }
 	State state = State.Active;
 
-	int[NRegisters] registers;
-	static {
+	int registers[] = new int[NRegisters];
+	{
 		for (int i = 0; i < NRegisters; i++)
 			registers[i] = Card.None;
 	}
 
-	Robot(int identity, int[Point.dimensionality] position, Direction direction) {
+	Robot(int identity, int[] position, Direction direction) {
 		this.identity = identity;
 		this.position = position;
 		this.direction = direction;
 
-		this.respawn_position = Arrays.clone(this.position);
+		this.respawn_position = this.position.clone();
 		this.respawn_direction = this.direction;
 	}
 
-	bool is_active   () { return state == State.Active    }
-	bool is_waiting  () { return state == State.Waiting   }
-	bool is_destroyed() { return state == State.Destroyed }
+	boolean is_active   () { return state == State.Active;    }
+	boolean is_waiting  () { return state == State.Waiting;   }
+	boolean is_destroyed() { return state == State.Destroyed; }
 
-	bool obstructs() {
-		return !is_virtual && state != Waiting;
+	boolean obstructs() {
+		return !is_virtual && state != State.Waiting;
 	}
 	
-	bool can_shoot() {
+	boolean can_shoot() {
 		return is_active() && !is_virtual;
 	}
 	
-	bool can_take_damage() {
+	boolean can_take_damage() {
 		return is_active() && !is_virtual;
 	}
 
@@ -53,8 +53,8 @@ class Robot {
 		direction = dir;
 	}
 
-	void rotate(Rotation dd) {
-		direction = direction.rotate(dd);
+	void rotate(int d) {
+		direction = direction.rotate(d);
 	}
 
 	void take_damage() {
@@ -68,18 +68,18 @@ class Robot {
 	}
 	
 	void destroy() {
-		state = Destroyed;
+		state = State.Destroyed;
 	}
 	
-	void wait() {
-		state = Waiting;
+	void skip() {
+		state = State.Waiting;
 	}
 	
 	void respawn() {
-		position = Arrays.clone(respawn_position);
+		position = respawn_position.clone();
 		direction = respawn_direction;
 		damage = 0;
-		state = Active;
+		state = State.Active;
 		// always respawn as virtual; the robot will be devirtualized if necessary
 		// after all respawns are complete.  this way simultaneous respawns can be
 		// handled independently.
@@ -98,13 +98,6 @@ class Robot {
 		int ni = Math.min(NRegisters, MaximumDamage - damage);
 		for (int i = 0; i < ni; i++)
 			registers[i] = Card.None;
-	}
-
-	void fill_empty_registers_randomly() {
-		for (int i = 0; i < NRegisters; i++) {
-			if (registers[i] == Card.None)
-				registers[i] = Card.random();
-		}
 	}
 
 

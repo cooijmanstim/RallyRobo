@@ -1,13 +1,15 @@
 package RallyRobo;
 
+import java.util.Arrays;
+
 class Point {
 	static final int dimensionality = 2;
 
-	static int[dimensionality] make(int... x) {
+	static int[] make(int... x) {
 		return x;
 	}
 
-	static bool equals(int[] a, int[] b) {
+	static boolean equals(int[] a, int[] b) {
 		return Arrays.equals(a, b);
 	}
 
@@ -16,14 +18,14 @@ class Point {
 			x[i] += dx[i];
 	}
 
-	static int[dimensionality] add(int[] x, int[] y) {
-		int[dimensionality] z = Arrays.clone(x);
+	static int[] add(int[] x, int[] y) {
+		int[] z = x.clone();
 		addTo(z, y);
 		return z;
 	}
 
 	// true iff one or more steps in direction dir from a lead to b
-	static bool sees(int[] a, int[] b, Direction dir) {
+	static boolean sees(int[] a, int[] b, Direction dir) {
 		int[] dx = dir.vector;
 		for (int i = 0; i < dimensionality; i++)
 			if (a[i] == b[i] && dx[i] == 0 && (b[1-i] - a[1-i])/dx[1-i] > 0)
