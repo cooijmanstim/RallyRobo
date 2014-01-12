@@ -1,0 +1,41 @@
+package RallyRobo;
+
+class Point {
+	static final int dimensionality = 2;
+
+	static int[dimensionality] make(int... x) {
+		return x;
+	}
+
+	static bool equals(int[] a, int[] b) {
+		return Arrays.equals(a, b);
+	}
+
+	static void addTo(int[] x, int[] dx) {
+		for (int i = 0; i < dimensionality; i++)
+			x[i] += dx[i];
+	}
+
+	static int[dimensionality] add(int[] x, int[] y) {
+		int[dimensionality] z = Arrays.clone(x);
+		addTo(z, y);
+		return z;
+	}
+
+	// true iff one or more steps in direction dir from a lead to b
+	static bool sees(int[] a, int[] b, Direction dir) {
+		int[] dx = dir.vector;
+		for (int i = 0; i < dimensionality; i++)
+			if (a[i] == b[i] && dx[i] == 0 && (b[1-i] - a[1-i])/dx[1-i] > 0)
+				return true;
+		return false;
+	}
+
+
+	static void test() {
+		assert( sees(make(0, 0), make( 0, 3), Direction.East));
+		assert( sees(make(0, 0), make(-3, 0), Direction.South));
+		assert(!sees(make(0, 0), make(-3, 0), Direction.East));
+		assert(!sees(make(0, 0), make( 0,-3), Direction.South));
+	}
+}
