@@ -236,7 +236,7 @@ class Game {
 				                 @Override
 					         public int compare(Robot a, Robot b) {
 					                 return Card.priority(b.registers[j]) -
-					                		 Card.priority(b.registers[j]);
+					                		 Card.priority(a.registers[j]);
 				                 }
 			                 });
 
