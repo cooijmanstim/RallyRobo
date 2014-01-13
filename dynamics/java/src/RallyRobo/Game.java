@@ -235,13 +235,24 @@ class Game {
 		for (int i = 0; i < Robot.NRegisters; i++)
 			process_register(i, robots);
 		
+		finalize_turn();
+	}
+	
+	public void vacate_registers() {
+		for (Robot robot: robots)
+			robot.vacate_registers();
+	}
+	
+	public void finalize_turn() {
 		respawn_waiting_robots();
 		remove_destroyed_robots();
-		devirtualize_robots(); 
+		devirtualize_robots();
+		
+		vacate_registers();
 	}
 
 	// for convenience
-	private void process_register(int i) {
+	public void process_register(int i) {
 		process_register(i, new ArrayList<Robot>(robots));
 	}
 
@@ -265,11 +276,6 @@ class Game {
 		fire_robot_lasers();
 		promote_robots();
 		repair_robots();
-	}
-	
-	void vacate_registers() {
-		for (Robot robot: robots)
-			robot.vacate_registers();
 	}
 
 	

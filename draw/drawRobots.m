@@ -8,11 +8,13 @@ for i = 1:robots.size()
         yx = double(robot.position);
         y = yx(1); x = yx(2);
         angle = direction_get_angle(robot.direction.ordinal());
-        % TODO: transparancy, flip vertically
+        % TODO: transparancy
         file = strcat('images/',colors{i},'.png');
         image = imread(file);
         rotated = imrotate(image,radtodeg(angle));
-        imagesc([x+resize,x+1-resize],[y+resize,y+1-resize],rotated);
+        xs = [x+resize,x+1-resize];
+        ys = [y+resize,y+1-resize];
+        imagesc(xs,fliplr(ys),rotated);
     end
 end
   

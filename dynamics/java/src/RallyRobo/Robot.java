@@ -1,7 +1,7 @@
 package RallyRobo;
 
 class Robot {
-	static final int NRegisters = 5;
+	public static final int NRegisters = 5;
 	static final int MaximumDamage = 9;
 
 	public final int identity;
@@ -117,6 +117,8 @@ class Robot {
 	
 	void vacate_registers() {
 		int ni = Math.min(NRegisters, MaximumDamage - damage);
+		if (!is_active())
+			ni = NRegisters;
 		for (int i = 0; i < ni; i++)
 			registers[i] = Card.None;
 	}
