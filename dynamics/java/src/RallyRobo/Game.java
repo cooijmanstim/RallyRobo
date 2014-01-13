@@ -1,6 +1,7 @@
 package RallyRobo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -80,7 +81,7 @@ class Game {
 		if (!board.has_feature(xnew, Feature.Pit)) {
 			// if there is a robot at the destination, try to push it
 			for (Robot pushee: robots) {
-				if (!pushee.is_virtual && pushee.position.equals(xnew)) {
+				if (pushee.can_be_pushed() && Point.equals(pushee.position, xnew)) {
 					if (!robot_move_maybe(pushee, dir))
 						return false;
 					break;
@@ -105,10 +106,10 @@ class Game {
 		// what's on the tile it is moving to.
 		for (Robot robot: robots) {
 			if (robot.is_virtual || robot.is_waiting())
-				return;
+				continue;
 			
 			int[] dx = {0, 0};
-			for (Direction dir: Direction.values()) {
+			for (Direction dir: Direction.values) {
 				if (board.has_feature(robot.position, dir.conveyor)) {
 					dx = dir.vector;
 					break;
@@ -162,10 +163,13 @@ class Game {
 		for (int i = 0, ni = robots.size(); i < ni; i++) {
 			Robot shooter = robots.get(i);
 			if (shooter.can_shoot()) {
-				for (int j = i+1, nj = ni; j < nj; j++) {
+				for (int j = 0, nj = ni; j < nj; j++) {
+					if (i == j)
+						continue;
+					
 					Robot shootee = robots.get(j);
 					if (shootee.can_take_damage() && in_view(shootee, shooter)) {
-						shooter.take_damage();
+						shootee.take_damage();
 						break;
 					}
 				}
@@ -206,8 +210,7 @@ class Game {
 			if (!robot.is_virtual && robot.is_active() &&
 					Point.equals(board.checkpoints.get(robot.next_checkpoint),
 								 robot.position)) {
-				robot.respawn_position = robot.position;
-				robot.respawn_direction = robot.direction;
+				robot.save_respawn();
 				robot.next_checkpoint++;
 				if (robot.next_checkpoint >= board.checkpoints.size()) {
 					over = true;
@@ -229,34 +232,41 @@ class Game {
 		// grab a working copy that we can sort according to card priority
 		ArrayList<Robot> robots = new ArrayList<Robot>(this.robots);
 
-		for (int i = 0; i < Robot.NRegisters; i++) {
-			final int j = i;
-			Collections.sort(robots,
-			                 new Comparator<Robot>() {
-				                 @Override
-					         public int compare(Robot a, Robot b) {
-					                 return Card.priority(b.registers[j]) -
-					                		 Card.priority(a.registers[j]);
-				                 }
-			                 });
-
-			for (Robot robot: robots) {
-				if (robot.is_active())
-					Card.apply(this, robot, robot.registers[i]);
-			}
-
-			devirtualize_robots();
-			advance_conveyors();
-			fire_robot_lasers();
-			promote_robots();
-			repair_robots();
-		}
+		for (int i = 0; i < Robot.NRegisters; i++)
+			process_register(i, robots);
 		
 		respawn_waiting_robots();
 		remove_destroyed_robots();
 		devirtualize_robots(); 
 	}
 
+	// for convenience
+	private void process_register(int i) {
+		process_register(i, new ArrayList<Robot>(robots));
+	}
+
+	// for speed
+	private void process_register(final int i, ArrayList<Robot> robots) {
+		Collections.sort(robots, new Comparator<Robot>() {
+			@Override
+			public int compare(Robot a, Robot b) {
+				return Card.priority(b.registers[i]) -
+						Card.priority(a.registers[i]);
+			}
+		});
+
+		for (Robot robot: robots) {
+			if (robot.is_active())
+				Card.apply(this, robot, robot.registers[i]);
+		}
+		
+		devirtualize_robots();
+		advance_conveyors();
+		fire_robot_lasers();
+		promote_robots();
+		repair_robots();
+	}
+	
 	void vacate_registers() {
 		for (Robot robot: robots)
 			robot.vacate_registers();
@@ -369,7 +379,7 @@ class Game {
 
 		assert(robots[0].damage == 0);
 		assert(robots[1].damage == 0);
-		assert(robots[2].damage == 0);
+		assert(robots[2].damage == 2);
 		assert(robots[3].damage == 0);
 	}
 
@@ -395,19 +405,35 @@ class Game {
 		Robot[] robots = game.robots.toArray(new Robot[]{});
 
 		robots[0].set_posdir(10, 8, Direction.West);
-		robots[2].set_posdir(10, 7, Direction.East);
-		robots[3].set_posdir(10, 6, Direction.North);
+		robots[1].set_posdir(10, 7, Direction.East);
+		robots[2].set_posdir(10, 6, Direction.North);
 
 		robots[2].destroy();
 
-		Card.apply(game, robots[3], Card.ThreeForward);
+		Card.apply(game, robots[0], Card.ThreeForward);
 
+		Test.assert_pos(robots[0], 10, 6);
+		Test.assert_pos(robots[1], 10, 6);
+		Test.assert_pos(robots[2], 10, 6);
+		
 		assert(robots[0].is_destroyed());
+		assert(robots[1].is_destroyed());
 		assert(robots[2].is_destroyed());
-		assert(robots[3].is_destroyed());
 	}
 
-	static void test_perform_turn() {
+	static void test_advance_conveyors_regression() {
+		Game game = Game.example_game();
+		Robot robot = game.robots.get(1);
+		robot.position = Point.make(7, 4);
+		robot.direction = Direction.East;
+		Card.apply(game, robot, Card.OneForward);
+		game.advance_conveyors();
+		Test.assert_posdir(robot, 7, 4, Direction.North);
+	}
+	
+	static void test_perform_turn_regression1() {
+		test_advance_conveyors_regression();
+		
 		Game game = Game.example_game();
 		Robot[] robots = game.robots.toArray(new Robot[]{});
 
@@ -415,15 +441,143 @@ class Game {
 		robots[1].registers = new int[]{81,10,43,45,12};
 		robots[2].registers = new int[]{70,49,44,67,46};
 		robots[3].registers = new int[]{ 8,68,83,46,47};
+
+		game.perform_turn();
+		
+		robots[0].registers = new int[]{11,63,77,35,64};
+		robots[1].registers = new int[]{49,80,78, 7,43};
+		robots[2].registers = new int[]{10,84,68,12,83};
+		robots[3].registers = new int[]{67,50, 1,46,47};
+
+		Test.assert_posdir(robots[1],  7, 4, Direction.East);
+		
+		game.process_register(0);
+
+		Test.assert_posdir(robots[1],  7, 4, Direction.North);
+		Test.assert_posdir(robots[2], 11, 1, Direction.East);
+		Test.assert_posdir(robots[3], 11, 4, Direction.West);
+		
+		assert(robots[2].damage == 3);
+		assert(robots[3].damage == 2);
+		
+		game.process_register(1);
+		
+		Test.assert_posdir(robots[1], 10, 4, Direction.North);
+		Test.assert_posdir(robots[2], 11, 3, Direction.East);
+		Test.assert_posdir(robots[3], 11, 4, Direction.West);
+		
+		assert(robots[2].damage == 4);
+		assert(robots[3].damage == 4);
+		
+		game.process_register(2);
+		
+		Test.assert_posdir(robots[1], 12, 4, Direction.North);
+		Test.assert_posdir(robots[2], 11, 5, Direction.East);
+		
+		assert(robots[3].is_destroyed());
+	}
+	
+	static void test_perform_turn_regression2() {
+		Game game = Game.example_game();
+		Robot[] robots = game.robots.toArray(new Robot[]{});
+
+		robots[0].registers = new int[]{11,63,78,35,64};
+		robots[1].registers = new int[]{81,10,43,45,12};
+		robots[2].registers = new int[]{70,49,44,67,46};
+		robots[3].registers = new int[]{ 8,68,83,46,47};
+
+		game.perform_turn();
+		
+		robots[0].registers = new int[]{11,63,77,35,64};
+		robots[1].registers = new int[]{49,80,78, 7,43};
+		robots[2].registers = new int[]{10,84,68,12,83};
+		robots[3].registers = new int[]{67,50, 1,46,47};
+
+		game.perform_turn();
+		
+		robots[0].registers = new int[]{67, 7,79,17,19};
+		robots[1].registers = new int[]{82, 9,68,11,49};
+		robots[2].registers = new int[]{71,13,72,15,73};
+		robots[3].registers = new int[]{67,50, 1,46,47};
 		
 		game.perform_turn();
 		
-		assert(robots[0].is_waiting());
+		robots[0].registers = new int[]{ 9,68,59,44, 9};
+		robots[1].registers = new int[]{55,56,57,58,84};
+		robots[2].registers = new int[]{67,50, 7,53,54};
+		robots[3].registers = new int[]{49,43,51,52, 8};
+		
+		Test.assert_posdir(robots[0],  6,  8, Direction.North);
+		Test.assert_posdir(robots[1], 10,  2, Direction.East);
+		Test.assert_posdir(robots[2],  8,  9, Direction.North);
+		Test.assert_posdir(robots[3], 11,  9, Direction.South);
+
+		game.process_register(0);
+
+		Test.assert_posdir(robots[0],  6,  9, Direction.West);
+		Test.assert_posdir(robots[1], 10,  3, Direction.East);
+		Test.assert_posdir(robots[2],  9,  9, Direction.North);
+		Test.assert_posdir(robots[3], 10,  9, Direction.South);
+		
+		assert(robots[2].damage == 5);
+
+		game.process_register(1);
+
+		Test.assert_posdir(robots[0],  6,  8, Direction.West);
+		Test.assert_posdir(robots[1], 10,  4, Direction.East);
+		Test.assert_posdir(robots[2], 10,  9, Direction.North);
+		Test.assert_posdir(robots[3], 12,  9, Direction.South);
+		
+		assert(robots[2].damage == 7);
+
+		game.process_register(2);
+
+		Test.assert_posdir(robots[0],  6,  8, Direction.West);
+		Test.assert_posdir(robots[1], 10,  5, Direction.East);
+		Test.assert_posdir(robots[2], 10,  9, Direction.West);
+		Test.assert_posdir(robots[3], 11,  9, Direction.South);
+		
+		assert(robots[1].damage == 1);
+		assert(robots[2].damage == 9);
+		
+		game.process_register(3);
+		
+		Test.assert_posdir(robots[0],  6, 10, Direction.West);
+		Test.assert_posdir(robots[2], 10,  8, Direction.West);
+		Test.assert_posdir(robots[3], 10,  9, Direction.South);
+		
+		assert(robots[1].is_destroyed());
+		assert(robots[2].damage == 9);
+		
+		game.process_register(4);
+		
+		Test.assert_posdir(robots[0],  6, 11, Direction.South);
+		Test.assert_posdir(robots[3], 10,  9, Direction.West);
+		
+		assert(robots[2].is_destroyed());
+	}
+	
+	static void test_perform_turn() {
+		test_perform_turn_regression1();
+		test_perform_turn_regression2();
+		
+		Game game = Game.example_game();
+		Robot[] robots = game.robots.toArray(new Robot[]{});
+
+		robots[0].registers = new int[]{11,63,78,35,64};
+		robots[1].registers = new int[]{81,10,43,45,12};
+		robots[2].registers = new int[]{70,49,44,67,46};
+		robots[3].registers = new int[]{ 8,68,83,46,47};
+
+		game.perform_turn();
 		
 		Test.assert_posdir(robots[1],  7,  4, Direction.East);
 		Test.assert_posdir(robots[2], 11,  1, Direction.North);
 		Test.assert_posdir(robots[3], 11,  6, Direction.West);
 
+		assert(robots[0].is_waiting());
+		assert(robots[2].damage == 2);
+		
 		assert(robots[2].next_checkpoint == 2);
 
 		robots[0].registers = new int[]{11,63,77,35,64};
@@ -433,12 +587,13 @@ class Game {
 		
 		game.perform_turn();
 		
-		assert(robots[0].is_active());
-		assert(robots[3].is_waiting());
-		
 		Test.assert_posdir(robots[0],  3,  1, Direction.East);
 		Test.assert_posdir(robots[1], 12,  4, Direction.West);
 		Test.assert_posdir(robots[2],  8,  5, Direction.South);
+		
+		assert(robots[0].is_active());
+		assert(robots[2].damage == 3);
+		assert(robots[3].is_waiting());		
 		
 		robots[0].registers = new int[]{67, 7,79,17,19};
 		robots[1].registers = new int[]{82, 9,68,11,49};
@@ -447,14 +602,15 @@ class Game {
 		
 		game.perform_turn();
 		
-		assert(robots[3].is_active());
-		
-		Test.assert_posdir(robots[0],  6,  8, Direction.West);
+		Test.assert_posdir(robots[0],  6,  8, Direction.North);
 		Test.assert_posdir(robots[1], 10,  2, Direction.East);
 		Test.assert_posdir(robots[2],  8,  9, Direction.North);
 		Test.assert_posdir(robots[3], 11,  9, Direction.South);
 
+		assert(robots[3].is_active());
+		
 		assert(robots[1].next_checkpoint == 2);
+		assert(Point.equals(robots[1].respawn_position, Point.make(12, 1)));
 		assert(robots[2].next_checkpoint == 3);
 		
 		robots[0].registers = new int[]{ 9,68,59,44, 9};
@@ -467,7 +623,7 @@ class Game {
 		assert(robots[1].is_waiting());
 		assert(robots[2].is_waiting());
 		
-		Test.assert_posdir(robots[0],  7,  7, Direction.West);
+		Test.assert_posdir(robots[0],  6, 11, Direction.South);
 		Test.assert_posdir(robots[3], 10,  9, Direction.West);
 		
 		assert(robots[0].next_checkpoint == 1);
@@ -478,20 +634,19 @@ class Game {
 		robots[2].registers = new int[]{67,50, 7,53,54};
 		robots[3].registers = new int[]{50,44,68,45,46};
 		
+		assert(robots[2].is_waiting());
+		
 		game.perform_turn();
 		
+		assert(robots[0].is_waiting());
 		assert(robots[1].is_active());
 		assert(robots[2].is_active());
 		
-		Test.assert_posdir(robots[0],  8,  9, Direction.South);
 		Test.assert_posdir(robots[1], 12,  1, Direction.West);
 		Test.assert_posdir(robots[2],  8,  9, Direction.North);
 		Test.assert_posdir(robots[3], 10,  9, Direction.West);
 		
 		assert(robots[1].next_checkpoint == 2);
 		assert(robots[2].next_checkpoint == 3);
-
-		assert( robots[2].is_virtual);
-		assert(!robots[0].is_virtual);
 	}
 }

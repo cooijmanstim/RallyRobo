@@ -34,8 +34,7 @@ class Robot {
 		this.position = position;
 		this.direction = direction;
 
-		this.respawn_position = this.position.clone();
-		this.respawn_direction = this.direction;
+		save_respawn();
 	}
 
 	public boolean is_active   () { return state == State.Active;    }
@@ -46,6 +45,10 @@ class Robot {
 
 	public boolean obstructs() {
 		return !is_virtual && state != State.Waiting;
+	}
+	
+	public boolean can_be_pushed() {
+		return obstructs();
 	}
 	
 	public boolean can_shoot() {
@@ -85,14 +88,23 @@ class Robot {
 	}
 	
 	void respawn() {
-		position = respawn_position.clone();
-		direction = respawn_direction;
+		load_respawn();
 		damage = 0;
 		state = State.Active;
 		// always respawn as virtual; the robot will be devirtualized if necessary
 		// after all respawns are complete.  this way simultaneous respawns can be
 		// handled independently.
 		virtualize();
+	}
+
+	public void save_respawn() {
+		respawn_position = position.clone();
+		respawn_direction = direction;
+	}
+
+	public void load_respawn() {
+		position = respawn_position.clone();
+		direction = respawn_direction;
 	}
 	
 	void virtualize() {

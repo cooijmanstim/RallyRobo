@@ -1,5 +1,7 @@
 package RallyRobo;
 
+import java.util.Arrays;
+
 class Test {
 	public static void main(String[] args) {
 		Point.test();
@@ -11,7 +13,11 @@ class Test {
 	}
 
 	static void assert_pos(Robot robot, int i, int j) {
-		assert(Point.equals(robot.position, Point.make(i, j)));
+		int[] expected = Point.make(i, j);
+		if (!Point.equals(robot.position, expected))
+			throw new AssertionError("robot["+robot.identity+"].position "+
+									  "expected "+Arrays.toString(expected)+
+									  " but saw "+Arrays.toString(robot.position));
 	}
 
 	static void assert_posdir(Robot robot, int i, int j, Direction dir) {

@@ -53,28 +53,38 @@ class Card {
 	// http://en.wikipedia.org/wiki/Reservoir_sampling
 	static int[] take(int k, boolean deck[]) {
 		int[] cards = new int[k];
-		int m = cardinality;
+		int m = deck.length;
 
 		int j = 0;
-		for (int i = 0; i < m; i++) {
-			// keep track of the number of set members seen
-			for (; j < m; j++) {
-				if (deck[j])
-					break;
-			}
-			// assume there are at least k cards
-			assert(j < m);
+		for (int i = 0; ; i++) {
+			// fast forward to the next element of the set
+			for (; j < m && !deck[j]; j++) {}
 
+			if (j >= m) {
+				// there should have been at least k cards in the deck
+				assert(i >= k);
+				break;
+			}
+			
 			if (i < k) {
 				// initial phase: fill the reservoir
 				deck[j] = false;
 				cards[i] = j+1;
 			} else {
 				// replace reservoir items
-				int h = Util.generator.nextInt(k);
-				if (h < k)
+				// XXX: not sure why the +1 is needed. the wikipedia example stresses
+				// that the range should be inclusive, but since we are dealing with
+				// 0-based indices, leaving out the +1 should be equivalent. however,
+				// tests show a bias toward replacement when it is left out.
+				int h = Util.generator.nextInt(i+1);
+				if (h < k) {
+					deck[cards[h]-1] = true;
+					deck[j] = false;
 					cards[h] = j+1;
+				}
 			}
+			
+			j++;
 		}
 		
 		return cards;
@@ -85,12 +95,13 @@ class Card {
 		boolean deck[] = new boolean[cardinality];
 		Arrays.fill(deck, true);
 
-		int ncards = cardinality;
+		int ncards = 0;
 		for (Robot robot: game.robots) {
 			for (int i = 0; i < Robot.NRegisters; i++) {
-				if (robot.registers[i] != Card.None) {
+				if (robot.registers[i] == Card.None) {
+					ncards++;
+				} else {
 					deck[robot.registers[i]-1] = false;
-					ncards--;
 				}
 			}
 		}
@@ -106,18 +117,17 @@ class Card {
 			}
 		}
 	}
-	
-	/*public void fill_empty_registers_randomly(Object game) {
-		assert(game instanceof Game);
-		fill_empty_registers_randomly((Game)game);
-	}*/
-
 
 	// for ease of specifying a card when you don't care about its priority (i.e., in tests)
 	static final int UTurn = 1, CounterClockwise = 7, Clockwise = 8, OneBackward = 43,
 		         OneForward = 49, TwoForward = 67, ThreeForward = 79;
 
 	static void test() {
+		test_apply();
+		test_take();
+	}
+	
+	static void test_apply() {
 		final Game game = Game.example_game();
 		final Robot robot = game.robots.get(0), pushed_robot = game.robots.get(1);
 		
@@ -138,7 +148,7 @@ class Card {
 		assert(Point.equals(pushed_robot.position, Point.make(4, 13)));
 		apply(game, robot, UTurn           ); Test.assert_posdir(robot, 4, 12, Direction.West);
 		apply(game, robot, ThreeForward    ); Test.assert_posdir(robot, 4,  9, Direction.West);
-		apply(game, robot, OneBackward     ); Test.assert_posdir(robot, 4,  9, Direction.North);
+		apply(game, robot, Clockwise       ); Test.assert_posdir(robot, 4,  9, Direction.North);
 		apply(game, robot, ThreeForward    ); Test.assert_posdir(robot, 5,  9, Direction.North); // fell into a pit
 		
 		// can't leave pit in any direction
@@ -147,5 +157,27 @@ class Card {
 			apply(game, robot, OneForward);
 			assert(Point.equals(robot.position, Point.make(5, 9)));
 		}
+	}
+	
+	static void test_take() {
+		int k = 5, n = 20;
+		boolean[] deck = new boolean[n];
+		Arrays.fill(deck, true);
+		
+		int sample_size = 10000;
+		int[] counts = new int[n];
+		for (int i = 0; i < sample_size; i++) {
+			for (int card: take(k, deck.clone()))
+				counts[card-1]++;
+		}
+
+		double[] ps = new double[n]; 
+		for (int i = 0; i < n; i++) {
+			ps[i] = counts[i] * 1.0 / sample_size;
+		}
+		
+		// might fail every once in a while due to randomness
+		assert(ps[0] - k*1.0/n < 1e-2);
+		assert(Util.variance(ps) < 1e-2);
 	}
 }

@@ -35,6 +35,9 @@ class Point {
 
 
 	static void test() {
+		assert( equals(make(0, 0), make(0, 0)));
+		assert(!equals(make(0, 1), make(0, 0)));
+		
 		assert( sees(make(0, 0), make( 0, 3), Direction.East));
 		assert( sees(make(0, 0), make(-3, 0), Direction.South));
 		assert(!sees(make(0, 0), make(-3, 0), Direction.East));

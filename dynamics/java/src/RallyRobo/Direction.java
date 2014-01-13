@@ -24,7 +24,7 @@ enum Direction {
 		vector = dx;
 		Feature[] walls = {Feature.WallEast, Feature.WallNorth, Feature.WallWest, Feature.WallSouth};
 		Feature[] conveyors = {Feature.ConveyorEast, Feature.ConveyorNorth, Feature.ConveyorWest, Feature.ConveyorSouth};
-		earlyWall = walls[ordinal()];
+		earlyWall = walls[(ordinal()+2)%walls.length]; // can't use opposite() yet
 		lateWall = walls[ordinal()];
 		conveyor = conveyors[ordinal()];
 	}
