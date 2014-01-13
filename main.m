@@ -1,8 +1,7 @@
 clear; clc;
-
-init();
 close();
-global BoardFigure;
-game = game_create_example();
+init();
+
+game = RallyRobo.Game.example_game();
 initBoardFigure(game);
-refreshBoard(game.board, game.robots, game.checkpoints);
+refreshBoard(game);

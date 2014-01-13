@@ -1,33 +1,36 @@
 function [game] = Backupfunction( DataStructure, PlayersPos )
-global RR;
+import RallyRobo.Feature;
 featuresets = {};
-featuresets{5} = RR.features.pit;
-featuresets{6} = RR.features.wall_west;
-featuresets{7} = RR.features.wall_east;
-featuresets{8} = RR.features.wall_north;
-featuresets{9} = RR.features.wall_south;
-featuresets{10} = [RR.features.wall_east RR.features.wall_north];
-featuresets{11} = [RR.features.wall_east RR.features.wall_south];
-featuresets{12} = [RR.features.wall_west RR.features.wall_north];
-featuresets{13} = [RR.features.wall_west RR.features.wall_south];
-featuresets{14} = RR.features.conveyor_west;
-featuresets{15} = RR.features.conveyor_east;
-featuresets{16} = RR.features.conveyor_south;
-featuresets{17} = RR.features.conveyor_north;
-featuresets{18} = [RR.features.conveyor_east RR.features.conveyor_turning_clockwise];
-featuresets{19} = [RR.features.conveyor_south RR.features.conveyor_turning_clockwise];
-featuresets{20} = [RR.features.conveyor_west RR.features.conveyor_turning_clockwise];
-featuresets{21} = [RR.features.conveyor_north RR.features.conveyor_turning_clockwise];
-featuresets{22} = [RR.features.conveyor_south RR.features.conveyor_turning_counterclockwise];
-featuresets{23} = [RR.features.conveyor_east RR.features.conveyor_turning_counterclockwise];
-featuresets{24} = [RR.features.conveyor_north RR.features.conveyor_turning_counterclockwise];
-featuresets{25} = [RR.features.conveyor_west RR.features.conveyor_turning_counterclockwise];
-featuresets{26} = RR.features.repair;
+featuresets{5} = Feature.Pit;
+featuresets{6} = Feature.WallWest;
+featuresets{7} = Feature.WallEast;
+featuresets{8} = Feature.WallNorth;
+featuresets{9} = Feature.WallSouth;
+featuresets{10} = [Feature.WallEast Feature.WallNorth];
+featuresets{11} = [Feature.WallEast Feature.WallSouth];
+featuresets{12} = [Feature.WallWest Feature.WallNorth];
+featuresets{13} = [Feature.WallWest Feature.WallSouth];
+featuresets{14} = Feature.ConveyorWest;
+featuresets{15} = Feature.ConveyorEast;
+featuresets{16} = Feature.ConveyorSouth;
+featuresets{17} = Feature.ConveyorNorth;
+featuresets{18} = [Feature.ConveyorEast Feature.ConveyorTurningCw];
+featuresets{19} = [Feature.ConveyorSouth Feature.ConveyorTurningCw];
+featuresets{20} = [Feature.ConveyorWest Feature.ConveyorTurningCw];
+featuresets{21} = [Feature.ConveyorNorth Feature.ConveyorTurningCw];
+featuresets{22} = [Feature.ConveyorSouth Feature.ConveyorTurningCcw];
+featuresets{23} = [Feature.ConveyorEast Feature.ConveyorTurningCcw];
+featuresets{24} = [Feature.ConveyorNorth Feature.ConveyorTurningCcw];
+featuresets{25} = [Feature.ConveyorWest Feature.ConveyorTurningCcw];
+featuresets{26} = Feature.Repair;
 
 width = size(DataStructure,2);
 height = size(DataStructure,1);
 
-game = game_create(height, width);
+import RallyRobo.Board;
+assert(height == Board.InteriorHeight && width == Board.InteriorWidth);
+
+game = RallyRobo.Game();
 
 % since the checkpoints are not encountered in order, we can't directly add
 % them to the game. order them in this temporary cell array first.
@@ -48,14 +51,16 @@ for i=1:height
             if y < 5
                 checkpoints{y} = [i j];
             else
-                game.board = board_enable_feature(game.board, [i j], featuresets{y});
+                for feature = featuresets{y}
+                    game.board.set_feature([i j], feature);
+                end
             end
         end                    
     end
 end
 
 for checkpoint = checkpoints
-    game = game_add_checkpoint(game, cell2mat(checkpoint));
+    game.board.add_checkpoint(cell2mat(checkpoint));
 end
 
 for s=1:length(PlayersPos)
@@ -73,7 +78,8 @@ for s=1:length(PlayersPos)
     % flip vertical axis
     i = height - i + 1;
     
-    game = game_add_robot(game, robot_create(s, [i j], direction));
+    % NOTE: assumption that the robots are always passed in in the same
+    % order (otherwise we may need to control robot.identity)
+    robot = game.add_robot([i j], direction);
 end
-
 end

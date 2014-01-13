@@ -1,11 +1,11 @@
 function [  ] = drawCheckpoints(checkpoints,n)
 hold on;
 
-for i = 1: size(checkpoints,1)
-    y = checkpoints(i,1);
-    x = checkpoints(i,2);
-   text(x+0.375,y+0.5,num2str(i),'FontSize',getFontSize(n));
+% TODO: make checkpoint indices 0-based in java
+for i = 1: checkpoints.size()-1
+    yx = double(checkpoints.get(i));
+    y = yx(1);
+    x = yx(2);
+    text(x+0.375,y+0.5,num2str(i),'FontSize',getFontSize(n));
 end
-  
-   
 end

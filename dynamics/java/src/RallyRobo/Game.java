@@ -10,8 +10,8 @@ class Game {
 	boolean over = false;
 	Robot winner = null;
 	
-	public Game() {
-		board = new Board();
+	public Game(int height, int width) {
+		board = new Board(height, width);
 	}
 	
 	public Robot add_robot(int[] position, Direction direction) {
@@ -31,7 +31,7 @@ class Game {
 	}
 	
 	public static Game example_game() {
-		Game game = new Game();
+		Game game = new Game(12, 12);
 		game.board.add_checkpoint(12, 1);
 		game.board.add_checkpoint( 8, 9);
 		game.board.add_checkpoint( 2, 8);

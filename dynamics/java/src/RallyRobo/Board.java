@@ -3,22 +3,25 @@ package RallyRobo;
 import java.util.ArrayList;
 
 class Board {
-	public static final int InteriorHeight = 12, InteriorWidth = 12;
-	public static final int Height = InteriorHeight+2, Width = InteriorWidth+2;
+	public final int interiorHeight, interiorWidth, height, width;
 
-	boolean features[] = new boolean[Height*Width*Feature.cardinality];
+	boolean features[];
 	public ArrayList<int[]> checkpoints = new ArrayList<int[]>();
 
-	Board() {
+	Board(int m, int n) {
+		interiorHeight = m; interiorWidth = n;
+		height = m+2; width = m+2;
+		features = new boolean[height*width*Feature.cardinality];
+		
 		// add a border of pits around the board.  this obviates the need to deal with bounds explicitly.
 		// the coordinates for the interior of the board are now 1-based.
-		for (int i = 0; i < Height; i++) {
+		for (int i = 0; i < height; i++) {
 			set_feature(i, 0,        Feature.Pit);
-			set_feature(i, Height-1, Feature.Pit);
+			set_feature(i, height-1, Feature.Pit);
 		}
-		for (int j = 0; j < Width; j++) {
+		for (int j = 0; j < width; j++) {
 			set_feature(0,       j, Feature.Pit);
-			set_feature(Width-1, j, Feature.Pit);
+			set_feature(width-1, j, Feature.Pit);
 		}
 
 		// checkpoint labels are 1-based, put a dummy 0th checkpoint in our vector
@@ -31,16 +34,16 @@ class Board {
 	}
 
 	boolean within_bounds(int[] x) {
-		return 0 <= x[0] && x[0] < Height &&
-				0 <= x[1] && x[1] < Width;
+		return 0 <= x[0] && x[0] < height &&
+				0 <= x[1] && x[1] < width;
 	}
 
 	public void set_feature(int i, int j, int k) {
-		features[(i*Width+j)*Feature.cardinality+k] = true;
+		features[(i*width+j)*Feature.cardinality+k] = true;
 	}
 
 	public boolean has_feature(int i, int j, int k) {
-		return features[(i*Width+j)*Feature.cardinality+k];
+		return features[(i*width+j)*Feature.cardinality+k];
 	}
 
 	public void set_feature(int i, int j, Feature feature) {

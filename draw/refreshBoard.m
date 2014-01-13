@@ -1,11 +1,7 @@
-function [ ] = refreshBoard(board,robots, checkpoints) 
+function [ ] = refreshBoard(game)
 % paints over the existing graphic
-[m,n,nFeatures] = size(board);
-
-drawGrid(m,n);
-drawCheckpoints(checkpoints,n);
-drawObjects(board);
-drawRobots(robots);
-
+drawGrid(game.board.interiorWidth, game.board.interiorHeight);
+drawObjects(game.board);
+drawCheckpoints(game.board.checkpoints, game.board.interiorWidth);
+drawRobots(game.robots);
 end
-

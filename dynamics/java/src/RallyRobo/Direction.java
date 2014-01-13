@@ -6,11 +6,19 @@ enum Direction {
 	West ( 0,-1),
 	South(-1, 0);
 
-	final int[] vector;
-	final Feature earlyWall, lateWall, conveyor;
+	public final int[] vector;
+	public final Feature earlyWall, lateWall, conveyor;
 
-	private final static Direction[] values = values();
-	final static int cardinality = values().length;
+	public final static Direction[] values = values();
+	public final static int cardinality = values().length;
+	public final static int[] ordinals = new int[cardinality];
+	static {
+		int i = 0;
+		for (Direction value: values) {
+			ordinals[i] = value.ordinal();
+			i++;
+		}
+	}
 
 	Direction(int... dx) {
 		vector = dx;
