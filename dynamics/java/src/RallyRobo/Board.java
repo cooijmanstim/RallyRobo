@@ -7,7 +7,7 @@ class Board {
 	public static final int Height = InteriorHeight+2, Width = InteriorWidth+2;
 
 	boolean features[] = new boolean[Height*Width*Feature.cardinality];
-	ArrayList<int[]> checkpoints = new ArrayList<int[]>();
+	public ArrayList<int[]> checkpoints = new ArrayList<int[]>();
 
 	Board() {
 		// add a border of pits around the board.  this obviates the need to deal with bounds explicitly.

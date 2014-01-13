@@ -51,7 +51,7 @@ class Card {
 
 	// reservoir sampling on a set represented by a bit vector
 	// http://en.wikipedia.org/wiki/Reservoir_sampling
-	int[] take(int k, boolean deck[]) {
+	static int[] take(int k, boolean deck[]) {
 		int[] cards = new int[k];
 		int m = cardinality;
 
@@ -81,7 +81,7 @@ class Card {
 	}
 
 	// this is gross
-	void fill_empty_registers_randomly(Game game) {
+	public static void fill_empty_registers_randomly(Game game) {
 		boolean deck[] = new boolean[cardinality];
 		Arrays.fill(deck, true);
 
@@ -106,6 +106,11 @@ class Card {
 			}
 		}
 	}
+	
+	/*public void fill_empty_registers_randomly(Object game) {
+		assert(game instanceof Game);
+		fill_empty_registers_randomly((Game)game);
+	}*/
 
 
 	// for ease of specifying a card when you don't care about its priority (i.e., in tests)
