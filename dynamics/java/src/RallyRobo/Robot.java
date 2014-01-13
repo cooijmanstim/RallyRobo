@@ -38,19 +38,21 @@ class Robot {
 		this.respawn_direction = this.direction;
 	}
 
-	boolean is_active   () { return state == State.Active;    }
-	boolean is_waiting  () { return state == State.Waiting;   }
-	boolean is_destroyed() { return state == State.Destroyed; }
+	public boolean is_active   () { return state == State.Active;    }
+	public boolean is_waiting  () { return state == State.Waiting;   }
+	public boolean is_destroyed() { return state == State.Destroyed; }
+	
+	public boolean is_visible() { return !is_virtual && state != State.Waiting; }
 
-	boolean obstructs() {
+	public boolean obstructs() {
 		return !is_virtual && state != State.Waiting;
 	}
 	
-	boolean can_shoot() {
+	public boolean can_shoot() {
 		return is_active() && !is_virtual;
 	}
 	
-	boolean can_take_damage() {
+	public boolean can_take_damage() {
 		return is_active() && !is_virtual;
 	}
 
