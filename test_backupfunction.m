@@ -1,3 +1,4 @@
+clear; clc;
 init();
 ds = [1     0     0     0     6     0    26     0     0     0     0     0
      0     0     0     0     0     0     0     0     0     0    26     0
@@ -14,4 +15,4 @@ ds = [1     0     0     0     6     0    26     0     0     0     0     0
 ps = [ 249         421        2107        1109];
 game = Backupfunction(ds, ps);
 initBoardFigure(game);
-refreshBoard(game.board, game.robots, game.checkpoints);
+refreshBoard(game);

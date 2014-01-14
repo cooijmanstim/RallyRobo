@@ -27,10 +27,7 @@ featuresets{26} = Feature.Repair;
 width = size(DataStructure,2);
 height = size(DataStructure,1);
 
-import RallyRobo.Board;
-assert(height == Board.InteriorHeight && width == Board.InteriorWidth);
-
-game = RallyRobo.Game();
+game = RallyRobo.Game(height, width);
 
 % since the checkpoints are not encountered in order, we can't directly add
 % them to the game. order them in this temporary cell array first.
@@ -51,7 +48,8 @@ for i=1:height
             if y < 5
                 checkpoints{y} = [i j];
             else
-                for feature = featuresets{y}
+                for h = 1:length(featuresets{y})
+                    feature = featuresets{y}(h);
                     game.board.set_feature([i j], feature);
                 end
             end
@@ -80,6 +78,7 @@ for s=1:length(PlayersPos)
     
     % NOTE: assumption that the robots are always passed in in the same
     % order (otherwise we may need to control robot.identity)
-    robot = game.add_robot([i j], direction);
+    directions = RallyRobo.Direction.values;
+    robot = game.add_robot([i j], directions(direction+1));
 end
 end
