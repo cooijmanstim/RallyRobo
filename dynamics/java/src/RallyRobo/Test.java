@@ -10,6 +10,7 @@ class Test {
 		Card.test();
 		Robot.test();
 		Game.test();
+		MonteCarloDecision.test();
 	}
 
 	static void assert_pos(Robot robot, int i, int j) {

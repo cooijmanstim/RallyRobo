@@ -5,8 +5,8 @@ import java.util.ArrayList;
 class Board {
 	public final int interiorHeight, interiorWidth, height, width;
 
-	boolean features[];
-	public ArrayList<int[]> checkpoints = new ArrayList<int[]>();
+	final boolean features[];
+	final public ArrayList<int[]> checkpoints = new ArrayList<int[]>();
 
 	Board(int m, int n) {
 		interiorHeight = m; interiorWidth = n;
@@ -27,6 +27,20 @@ class Board {
 		// checkpoint labels are 1-based, put a dummy 0th checkpoint in our vector
 		// to keep the correspondence
 		add_checkpoint(Point.make(-1, -1));
+	}
+
+	Board(Board that) {
+		this.interiorHeight = that.interiorHeight;
+		this.interiorWidth  = that.interiorWidth;
+		this.height = that.height;
+		this.width  = that.width;
+		this.features = that.features.clone();
+		for (int[] checkpoint: that.checkpoints)
+			this.checkpoints.add(checkpoint.clone());
+	}
+
+	public Board clone() {
+		return new Board(this);
 	}
 
 	public void add_checkpoint(int... checkpoint) {

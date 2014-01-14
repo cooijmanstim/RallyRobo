@@ -6,13 +6,26 @@ import java.util.Collections;
 import java.util.Comparator;
 
 class Game {
-	public Board board;
-	public ArrayList<Robot> robots = new ArrayList<Robot>();
+	final public Board board;
+	final public ArrayList<Robot> robots = new ArrayList<Robot>();
 	boolean over = false;
 	Robot winner = null;
 	
 	public Game(int height, int width) {
 		board = new Board(height, width);
+	}
+
+	public Game(Game that) {
+		this.board = that.board.clone();
+		for (Robot robot: that.robots)
+			this.robots.add(robot.clone());
+		this.over = that.over;
+		if (that.winner != null)
+			this.winner = this.robots.get(that.winner.identity);
+	}
+
+	public Game clone() {
+		return new Game(this);
 	}
 	
 	public Robot add_robot(int[] position, Direction direction) {
@@ -232,8 +245,11 @@ class Game {
 		// grab a working copy that we can sort according to card priority
 		ArrayList<Robot> robots = new ArrayList<Robot>(this.robots);
 
-		for (int i = 0; i < Robot.NRegisters; i++)
+		for (int i = 0; i < Robot.NRegisters; i++) {
 			process_register(i, robots);
+			if (over)
+				return;
+		}
 		
 		finalize_turn();
 	}
@@ -247,7 +263,6 @@ class Game {
 		respawn_waiting_robots();
 		remove_destroyed_robots();
 		devirtualize_robots();
-		
 		vacate_registers();
 	}
 
@@ -258,6 +273,8 @@ class Game {
 
 	// for speed
 	private void process_register(final int i, ArrayList<Robot> robots) {
+		assert(!over);
+		
 		Collections.sort(robots, new Comparator<Robot>() {
 			@Override
 			public int compare(Robot a, Robot b) {

@@ -37,6 +37,23 @@ class Robot {
 		save_respawn();
 	}
 
+	Robot(Robot that) {
+		this.identity = that.identity;
+		this.position = that.position.clone();
+		this.direction = that.direction;
+		this.next_checkpoint = that.next_checkpoint;
+		this.damage = that.damage;
+		this.is_virtual = that.is_virtual;
+		this.state = that.state;
+		this.registers = that.registers.clone();
+
+		save_respawn();
+	}
+
+	public Robot clone() {
+		return new Robot(this);
+	}
+
 	public boolean is_active   () { return state == State.Active;    }
 	public boolean is_waiting  () { return state == State.Waiting;   }
 	public boolean is_destroyed() { return state == State.Destroyed; }

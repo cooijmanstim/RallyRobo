@@ -49,47 +49,6 @@ class Card {
 	}
 
 
-	// reservoir sampling on a set represented by a bit vector
-	// http://en.wikipedia.org/wiki/Reservoir_sampling
-	static int[] take(int k, boolean deck[]) {
-		int[] cards = new int[k];
-		int m = deck.length;
-
-		int j = 0;
-		for (int i = 0; ; i++) {
-			// fast forward to the next element of the set
-			for (; j < m && !deck[j]; j++) {}
-
-			if (j >= m) {
-				// there should have been at least k cards in the deck
-				assert(i >= k);
-				break;
-			}
-			
-			if (i < k) {
-				// initial phase: fill the reservoir
-				deck[j] = false;
-				cards[i] = j+1;
-			} else {
-				// replace reservoir items
-				// XXX: not sure why the +1 is needed. the wikipedia example stresses
-				// that the range should be inclusive, but since we are dealing with
-				// 0-based indices, leaving out the +1 should be equivalent. however,
-				// tests show a bias toward replacement when it is left out.
-				int h = Util.generator.nextInt(i+1);
-				if (h < k) {
-					deck[cards[h]-1] = true;
-					deck[j] = false;
-					cards[h] = j+1;
-				}
-			}
-			
-			j++;
-		}
-		
-		return cards;
-	}
-
 	// this is gross
 	public static void fill_empty_registers_randomly(Game game) {
 		boolean deck[] = new boolean[cardinality];
@@ -106,12 +65,13 @@ class Card {
 			}
 		}
 
-		int cards[] = take(ncards, deck);
+		int indices[] = Util.take(ncards, deck);
 		int j = 0;
 		for (Robot robot: game.robots) {
 			for (int i = 0; i < Robot.NRegisters; i++) {
 				if (robot.registers[i] == Card.None) {
-					robot.registers[i] = cards[j];
+					// 1+ because card numbers are 1-based
+					robot.registers[i] = 1+indices[j];
 					j++;
 				}
 			}
@@ -167,8 +127,8 @@ class Card {
 		int sample_size = 10000;
 		int[] counts = new int[n];
 		for (int i = 0; i < sample_size; i++) {
-			for (int card: take(k, deck.clone()))
-				counts[card-1]++;
+			for (int j: Util.take(k, deck.clone()))
+				counts[j]++;
 		}
 
 		double[] ps = new double[n]; 
