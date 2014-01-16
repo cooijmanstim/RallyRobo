@@ -5,6 +5,7 @@ import java.util.Arrays;
 class Test {
 	public static void main(String[] args) {
 		Util.test();
+		Average.test();
 		Point.test();
 		Feature.test();
 		Direction.test();
@@ -45,5 +46,12 @@ class Test {
 			throw new AssertionError("assert_equal: "+
 					  "expected "+Arrays.deepToString(expected)+
 					  " but saw "+Arrays.deepToString(actual));
+	}
+
+	public static void assert_equalish(double expected, double actual) {
+		if (Math.abs(actual - expected) > 1e-3)
+			throw new AssertionError("assert_equalish: "+
+						 			  "expected "+expected+
+						 			  " but saw "+actual);
 	}
 }
