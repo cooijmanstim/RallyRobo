@@ -77,4 +77,36 @@ public class Util {
 		assert(number == 0);
 		return digits;
 	}
+
+	// in our domain, n will be at most 5, so no need to worry about overflow
+	public static int multinomial_coefficient(int n, int[] ks) {
+		int sum = 0;
+		for (int i = 0; i < ks.length; i++) {
+			sum += ks[i];
+
+			for (int k = ks[i]-1; k > 1; k--)
+				ks[i] *= k;
+		}
+
+		// if ks don't sum to n, add an (n-sum)! in the denominator
+		int k0 = n - sum;
+
+		int c = 1;
+		for (int d = n; d > k0; d--)
+			c *= d;
+		for (int i = 0; i < ks.length; i++)
+			c /= ks[i];
+		return c;
+	}
+
+	public static void test() {
+		test_multinomial_coefficient();
+	}
+
+	private static void test_multinomial_coefficient() {
+		Test.assert_equal(6, multinomial_coefficient(3, new int[]{1, 1, 1}));
+		Test.assert_equal(3, multinomial_coefficient(3, new int[]{2, 1}));
+		Test.assert_equal(6, multinomial_coefficient(3, new int[]{1, 1}));
+		Test.assert_equal(6, multinomial_coefficient(4, new int[]{2, 2}));
+	}
 }

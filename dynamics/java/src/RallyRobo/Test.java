@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 class Test {
 	public static void main(String[] args) {
+		Util.test();
 		Point.test();
 		Feature.test();
 		Direction.test();
@@ -24,5 +25,24 @@ class Test {
 	static void assert_posdir(Robot robot, int i, int j, Direction dir) {
 		assert_pos(robot, i, j);
 		assert(robot.direction == dir);
+	}
+
+	static void assert_equal(int expected, int actual) {
+		if (expected != actual)
+			throw new AssertionError("assert_equal: expected "+expected+" but saw "+actual);
+	}
+
+	public static void assert_equal(int[] expected, int[] actual) {
+		if (!Arrays.equals(expected, actual))
+			throw new AssertionError("assert_equal: "+
+					  "expected "+Arrays.toString(expected)+
+					  " but saw "+Arrays.toString(actual));
+	}
+
+	public static void assert_equal(int[][] expected, int[][] actual) {
+		if (!Arrays.deepEquals(expected, actual))
+			throw new AssertionError("assert_equal: "+
+					  "expected "+Arrays.deepToString(expected)+
+					  " but saw "+Arrays.deepToString(actual));
 	}
 }
