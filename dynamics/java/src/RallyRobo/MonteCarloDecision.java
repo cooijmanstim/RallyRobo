@@ -8,6 +8,7 @@ class MonteCarloDecision {
 	private final int irobot;
 	private final DecisionSet decisions;
 	private final long[] successCounts, sampleCounts;
+	private final Average meanDepth = new Average();
 	private long sampleCount = 0;
 
 	private double[] winRates;
@@ -18,8 +19,8 @@ class MonteCarloDecision {
 		
 		this.decisions = new DecisionSet(decisionLength(game.robots.get(irobot)), hand);
 
-		this.successCounts = new long[decisions.size];
-		this.sampleCounts = new long[decisions.size];
+		this.successCounts = new long[decisions.indexUpperBound];
+		this.sampleCounts = new long[decisions.indexUpperBound];
 	}
 
 	private static int decisionLength(Robot robot) {
@@ -44,8 +45,9 @@ class MonteCarloDecision {
 		Game game = this.game.clone();
 
 		// make a decision
-		int decisionIndex = decisions.randomIndex(); 
-		int[] cards = decisions.cards(decisionIndex);
+		int[] decision = decisions.random();
+		int decisionIndex = decisions.decisionIndex(decision);
+		int[] cards = decisions.cards(decision);
 		int[] registers = game.robots.get(irobot).registers;
 		for (int i = 0; i < cards.length; i++)
 			registers[i] = cards[i];
@@ -59,17 +61,25 @@ class MonteCarloDecision {
 
 	private boolean playout(Game game) {
 		// XXX: maybe limit depth. games can take arbitrarily long.
+		int depth = 0;
 		while (!game.over) {
+			// TODO: use DecisionSet
 			Card.fill_empty_registers_randomly(game);
 			game.perform_turn();
+			depth++;
 		}
+		meanDepth.record(depth);
 		return game.winner.identity == game.robots.get(irobot).identity;
 	}
 
 	private void computeWinRates() {
-		winRates = new double[decisions.size];
-		for (int i = 0; i < decisions.size; i++)
+		winRates = new double[decisions.indexUpperBound];
+		for (int i = 0; i < decisions.indexUpperBound; i++) {
+			if (sampleCounts[i] == 0)
+				continue;
+		
 			winRates[i] = successCounts[i] * 1.0 / sampleCounts[i];
+		}
 	}
 
 	public int[] decide() {
@@ -77,7 +87,10 @@ class MonteCarloDecision {
 			computeWinRates();
 
 		int decisionIndex = 0;
-		for (int i = 0; i < decisions.size; i++) {
+		for (int i = 0; i < decisions.indexUpperBound; i++) {
+			if (sampleCounts[i] == 0)
+				continue;
+			
 			if (winRates[i] > winRates[decisionIndex])
 				decisionIndex = i;
 		}
@@ -86,33 +99,43 @@ class MonteCarloDecision {
 	}
 
 	static class Statistics {
-		final double min, max;
-		final long[] histogram;
-		Statistics(double min, double max, long[] histogram) {
-			this.min = min; this.max = max;
-			this.histogram = histogram;
+		public final Average meanDepth;
+		public final Histogram winRatesHistogram, sampleCountsHistogram;
+		Statistics(Average meanDepth, Histogram winRatesHistogram, Histogram sampleCountsHistogram) {
+			this.meanDepth = meanDepth;
+			this.winRatesHistogram = winRatesHistogram;
+			this.sampleCountsHistogram = sampleCountsHistogram;
 		}
 	}
 	
 	public Statistics statistics() {
 		if (winRates == null)
 			computeWinRates();
-		
-		double min = 1, max = 0;
-		for (int i = 0, ni = winRates.length; i < ni; i++) {
-			min = Math.min(min, winRates[i]);
-			max = Math.max(max, winRates[i]);
-		}
 
-		int nbuckets = 10;
-		long[] histogram = new long[nbuckets];
+		double minWinRate = Double.MAX_VALUE, maxWinRate = Double.MIN_VALUE;
+		long minSampleCount = Long.MAX_VALUE, maxSampleCount = Long.MIN_VALUE;
 		for (int i = 0, ni = winRates.length; i < ni; i++) {
-			int bucket = (int)((winRates[i] - min)/(max - min) * nbuckets);
-			if (bucket == nbuckets)
-				bucket--;
-			histogram[bucket]++;
+			if (sampleCounts[i] == 0)
+				continue;
+			
+			minWinRate = Math.min(minWinRate, winRates[i]);
+			maxWinRate = Math.max(maxWinRate, winRates[i]);
+			
+			minSampleCount = Math.min(minSampleCount, sampleCounts[i]);
+			maxSampleCount = Math.max(maxSampleCount, sampleCounts[i]);
 		}
-		return new Statistics(min, max, histogram);
+		
+		Histogram winRatesHistogram    = new Histogram(10, minWinRate, maxWinRate);
+		Histogram sampleCountsHistogram = new Histogram(10, minSampleCount, maxSampleCount);
+
+		for (int i = 0, ni = sampleCounts.length; i < ni; i++) {
+			if (sampleCounts[i] == 0)
+				continue;
+			
+			winRatesHistogram.record(winRates[i]);
+			sampleCountsHistogram.record(sampleCounts[i]);
+		}
+		return new Statistics(meanDepth, winRatesHistogram, sampleCountsHistogram);
 	}
 
 	static void test() {
@@ -122,8 +145,11 @@ class MonteCarloDecision {
 		Game game = Game.example_game();
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
 		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand);
-		mcd.sample(1000);
+		mcd.sample(10000);
 		Statistics s = mcd.statistics();
-		System.out.println("statistics: "+s.min+" "+Arrays.toString(s.histogram)+" "+s.max);
+		System.out.println("decision set size: "+mcd.decisions.computeSize());
+		System.out.println("mean depth: "+s.meanDepth.value());
+		System.out.println("win rates: "+s.winRatesHistogram);
+		System.out.println("sample counts: "+s.sampleCountsHistogram);
 	}
 }

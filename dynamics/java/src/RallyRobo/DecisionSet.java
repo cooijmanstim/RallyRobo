@@ -7,20 +7,19 @@ public class DecisionSet {
 	public final int[][] xclasses;
 	public final int[] xclass_sizes;
 	public final int decisionLength;
-	public final int size;
+	public final int indexUpperBound;
 
-	public DecisionSet(int k, int[] hand) {
+	public DecisionSet(int decisionLength, int[] hand) {
 		this.xclasses = xclasses(hand);
 		this.xclass_sizes = new int[xclasses.length];
 		for (int i = 0, ni = xclasses.length; i < ni; i++)
 			xclass_sizes[i] = xclasses[i].length;
 
-		this.decisionLength = k;
-		this.size = computeSize(k, xclass_sizes);
-		System.out.println("decisionSetSize: "+size);
+		this.decisionLength = decisionLength;
+		this.indexUpperBound = computeIndexUpperBound(decisionLength, xclass_sizes);
 	}
 
-	// true iff c and d are *directly* exchangeable; does not respect transitivity
+	// true iff cards c and d are *directly* exchangeable; does not respect transitivity
 	private static boolean exchangeable(int c, int d) {
 		if (Card.translation(c) == 0)
 			return Card.rotation(c) == Card.rotation(d);
@@ -83,8 +82,19 @@ public class DecisionSet {
 		return result;
 	}
 	
+	public int computeSize() {
+		return computeSize(decisionLength, xclass_sizes.clone());
+	}
+	
+	// the indices are not in a contiguous range; there are indices in between
+	// that correspond to decisions with length > k.  there is no easy way to
+	// work around this, but if we have an upper bound on the indices we can
+	// still use them as array indices.
+	private static int computeIndexUpperBound(int k, int[] ns) {
+		return (int)Math.pow(ns.length, k);
+	}
+	
 	public int decisionIndex(int[] decision) {
-		System.err.println("encoding "+Arrays.toString(decision));
 		// a decision is represented by a sequence of indices into this.xclasses,
 		// intuitively these are used as digits in radix this.xclasses.size() to
 		// compute an index.  however, note that there are then decisionIndexes
@@ -117,7 +127,6 @@ public class DecisionSet {
 		// known; this makes decoding straightforward.
 		int decisionIndex = 0;
 		for (int i = decision.length - 1; i >= 0; i--) {
-			System.err.println(digits[i]+"/"+radices[i]);
 			decisionIndex *= radices[i];
 			decisionIndex += digits[i];
 		}
@@ -125,19 +134,14 @@ public class DecisionSet {
 	}
 
 	public int[] decisionFromIndex(int decisionIndex) {
-		System.err.println("decoding "+decisionIndex);
 		int[] xclass_sizes = this.xclass_sizes.clone();
 
 		int[] decision = new int[decisionLength];
 		int radix = xclass_sizes.length;
 		for (int i = 0; i < decisionLength; i++) {
-			if (decisionIndex <= 0)
-				break;
-			
 			decision[i]   = decisionIndex % radix;
 			decisionIndex = decisionIndex / radix;
-			System.err.println(decision[i]+"/"+radix);
-
+			
 			for (int j = 0; j <= decision[i]; j++) {
 				if (xclass_sizes[j] == 0)
 					decision[i]++;
@@ -152,26 +156,6 @@ public class DecisionSet {
 		return decision;
 	}
 	
-	public void enumerateDecisionSet() {
-		enumerateDecisionSet(decisionLength, new int[decisionLength], xclass_sizes.clone());
-	}
-	
-	public void enumerateDecisionSet(int j, int[] decision, int[] ns) {
-		if (j == 0) {
-			System.out.println(Arrays.toString(decision));
-			return;
-		}
-
-		for (int i = 0; i < ns.length; i++) {
-			if (ns[i] > 0) {
-				ns[i]--;
-				decision[j-1] = i;
-				enumerateDecisionSet(j-1, decision, ns);
-				ns[i]++;
-			}
-		}
-	}
-
 	public int[] cards(int[] decision) {
 		int[] cards = new int[decision.length];
 		int[] xclass_sizes = this.xclass_sizes.clone();
@@ -188,16 +172,25 @@ public class DecisionSet {
 		return cards(decisionFromIndex(decisionIndex));
 	}
 	
-	public int randomIndex() {
-		return Util.generator.nextInt(size);
+	public int[] random() {
+		int[] xclass_sizes = this.xclass_sizes.clone();
+		int[] decision = new int[decisionLength];
+		for (int i = 0; i < decisionLength; i++) {
+			int xclass_index;
+			do {
+				xclass_index = Util.generator.nextInt(xclasses.length);
+			} while (xclass_sizes[xclass_index] <= 0);
+			xclass_sizes[xclass_index]--;
+			decision[i] = xclass_index;
+		}
+		return decision;
 	}
 	
 	static void test() {
 		test_xclasses();
-		test_decisionSetSize();
-		test_decisionIndex();
-		test_decisionIndexDeterministically();
-		test_decisionIndexRandomly();
+		test_size();
+		test_index();
+		test_index_randomly();
 	}
 
 	static void test_xclasses() {
@@ -205,63 +198,33 @@ public class DecisionSet {
 						  xclasses(new int[]{11,63,78,35,64,67,50, 7,54}));
 	}
 
-	static void test_decisionSetSize() {
+	static void test_size() {
 		Test.assert_equal(19, computeSize(3, new int[]{4,2,1}));
-
-		DecisionSet ds = new DecisionSet(3, new int[]{11,13,15,17,12,16,77});
-		Test.assert_equal(new int[]{4,2,1}, ds.xclass_sizes);
-		Test.assert_equal(19, ds.size);
-		int n = 0;
-		for (; ; n++) {
-			try {
-				int[] decision = ds.decisionFromIndex(n);
-				System.out.println(Arrays.toString(decision));
-			} catch (AssertionError e) {
-				break;
-			}
-		}
-		System.out.println(n);
-		
-		ds.enumerateDecisionSet();
-		
-		Test.assert_equal(23, computeSize(3, new int[]{4,2,1}));
-		Test.assert_equal(1034, computeSize(5, new int[]{3,2,1,1,1,1}));
+		Test.assert_equal(2250, computeSize(5, new int[]{3,2,1,1,1,1}));
 	}
 
-	static void test_decisionIndex() {
+	static void test_index() {
 		DecisionSet ds = new DecisionSet(5, new int[]{11,63,78,35,64,67,50, 7,54});
 		Test.assert_equal(719, ds.decisionIndex(new int[]{5,4,3,2,1}));
 		Test.assert_equal(new int[]{5,4,3,2,1}, ds.decisionFromIndex(719));
 		Test.assert_equal(221, ds.decisionIndex(new int[]{5,1,2,1,0}));
 		Test.assert_equal(new int[]{5,1,2,1,0}, ds.decisionFromIndex(221));
-		for (int d: new int[]{2021, 1604, 1754, 1858, 1910, 1558}) {
-			try {
-		//		System.err.println(Arrays.toString(ds.decisionFromIndex(d)));
-			} catch(AssertionError e) {
-				e.printStackTrace(System.err);
-			}
-		}
+		Test.assert_equal(18, ds.decisionIndex(new int[]{0,3,0,0,1}));
+		Test.assert_equal(new int[]{0,3,0,0,1}, ds.decisionFromIndex(18));
 	}
 	
-	static void test_decisionIndexDeterministically() {
-		DecisionSet ds = new DecisionSet(5, new int[]{11,63,78,35,64,67,50, 7,54});
-		for (int decisionIndex = 0; decisionIndex < ds.size; decisionIndex++) {
-			int[] decision = ds.decisionFromIndex(decisionIndex);
-			int decisionIndex2 = ds.decisionIndex(decision);
-			if (decisionIndex != decisionIndex2)
-				throw new AssertionError("test_decisionIndex:"+
-										  " expected "+decisionIndex+
-										  " but saw "+decisionIndex2+
-										  ", intermediate decision "+Arrays.toString(decision));
-		}
-	}
-
-	static void test_decisionIndexRandomly() {
+	static void test_index_randomly() {
 		DecisionSet ds = new DecisionSet(5, new int[]{11,63,78,35,64,67,50, 7,54});
 		for (int i = 0; i < 100; i++) {
-			int decisionIndex = ds.randomIndex();
-			int[] decision = ds.decisionFromIndex(decisionIndex);
+			int[] decision = ds.random();
+			int decisionIndex = ds.decisionIndex(decision);
+			int[] decision2 = ds.decisionFromIndex(decisionIndex);
 			int decisionIndex2 = ds.decisionIndex(decision);
+			if (!Arrays.equals(decision, decision2))
+				throw new AssertionError("test_decisionIndex:"+
+										  " expected "+Arrays.toString(decision)+
+										  " but saw "+Arrays.toString(decision2)+
+										  ", intermediate decisionIndex "+decisionIndex);
 			if (decisionIndex != decisionIndex2)
 				throw new AssertionError("test_decisionIndex:"+
 										  " expected "+decisionIndex+
