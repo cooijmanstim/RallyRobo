@@ -48,9 +48,7 @@ class MonteCarloDecision {
 		int[] decision = decisions.random();
 		int decisionIndex = decisions.decisionIndex(decision);
 		int[] cards = decisions.cards(decision);
-		int[] registers = game.robots.get(irobot).registers;
-		for (int i = 0; i < cards.length; i++)
-			registers[i] = cards[i];
+		game.robots.get(irobot).fill_registers(cards);
 
 		boolean won = playout(game);
 		sampleCount++;
@@ -58,13 +56,32 @@ class MonteCarloDecision {
 		if (won)
 			successCounts[decisionIndex]++;
 	}
+	
+	private final boolean use_decisionset_internally = true;
 
 	private boolean playout(Game game) {
 		// XXX: maybe limit depth. games can take arbitrarily long.
 		int depth = 0;
 		while (!game.over) {
-			// TODO: use DecisionSet
-			Card.fill_empty_registers_randomly(game);
+			if (use_decisionset_internally) {
+				int[][] hands = game.deal();
+				for (int i = 0; i < hands.length; i++) {
+					Robot robot = game.robots.get(i);
+					if (!robot.is_active())
+						continue;
+				
+					int k = robot.empty_register_count();
+					if (k > 0) {
+						DecisionSet ds = new DecisionSet(k, hands[i]);
+						int[] cards = ds.cards(ds.random());
+						robot.fill_registers(cards);
+					}
+				}
+			} else {
+				boolean[] deck = game.deck();
+				for (Robot robot: game.robots)
+					robot.fill_registers(Util.take(robot.empty_register_count(), deck));
+			}
 			game.perform_turn();
 			depth++;
 		}
@@ -147,6 +164,7 @@ class MonteCarloDecision {
 		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand);
 		mcd.sample(10000);
 		Statistics s = mcd.statistics();
+		System.out.println("sample count: "+mcd.sampleCount);
 		System.out.println("decision set size: "+mcd.decisions.computeSize());
 		System.out.println("mean depth: "+s.meanDepth.value());
 		System.out.println("win rates: "+s.winRatesHistogram);

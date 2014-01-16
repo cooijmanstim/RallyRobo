@@ -131,16 +131,36 @@ class Robot {
 	void devirtualize() {
 		is_virtual = false;
 	}
+
+	public int hand_size() {
+		return MaximumDamage - damage;
+	}
+	
+	public int free_register_count() {
+		return Math.min(NRegisters, MaximumDamage - damage);
+	}
+	
+	public int empty_register_count() {
+		int n = 0;
+		for (int i = 0; i < NRegisters; i++)
+			if (registers[i] == Card.None)
+				n++;
+		return n;
+	}
+
+	public void fill_registers(int[] cards) {
+		for (int i = 0; i < cards.length; i++)
+			registers[i] = cards[i];
+	}
 	
 	void vacate_registers() {
-		int ni = Math.min(NRegisters, MaximumDamage - damage);
+		int ni = free_register_count();
 		if (!is_active())
 			ni = NRegisters;
 		for (int i = 0; i < ni; i++)
 			registers[i] = Card.None;
 	}
-
-
+	
 	static void test() {
 		Robot robot = new Robot(0, Point.make(0, 0), Direction.East);
 		robot.rotate(-1);

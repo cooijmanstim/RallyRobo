@@ -49,35 +49,12 @@ class Card {
 	}
 
 
-	// this is gross
-	public static void fill_empty_registers_randomly(Game game) {
+	public static boolean[] deck() {
 		boolean deck[] = new boolean[cardinality];
 		Arrays.fill(deck, true);
-
-		int ncards = 0;
-		for (Robot robot: game.robots) {
-			for (int i = 0; i < Robot.NRegisters; i++) {
-				if (robot.registers[i] == Card.None) {
-					ncards++;
-				} else {
-					deck[robot.registers[i]-1] = false;
-				}
-			}
-		}
-
-		int indices[] = Util.take(ncards, deck);
-		int j = 0;
-		for (Robot robot: game.robots) {
-			for (int i = 0; i < Robot.NRegisters; i++) {
-				if (robot.registers[i] == Card.None) {
-					// 1+ because card numbers are 1-based
-					robot.registers[i] = 1+indices[j];
-					j++;
-				}
-			}
-		}
+		return deck;
 	}
-
+	
 	// for ease of specifying a card when you don't care about its priority (i.e., in tests)
 	static final int UTurn = 1, CounterClockwise = 7, Clockwise = 8, OneBackward = 43,
 		         OneForward = 49, TwoForward = 67, ThreeForward = 79;

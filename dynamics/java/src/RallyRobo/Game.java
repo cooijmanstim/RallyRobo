@@ -253,7 +253,46 @@ class Game {
 		
 		finalize_turn();
 	}
+
+	// computes the contents of the deck based on what's in locked registers
+	public boolean[] deck() {
+		boolean[] deck = Card.deck();
+		for (Robot robot: robots) {
+			for (int i = 0; i < Robot.NRegisters; i++) {
+				if (robot.registers[i] != Card.None)
+					deck[robot.registers[i]-1] = false;
+			}
+		}
+		return deck;
+	}
 	
+	// doesn't modify state; just returns hands that would be dealt
+	public int[][] deal() {
+		int ncards = 0;
+		int[] hand_sizes = new int[robots.size()];
+		for (int i = 0; i < hand_sizes.length; i++) {
+			Robot robot = robots.get(i);
+			if (!robot.is_active())
+				continue;
+			
+			hand_sizes[i] = robot.hand_size();
+			ncards += hand_sizes[i];
+		}
+		
+		boolean[] deck = deck();
+		int[] card_indices = Util.take(ncards, deck);
+		int k = 0;
+		int[][] hands = new int[hand_sizes.length][];
+		for (int i = 0; i < hand_sizes.length; i++) {
+			hands[i] = new int[hand_sizes[i]];
+			for (int j = 0; j < hands[i].length; j++) {
+				hands[i][j] = 1+card_indices[k];
+				k++;
+			}
+		}
+		return hands;
+	}
+
 	public void vacate_registers() {
 		for (Robot robot: robots)
 			robot.vacate_registers();
@@ -278,8 +317,11 @@ class Game {
 		Collections.sort(robots, new Comparator<Robot>() {
 			@Override
 			public int compare(Robot a, Robot b) {
-				return Card.priority(b.registers[i]) -
-						Card.priority(a.registers[i]);
+				if (!a.is_active() || !b.is_active())
+					return 0;
+				else
+					return Card.priority(b.registers[i]) -
+							Card.priority(a.registers[i]);
 			}
 		});
 
