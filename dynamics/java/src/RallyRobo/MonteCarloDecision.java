@@ -9,8 +9,7 @@ class MonteCarloDecision {
 	private final DecisionSet decisions;
 	private final int maxDepth;
 	private final Evaluator evaluator;
-	private final double[] expectations;
-	private final long[] sampleCounts;
+	private final Average[] expectations;
 	private final Average meanDepth = new Average();
 	private long sampleCount = 0;
 
@@ -23,8 +22,9 @@ class MonteCarloDecision {
 		this.maxDepth = maxDepth;
 		this.evaluator = evaluator;
 
-		this.expectations = new double[decisions.indexUpperBound];
-		this.sampleCounts = new long[decisions.indexUpperBound];
+		this.expectations = new Average[decisions.indexUpperBound];
+		for (int i = 0; i < expectations.length; i++)
+			expectations[i] = new Average();
 	}
 
 	public void sample(long sampleBudget) {
@@ -42,16 +42,10 @@ class MonteCarloDecision {
 		game.robots.get(irobot).fill_registers(cards);
 
 		double value = playout(game);
-		recordValue(decisionIndex, value);
+		expectations[decisionIndex].record(value);
+		sampleCount++;
 	}
 	
-	private void recordValue(int i, double x) {
-		long n = sampleCounts[i];
-		expectations[i] = (n*1.0/(n+1))*expectations[i] + (1.0/(n+1))*x;
-		sampleCount++;
-		sampleCounts[i]++;
-	}
-
 	private final boolean use_decisionset_internally = true;
 
 	private double playout(Game game) {
@@ -88,13 +82,12 @@ class MonteCarloDecision {
 	public int[] decide() {
 		int decisionIndex = 0;
 		for (int i = 0; i < decisions.indexUpperBound; i++) {
-			if (sampleCounts[i] == 0)
+			if (expectations[i].baseless())
 				continue;
 			
-			if (expectations[i] > expectations[decisionIndex])
+			if (expectations[i].value() > expectations[decisionIndex].value())
 				decisionIndex = i;
 		}
-
 		return decisions.cards(decisionIndex);
 	}
 
@@ -111,26 +104,28 @@ class MonteCarloDecision {
 	public Statistics statistics() {
 		double minExpectation = Double.MAX_VALUE, maxExpectation = Double.MIN_VALUE;
 		long minSampleCount = Long.MAX_VALUE, maxSampleCount = Long.MIN_VALUE;
-		for (int i = 0, ni = sampleCounts.length; i < ni; i++) {
-			if (sampleCounts[i] == 0)
+		for (int i = 0; i < expectations.length; i++) {
+			Average expectation = expectations[i];
+			if (expectation.baseless())
 				continue;
 			
-			minExpectation = Math.min(minExpectation, expectations[i]);
-			maxExpectation = Math.max(maxExpectation, expectations[i]);
+			minExpectation = Math.min(minExpectation, expectation.value());
+			maxExpectation = Math.max(maxExpectation, expectation.value());
 			
-			minSampleCount = Math.min(minSampleCount, sampleCounts[i]);
-			maxSampleCount = Math.max(maxSampleCount, sampleCounts[i]);
+			minSampleCount = Math.min(minSampleCount, expectation.sampleSize());
+			maxSampleCount = Math.max(maxSampleCount, expectation.sampleSize());
 		}
 		
 		Histogram expectationHistogram = new Histogram(10, minExpectation, maxExpectation);
 		Histogram sampleCountHistogram = new Histogram(10, minSampleCount, maxSampleCount);
 
-		for (int i = 0, ni = sampleCounts.length; i < ni; i++) {
-			if (sampleCounts[i] == 0)
+		for (int i = 0; i < expectations.length; i++) {
+			Average expectation = expectations[i];
+			if (expectation.baseless())
 				continue;
 			
-			expectationHistogram.record(expectations[i]);
-			sampleCountHistogram.record(sampleCounts[i]);
+			expectationHistogram.record(expectation.value());
+			sampleCountHistogram.record(expectation.sampleSize());
 		}
 		return new Statistics(meanDepth, expectationHistogram, sampleCountHistogram);
 	}
@@ -142,7 +137,7 @@ class MonteCarloDecision {
 		Game game = Game.example_game();
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
 		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10, new CheckpointAdvantageEvaluator());
-		mcd.sample(10000);
+		mcd.sample(100000);
 		Statistics s = mcd.statistics();
 		System.out.println("sample count: "+mcd.sampleCount);
 		System.out.println("decision set size: "+mcd.decisions.computeSize());

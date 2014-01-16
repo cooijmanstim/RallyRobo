@@ -23,4 +23,12 @@ public class Average {
 			a.record(i);
 		Test.assert_equalish(4, a.value());
 	}
+
+	public boolean baseless() {
+		return n == 0;
+	}
+
+	public long sampleSize() {
+		return n;
+	}
 }
