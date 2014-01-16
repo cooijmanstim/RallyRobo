@@ -11,6 +11,7 @@ class Test {
 		Card.test();
 		Robot.test();
 		Game.test();
+		DecisionSet.test();
 		MonteCarloDecision.test();
 	}
 
