@@ -42,6 +42,10 @@ class Game {
 		return over;
 	}
 	
+	public int winner() {
+		return winner.identity;
+	}
+	
 	public Robot add_robot(int[] position, Direction direction) {
 		int identity = robots.size();
 		Robot robot = new Robot(identity, position, direction);

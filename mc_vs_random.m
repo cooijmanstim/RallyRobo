@@ -1,16 +1,21 @@
 % play the monte-carlo strategy against a random one
+clear classes; clear all;
 init();
 
 ngames = 1;
-nwins = [];
+nwins = zeros(1, 4);
 for j = 1:ngames
-    clear classes; clear all; clc; close all;
+    clc; close all;
     % TODO: come up with a fair two-player board to test strategies
     % one-on-one.
     game = RallyRobo.Game.example_game();
     % the first robot uses the monte carlo strategy, all the others
-    % use the random strategy.
-    game.robots.get(0).set_strategy(RallyRobo.Strategy.MonteCarlo);
+    % use the random heuristic strategy.
+    game.robots.get(0).set_strategy(RallyRobo.Strategy.MonteCarloHeuristicSmart);
+    game.robots.get(1).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
+    game.robots.get(2).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
+    game.robots.get(3).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
+    
     initBoardFigure(game);
     refreshBoard(game);
 
@@ -25,19 +30,31 @@ for j = 1:ngames
         end
     
         for i = 1:RallyRobo.Robot.NRegisters
+            if game.is_over()
+                break;
+            end
+            
             game.process_register(i-1);
             refreshBoard(game);
         
             for k = 1:game.robots.size()
                 robot = game.robots.get(k-1);
-                display(sprintf('robot %i position %s direction %i', ...
-                                k, num2str(robot.position(:)'), robot.direction.ordinal()));
+                display(sprintf('robot %i position %s direction %i damage %i next_checkpoint %i', ...
+                                k, num2str(robot.position(:)'), ...
+                                robot.direction.ordinal(), ...
+                                robot.damage, ...
+                                robot.next_checkpoint));
             end
+        end
+        
+        if game.is_over()
+            break;
         end
         
         % remove destroyed robots, respawn waiting robots, etc.
         game.finalize_turn();
+        refreshBoard(game);
     end
     
-    nwins(game.winner.identity-1) = nwins(game.winner.identity-1) + 1;
+    nwins(game.winner()+1) = nwins(game.winner()+1) + 1;
 end

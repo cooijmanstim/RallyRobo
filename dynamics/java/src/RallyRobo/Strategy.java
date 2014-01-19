@@ -7,10 +7,11 @@ public enum Strategy {
 			return ds.cards(ds.random());
 		}
 	}),
-	RandomSearchHeuristic(new RandomSearchDecisionFunction(30, Evaluator.Heuristic)),
-	MonteCarloCheckpoint(new MonteCarloDecisionFunction(30, 10, Evaluator.CheckpointAdvantage, Strategy.Random)),
-	MonteCarloHeuristic(new MonteCarloDecisionFunction(30, 10, Evaluator.Heuristic, Strategy.Random)),
-	MonteCarloHeuristicSmart(new MonteCarloDecisionFunction(30, 10, Evaluator.Heuristic, Strategy.RandomSearchHeuristic));
+	RandomSearchHeuristicFast(new RandomSearchDecisionFunction(100, Evaluator.Heuristic)),
+	RandomSearchHeuristicSlow(new RandomSearchDecisionFunction(1000, Evaluator.Heuristic)),
+	MonteCarloCheckpoint(new MonteCarloDecisionFunction(30, 1, Evaluator.CheckpointAdvantage, Strategy.Random)),
+	MonteCarloHeuristic(new MonteCarloDecisionFunction(30, 1, Evaluator.Heuristic, Strategy.Random)),
+	MonteCarloHeuristicSmart(new MonteCarloDecisionFunction(30, 1, Evaluator.Heuristic, Strategy.RandomSearchHeuristicFast));
 	
 	final DecisionFunction f;
 	Strategy(DecisionFunction f) {

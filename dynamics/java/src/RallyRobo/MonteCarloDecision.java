@@ -110,6 +110,7 @@ class MonteCarloDecision {
 			if (expectations[i].value() > expectations[decisionIndex].value())
 				decisionIndex = i;
 		}
+		System.out.println("deciding on decision with expectation "+expectations[decisionIndex].value());
 		return decisions.cards(decisionIndex);
 	}
 
@@ -160,7 +161,7 @@ class MonteCarloDecision {
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
 		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10);
 		mcd.setEvaluator(Evaluator.Heuristic);
-		mcd.setPlayoutStrategy(Strategy.RandomSearchHeuristic);
+		mcd.setPlayoutStrategy(Strategy.RandomSearchHeuristicFast);
 		mcd.sampleTimeLimited(10);
 		Statistics s = mcd.statistics();
 		System.out.println("sample count: "+mcd.sampleCount);
