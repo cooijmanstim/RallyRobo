@@ -37,10 +37,11 @@ class MonteCarloDecision {
 			sampleOnce();
 	}
 	
-	private class Sampler implements Callable<Integer> {
-		@Override public Integer call() {
-			for (;;)
+	private class Sampler implements Callable<Void> {
+		@Override public Void call() {
+			while (!Thread.interrupted())
 				sampleOnce();
+			return null;
 		}
 	}
 	
