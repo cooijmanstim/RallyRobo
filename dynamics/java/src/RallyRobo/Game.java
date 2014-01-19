@@ -7,7 +7,7 @@ import java.util.Comparator;
 
 class Game {
 	final public Board board;
-	final public ArrayList<Robot> robots = new ArrayList<Robot>();
+	public ArrayList<Robot> robots = new ArrayList<Robot>();
 	boolean over = false;
 	Robot winner = null;
 	
@@ -24,8 +24,18 @@ class Game {
 			this.winner = this.robots.get(that.winner.identity);
 	}
 
-	public Game clone() {
+	@Override public Game clone() {
 		return new Game(this);
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (!(o instanceof Game))
+			return false;
+		Game that = (Game)o;
+		return this.board.equals(that.board) &&
+				this.robots.equals(that.robots) &&
+				this.over == that.over &&
+				this.winner == that.winner;
 	}
 	
 	public boolean is_over() {
@@ -351,7 +361,31 @@ class Game {
 		promote_robots();
 		repair_robots();
 	}
-
+	
+	public double evaluate_naive_outcome(int[] decision, int irobot, Evaluator evaluator) {
+		// this is gross; make temporary copies of state data and do some
+		// half-assed simulation to get an idea of where the decision leads.
+		ArrayList<Robot> oldrobots = robots;
+		boolean oldover = over;
+		Robot oldwinner = winner;
+		robots = new ArrayList<Robot>();
+		for (Robot robot: oldrobots)
+			robots.add(robot.clone());
+		
+		Robot robot = robots.get(irobot);
+		for (int j = 0; j < decision.length; j++) {
+			Card.apply(this, robot, decision[j]);
+			advance_conveyors();
+			devirtualize_robots();
+		}
+		double evaluation = evaluator.evaluate(this, irobot);
+		
+		robots = oldrobots;
+		over = oldover;
+		winner = oldwinner;
+		
+		return evaluation;
+	}
 	
 	static void test() {
 		test_example_game();
@@ -362,6 +396,7 @@ class Game {
 		test_push_many();
 		test_push_many_into_pit();
 		test_perform_turn();
+		test_evaluate_naive_outcome();
 	}
 
 	static void test_example_game() {
@@ -728,5 +763,16 @@ class Game {
 		
 		assert(robots[1].next_checkpoint == 2);
 		assert(robots[2].next_checkpoint == 3);
+	}
+	
+	static void test_evaluate_naive_outcome() {
+		Game game = Game.example_game();
+		Game game2 = Game.example_game();
+		int[] hand = {11,83,57,49,35,21, 3,50, 4};
+		DecisionSet ds = new DecisionSet(5, hand);
+		for (int i = 0; i < 100; i++) {
+			game2.evaluate_naive_outcome(ds.cards(ds.random()), i % game.robots.size(), Evaluator.Heuristic);
+			assert(game.equals(game2));
+		}
 	}
 }

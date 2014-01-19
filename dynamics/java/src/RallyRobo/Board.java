@@ -1,6 +1,8 @@
 package RallyRobo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 class Board {
 	public final int interiorHeight, interiorWidth, height, width;
@@ -39,8 +41,26 @@ class Board {
 			this.checkpoints.add(checkpoint.clone());
 	}
 
-	public Board clone() {
+	@Override public Board clone() {
 		return new Board(this);
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (!(o instanceof Board))
+			return false;
+		Board that = (Board)o;
+		Iterator<int[]> it1 = this.checkpoints.iterator(),
+						it2 = that.checkpoints.iterator();
+		while (it1.hasNext() && it2.hasNext())
+			if (!Point.equals(it1.next(), it2.next()))
+				return false;
+		if (it1.hasNext() || it2.hasNext())
+			return false;
+		return this.height == that.height &&
+				this.width == that.width &&
+				this.interiorHeight == that.interiorHeight &&
+				this.interiorWidth == that.interiorWidth &&
+				Arrays.equals(this.features, that.features);
 	}
 
 	public void add_checkpoint(int... checkpoint) {

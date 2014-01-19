@@ -1,7 +1,5 @@
 package RallyRobo;
 
-import RallyRobo.MonteCarloDecision.Statistics;
-
 public enum Strategy {
 	Random(new DecisionFunction() {
 		@Override public int[] call(Game game, int irobot, int[] hand) {
@@ -9,7 +7,10 @@ public enum Strategy {
 			return ds.cards(ds.random());
 		}
 	}),
-	MonteCarloCheckpoint(new MonteCarloDecisionFunction(30, 10, new CheckpointAdvantageEvaluator()));
+	RandomSearchHeuristic(new RandomSearchDecisionFunction(30, Evaluator.Heuristic)),
+	MonteCarloCheckpoint(new MonteCarloDecisionFunction(30, 10, Evaluator.CheckpointAdvantage, Strategy.Random)),
+	MonteCarloHeuristic(new MonteCarloDecisionFunction(30, 10, Evaluator.Heuristic, Strategy.Random)),
+	MonteCarloHeuristicSmart(new MonteCarloDecisionFunction(30, 10, Evaluator.Heuristic, Strategy.RandomSearchHeuristic));
 	
 	final DecisionFunction f;
 	Strategy(DecisionFunction f) {

@@ -43,4 +43,9 @@ class Point {
 		assert(!sees(make(0, 0), make(-3, 0), Direction.East));
 		assert(!sees(make(0, 0), make( 0,-3), Direction.South));
 	}
+
+	public static int manhattanDistance(int[] a, int[] b) {
+		return Math.abs(a[0] - b[0]) +
+				Math.abs(a[1] - b[1]);
+	}
 }

@@ -13,23 +13,32 @@ class MonteCarloDecision {
 	private final int irobot;
 	public final DecisionSet decisions;
 	private final int maxDepth;
-	private final Evaluator evaluator;
+	private Evaluator evaluator = Evaluator.Heuristic;
 	private final Average[] expectations;
 	private final Average meanDepth = new Average();
 	private long sampleCount = 0;
 
-	public MonteCarloDecision(Game game, int irobot, int[] hand, int maxDepth, Evaluator evaluator) {
+	public MonteCarloDecision(Game game, int irobot, int[] hand, int maxDepth) {
 		this.game = game.clone();
 		this.irobot = irobot;
 		
 		this.decisions = new DecisionSet(game.robots.get(irobot).empty_register_count(), hand);
 		
 		this.maxDepth = maxDepth;
-		this.evaluator = evaluator;
 
 		this.expectations = new Average[decisions.indexUpperBound];
 		for (int i = 0; i < expectations.length; i++)
 			expectations[i] = new Average();
+	}
+	
+	public void setPlayoutStrategy(Strategy s) {
+		for (Robot robot: game.robots)
+			robot.set_strategy(s);
+	}
+	
+	public void setEvaluator(Evaluator e) {
+		assert(sampleCount == 0);
+		evaluator = e;
 	}
 	
 	public long sampleCount() {
@@ -60,10 +69,13 @@ class MonteCarloDecision {
 		} catch(InterruptedException e) {
 			System.err.println("sampling interrupted");
 		}
+		es.shutdown();
 	}
 
 	public void sampleOnce() {
 		Game game = this.game.clone();
+		for (Robot robot: game.robots)
+			robot.set_strategy(Strategy.Random);
 
 		// make a decision
 		int[] decision = decisions.random();
@@ -76,30 +88,10 @@ class MonteCarloDecision {
 		sampleCount++;
 	}
 	
-	private final boolean use_decisionset_internally = true;
-
 	private double playout(Game game) {
 		int depth;
 		for (depth = 0; depth < maxDepth; depth++) {
-			if (use_decisionset_internally) {
-				int[][] hands = game.deal();
-				for (int i = 0; i < hands.length; i++) {
-					Robot robot = game.robots.get(i);
-					if (!robot.is_active())
-						continue;
-				
-					int k = robot.empty_register_count();
-					if (k > 0) {
-						DecisionSet ds = new DecisionSet(k, hands[i]);
-						int[] cards = ds.cards(ds.random());
-						robot.fill_registers(cards);
-					}
-				}
-			} else {
-				boolean[] deck = game.deck();
-				for (Robot robot: game.robots)
-					robot.fill_registers(Util.take(robot.empty_register_count(), deck));
-			}
+			game.fill_registers();
 			game.perform_turn();
 			
 			if (game.over)
@@ -132,13 +124,13 @@ class MonteCarloDecision {
 	}
 	
 	public Statistics statistics() {
-		double minExpectation = Double.MAX_VALUE, maxExpectation = Double.MIN_VALUE;
+		double minExpectation = Double.MAX_VALUE, maxExpectation = -Double.MAX_VALUE;
 		long minSampleCount = Long.MAX_VALUE, maxSampleCount = Long.MIN_VALUE;
 		for (int i = 0; i < expectations.length; i++) {
 			Average expectation = expectations[i];
 			if (expectation.baseless())
 				continue;
-			
+
 			minExpectation = Math.min(minExpectation, expectation.value());
 			maxExpectation = Math.max(maxExpectation, expectation.value());
 			
@@ -166,7 +158,9 @@ class MonteCarloDecision {
 	public static void main(String[] args) {
 		Game game = Game.example_game();
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
-		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10, new CheckpointAdvantageEvaluator());
+		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10);
+		mcd.setEvaluator(Evaluator.Heuristic);
+		mcd.setPlayoutStrategy(Strategy.RandomSearchHeuristic);
 		mcd.sampleTimeLimited(10);
 		Statistics s = mcd.statistics();
 		System.out.println("sample count: "+mcd.sampleCount);

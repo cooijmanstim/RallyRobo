@@ -6,15 +6,19 @@ public class MonteCarloDecisionFunction implements DecisionFunction {
 	final int duration;
 	final int maxDepth;
 	final Evaluator evaluator;
+	final Strategy playoutStrategy;
 	
-	public MonteCarloDecisionFunction(int duration, int maxDepth, Evaluator evaluator) {
+	public MonteCarloDecisionFunction(int duration, int maxDepth, Evaluator evaluator, Strategy playoutStrategy) {
 		this.duration = duration;
 		this.maxDepth = maxDepth;
 		this.evaluator = evaluator;
+		this.playoutStrategy = playoutStrategy;
 	}
 	
 	@Override public int[] call(Game game, int irobot, int[] hand) {
-		MonteCarloDecision mcd = new MonteCarloDecision(game, irobot, hand, maxDepth, evaluator);
+		MonteCarloDecision mcd = new MonteCarloDecision(game, irobot, hand, maxDepth);
+		mcd.setEvaluator(evaluator);
+		mcd.setPlayoutStrategy(playoutStrategy);
 		mcd.sampleTimeLimited(duration);
 		Statistics s = mcd.statistics();
 		System.out.println("sample count: "+mcd.sampleCount());

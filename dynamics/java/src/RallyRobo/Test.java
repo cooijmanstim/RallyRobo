@@ -6,6 +6,7 @@ class Test {
 	public static void main(String[] args) {
 		Util.test();
 		Average.test();
+		Histogram.test();
 		Point.test();
 		Feature.test();
 		Direction.test();

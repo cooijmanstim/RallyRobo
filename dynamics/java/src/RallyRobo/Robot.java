@@ -1,5 +1,7 @@
 package RallyRobo;
 
+import java.util.Arrays;
+
 class Robot {
 	public static final int NRegisters = 5;
 	static final int MaximumDamage = 9;
@@ -52,8 +54,25 @@ class Robot {
 		save_respawn();
 	}
 
-	public Robot clone() {
+	@Override public Robot clone() {
 		return new Robot(this);
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (!(o instanceof Robot))
+			return false;
+		Robot that = (Robot)o;
+		return this.identity == that.identity &&
+				Point.equals(this.position, that.position) &&
+				Point.equals(this.respawn_position, that.respawn_position) &&
+				this.direction == that.direction &&
+				this.respawn_direction == that.respawn_direction &&
+				this.next_checkpoint == that.next_checkpoint &&
+				this.damage == that.damage &&
+				this.is_virtual == that.is_virtual &&
+				this.state == that.state &&
+				Arrays.equals(this.registers, that.registers) &&
+				this.strategy == that.strategy;
 	}
 	
 	public void set_strategy(Strategy strategy) {

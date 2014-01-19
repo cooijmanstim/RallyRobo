@@ -22,4 +22,16 @@ public class Histogram {
 	public String toString() {
 		return "Histogram("+min+" "+Arrays.toString(bins)+" "+max+")";
 	}
+	
+	static void test() {
+		Histogram h = new Histogram(6, -3, 3);
+		h.record(-2.5);
+		h.record(-2.5);
+		h.record(-0.5);
+		h.record( 0.5);
+		h.record( 0.5);
+		h.record( 1.5);
+		h.record( 2.5);
+		assert(Arrays.equals(h.bins, new long[]{2, 0, 1, 2, 1, 1}));
+	}
 }
