@@ -28,6 +28,10 @@ class Game {
 		return new Game(this);
 	}
 	
+	public boolean is_over() {
+		return over;
+	}
+	
 	public Robot add_robot(int[] position, Direction direction) {
 		int identity = robots.size();
 		Robot robot = new Robot(identity, position, direction);

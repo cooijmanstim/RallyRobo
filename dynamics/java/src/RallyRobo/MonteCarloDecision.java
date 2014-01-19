@@ -2,6 +2,11 @@ package RallyRobo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 class MonteCarloDecision {
 	private final Game game;
@@ -30,6 +35,26 @@ class MonteCarloDecision {
 	public void sample(long sampleBudget) {
 		for (int i = 0; i < sampleBudget; i++)
 			sampleOnce();
+	}
+	
+	private class Sampler implements Callable<Integer> {
+		@Override public Integer call() {
+			for (;;)
+				sampleOnce();
+		}
+	}
+	
+	public void sampleTimeLimited(int timeBudget) {
+		int nthreads = Runtime.getRuntime().availableProcessors() - 1;
+		ExecutorService es = Executors.newFixedThreadPool(nthreads);
+		List<Sampler> tasks = new ArrayList<Sampler>();
+		for (int i = 0; i < nthreads; i++)
+			tasks.add(new Sampler());
+		try {
+			es.invokeAll(tasks, timeBudget, TimeUnit.SECONDS);
+		} catch(InterruptedException e) {
+			System.err.println("sampling interrupted");
+		}
 	}
 
 	public void sampleOnce() {
@@ -137,7 +162,7 @@ class MonteCarloDecision {
 		Game game = Game.example_game();
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
 		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10, new CheckpointAdvantageEvaluator());
-		mcd.sample(100000);
+		mcd.sampleTimeLimited(10);
 		Statistics s = mcd.statistics();
 		System.out.println("sample count: "+mcd.sampleCount);
 		System.out.println("decision set size: "+mcd.decisions.computeSize());
