@@ -9,7 +9,7 @@ public enum Evaluator {
 				if (them.identity == irobot)
 					continue;
 				
-				advantage = Math.min(advantage, them.next_checkpoint - us.next_checkpoint);
+				advantage = Math.min(advantage, us.next_checkpoint - them.next_checkpoint);
 			}
 			return advantage;
 		}
@@ -18,8 +18,10 @@ public enum Evaluator {
 		@Override public double call(Game game, int irobot) {
 			Robot robot = game.robots.get(irobot);
 			int distance = Point.manhattanDistance(robot.position, game.board.checkpoints.get(robot.next_checkpoint));
+			int active = robot.is_active() ? 1 : 0;
 			// TODO: learn weights
-			return  1  *CheckpointAdvantage.evaluate(game, irobot) +
+			return  3  *active +
+					 1  *CheckpointAdvantage.evaluate(game, irobot) +
 					-0.3*robot.damage +
 					-0.1*distance;
 		}
