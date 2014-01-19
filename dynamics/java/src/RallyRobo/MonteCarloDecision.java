@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 class MonteCarloDecision {
 	private final Game game;
 	private final int irobot;
-	private final DecisionSet decisions;
+	public final DecisionSet decisions;
 	private final int maxDepth;
 	private final Evaluator evaluator;
 	private final Average[] expectations;
@@ -30,6 +30,10 @@ class MonteCarloDecision {
 		this.expectations = new Average[decisions.indexUpperBound];
 		for (int i = 0; i < expectations.length; i++)
 			expectations[i] = new Average();
+	}
+	
+	public long sampleCount() {
+		return sampleCount;
 	}
 
 	public void sample(long sampleBudget) {

@@ -1,5 +1,6 @@
 package RallyRobo;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Util {
@@ -56,6 +57,15 @@ public class Util {
 		
 		return sample;
 	}
+	
+	public static int[] take(int k, int[] xs) {
+		boolean[] set = new boolean[xs.length];
+		Arrays.fill(set, true);
+		int[] sample = take(k, set);
+		for (int i = 0; i < sample.length; i++)
+			sample[i] = xs[sample[i]];
+		return sample;
+	}
 
 	public static int digitsToNumber(int[] digits, int radix) {
 		int number = 0;
@@ -109,4 +119,5 @@ public class Util {
 		Test.assert_equal(6, multinomial_coefficient(3, new int[]{1, 1}));
 		Test.assert_equal(6, multinomial_coefficient(4, new int[]{2, 2}));
 	}
+
 }

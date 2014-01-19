@@ -22,13 +22,14 @@ class Robot {
 		return states[i];
 	}
 
-	
 	public int registers[] = new int[NRegisters];
 	{
 		for (int i = 0; i < NRegisters; i++)
 			registers[i] = Card.None;
 	}
-
+	
+	private Strategy strategy = Strategy.Random;
+	
 	Robot(int identity, int[] position, Direction direction) {
 		this.identity = identity;
 		this.position = position;
@@ -46,12 +47,17 @@ class Robot {
 		this.is_virtual = that.is_virtual;
 		this.state = that.state;
 		this.registers = that.registers.clone();
+		this.strategy = that.strategy;
 
 		save_respawn();
 	}
 
 	public Robot clone() {
 		return new Robot(this);
+	}
+	
+	public void set_strategy(Strategy strategy) {
+		this.strategy = strategy;
 	}
 
 	public boolean is_active   () { return state == State.Active;    }
@@ -161,6 +167,10 @@ class Robot {
 			registers[i] = Card.None;
 	}
 	
+	public void decide(Game game, int[] hand) {
+		fill_registers(strategy.decide(game, identity, hand));
+	}
+
 	static void test() {
 		Robot robot = new Robot(0, Point.make(0, 0), Direction.East);
 		robot.rotate(-1);

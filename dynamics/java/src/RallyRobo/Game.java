@@ -296,6 +296,17 @@ class Game {
 		}
 		return hands;
 	}
+	
+	public void fill_registers() {
+		int[][] hands = deal();
+		for (int i = 0; i < robots.size(); i++) {
+			Robot robot = robots.get(i);
+			if (robot.is_active()) {
+				assert(hands[i].length > 0);
+				robot.decide(this, hands[i]);
+			}
+		}
+	}
 
 	public void vacate_registers() {
 		for (Robot robot: robots)
