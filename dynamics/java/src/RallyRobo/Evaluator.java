@@ -3,27 +3,26 @@ package RallyRobo;
 public enum Evaluator {
 	CheckpointAdvantage(new EvaluationFunction() {
 		@Override public double call(Game game, int irobot) {
-			Robot us = game.robots.get(irobot);
-			int advantage = Integer.MAX_VALUE;
-			for (Robot them: game.robots) {
-				if (them.identity == irobot)
-					continue;
-				
-				advantage = Math.min(advantage, us.next_checkpoint - them.next_checkpoint);
-			}
-			return advantage;
+			return Knowledge.checkpointAdvantage(game, irobot);
 		}
 	}),
 	Heuristic(new EvaluationFunction() {
 		@Override public double call(Game game, int irobot) {
 			Robot robot = game.robots.get(irobot);
-			int distance = Point.manhattanDistance(robot.position, game.board.checkpoints.get(robot.next_checkpoint));
-			int active = robot.is_active() ? 1 : 0;
+			int distance = Math.min(game.board.width*game.board.height,
+									Knowledge.distanceToCheckpoint(game, irobot));
+			int active = robot.is_active() && !Knowledge.conveyorOfDeath(game, irobot) ? 1 : 0;
 			// TODO: learn weights
 			return  3  *active +
-					 1  *CheckpointAdvantage.evaluate(game, irobot) +
+					 5  *Knowledge.checkpointAdvantage(game, irobot) +
+					 1  *robot.next_checkpoint +
 					-0.3*robot.damage +
 					-0.1*distance;
+		}
+	}),
+	Constant(new EvaluationFunction () {
+		@Override public double call(Game game, int irobot) {
+			return 0;
 		}
 	});
 

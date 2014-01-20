@@ -2,19 +2,15 @@
 clear classes; clear all;
 init();
 
-ngames = 1;
+ngames = 1000;
 nwins = zeros(1, 4);
 for j = 1:ngames
     clc; close all;
-    % TODO: come up with a fair two-player board to test strategies
-    % one-on-one.
-    game = RallyRobo.Game.example_game();
-    % the first robot uses the monte carlo strategy, all the others
-    % use the random heuristic strategy.
+    game = RallyRobo.Game.example_game_1v1();
+    % the first robot uses the monte carlo strategy
+    % the second uses the random search strategy
     game.robots.get(0).set_strategy(RallyRobo.Strategy.MonteCarloHeuristicSmart);
     game.robots.get(1).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
-    game.robots.get(2).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
-    game.robots.get(3).set_strategy(RallyRobo.Strategy.RandomSearchHeuristicSlow);
     
     initBoardFigure(game);
     refreshBoard(game);

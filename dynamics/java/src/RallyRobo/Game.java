@@ -90,6 +90,41 @@ class Game {
 		return game;
 	}
 	
+	public static Game example_game_1v1() {
+		Game game = new Game(12, 12);
+
+		game.add_robot( 2, 6, Direction.South);
+		game.add_robot(11, 6, Direction.North);
+		
+		game.board.add_checkpoint(6,6);
+		game.board.add_checkpoint(7,7);
+		game.board.add_checkpoint(6,7);
+		game.board.add_checkpoint(7,6);
+
+		game.add_features(Feature.ConveyorEast, new int[][]{{5,5},{5,6},{5,7}});
+		game.add_features(Feature.ConveyorNorth, new int[][]{{5,8},{6,8},{7,8}});
+		game.add_features(Feature.ConveyorWest, new int[][]{{8,8},{8,7},{8,6}});
+		game.add_features(Feature.ConveyorSouth, new int[][]{{8,5},{7,5},{6,5}});
+		game.add_features(Feature.ConveyorTurningCcw, new int[][]{{5,5},{5,8},{8,8},{8,5}});
+		
+		game.board.add_checkpoint(6, 1);
+		game.add_features(Feature.WallEast,  new int[][]{{5,2},{6,2},{7,2},{7,3},{8,3}});
+		game.add_features(Feature.WallNorth, new int[][]{{8,1},{8,3}});
+		game.add_features(Feature.ConveyorNorth, new int[][]{{6,3},{7,3}});
+		game.add_features(Feature.ConveyorWest,  new int[][]{{8,3},{8,2},{8,1}});
+		game.add_features(Feature.ConveyorTurningCcw, new int[][]{{8,3}});
+		game.add_features(Feature.Pit, new int[][]{{9,3},{4,2}});
+		
+		game.board.add_checkpoint(6,10);
+		for (int i = 1; i <= game.board.interiorHeight; i++)
+			game.board.set_feature(i, 11, Feature.ConveyorNorth);
+		game.add_features(Feature.Pit, new int[][]{{6,9},{5,10},{7,10}});
+
+		game.add_features(Feature.Repair, new int[][]{{4,4},{9,4},{4,9},{9,9}});
+		
+		return game;
+	}
+	
 	boolean robot_can_move(Robot robot, Direction dir) {
 		int[] a = robot.position, b = Point.add(a, dir.vector);
 		return  !board.has_feature(a, Feature.Pit)  &&
@@ -775,7 +810,7 @@ class Game {
 		int[] hand = {11,83,57,49,35,21, 3,50, 4};
 		DecisionSet ds = new DecisionSet(5, hand);
 		for (int i = 0; i < 100; i++) {
-			game2.evaluate_naive_outcome(ds.cards(ds.random()), i % game.robots.size(), Evaluator.Heuristic);
+			game2.evaluate_naive_outcome(ds.cards(ds.random()), i % game.robots.size(), Evaluator.Constant);
 			assert(game.equals(game2));
 		}
 	}

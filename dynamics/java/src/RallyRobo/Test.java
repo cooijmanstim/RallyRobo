@@ -13,6 +13,7 @@ class Test {
 		Card.test();
 		Robot.test();
 		Game.test();
+		Knowledge.test();
 		DecisionSet.test();
 		MonteCarloDecision.test();
 	}
