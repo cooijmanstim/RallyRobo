@@ -14,8 +14,7 @@ public class Histogram {
 
 	public void record(double x) {
 		int bin = (int)((x - min)/(max - min) * bins.length);
-		if (bin == bins.length)
-			bin--;
+		bin = Math.min(bins.length - 1, Math.max(0, bin));
 		bins[bin]++;
 	}
 
