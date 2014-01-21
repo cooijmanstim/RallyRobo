@@ -98,8 +98,6 @@ class Game {
 		
 		game.board.add_checkpoint(6,6);
 		game.board.add_checkpoint(7,7);
-		game.board.add_checkpoint(6,7);
-		game.board.add_checkpoint(7,6);
 
 		game.add_features(Feature.ConveyorEast, new int[][]{{5,5},{5,6},{5,7}});
 		game.add_features(Feature.ConveyorNorth, new int[][]{{5,8},{6,8},{7,8}});

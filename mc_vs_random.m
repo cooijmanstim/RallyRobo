@@ -6,7 +6,7 @@ ngames = 1000;
 nwins = zeros(1, 4);
 for j = 1:ngames
     clc; close all;
-    game = RallyRobo.Game.example_game();
+    game = RallyRobo.Game.example_game_1v1();
     % the first robot uses the monte carlo strategy
     % the second uses the random search strategy
     game.robots.get(0).set_strategy(RallyRobo.Strategy.MonteCarloHeuristicSmart);

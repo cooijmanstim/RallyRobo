@@ -52,8 +52,13 @@ class MonteCarloDecision {
 	
 	private class Sampler implements Callable<Void> {
 		@Override public Void call() {
-			while (!Thread.interrupted())
-				sampleOnce();
+			try {
+				while (!Thread.interrupted())
+					sampleOnce();
+			} catch(Throwable t) {
+				System.out.println("sampler threw: "+t);
+				t.printStackTrace();
+			}
 			System.out.println("sampler interrupted");
 			return null;
 		}
