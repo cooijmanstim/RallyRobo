@@ -9,7 +9,7 @@ for x = 1:m+1  % vertical lines
 end
 
 for y = 1:n+1   % horizontal lines
-    line([1,n+1],[y,y],'color','black');
+    line([1,n+1],[y,y],'color','black','LineWidth',1.5);
 end
 
 

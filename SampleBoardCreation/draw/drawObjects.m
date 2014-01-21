@@ -3,22 +3,22 @@ import RallyRobo.Feature;
 
 directions = RallyRobo.Direction.ordinals;
 
-widthWalls = 0.15;
+widthWalls = 0.2;
 
 images = [];
 
 scale = 101/68;
-height = 0.5;
+height = 0.45;
 width = height*scale;
 images.conveyor.plain = generate_conveyor_images(imread('images/conveyorEast.png'), height, width, directions);
 
 scale = 112/114;
-height = 0.7;
+height = 0.6;
 width = height*scale;
 images.conveyor.cw = generate_conveyor_images(imread('images/conveyorEastClockwise.png'), height, width, directions);
 
 scale = 126/118;
-height = 0.7;
+height = 0.6;
 width = height*scale;
 images.conveyor.ccw = generate_conveyor_images(imread('images/conveyorEastCounterclockwise.png'), height, width, directions);
 
@@ -54,8 +54,8 @@ for y = 1:board.interiorHeight
             fill(rectX,rectY,'black');
         end
         if board.has_feature(ij, Feature.Repair)
-            resize = 0.2;
-            imagesc([x+resize,x+1-resize],[y+resize,y+1-resize], images.repair);
+            resize = 0.1;
+            imagesc([x+resize,x+1-resize],[y+1-resize,y+resize], images.repair);
         end
         
         if board.has_feature(ij, Feature.ConveyorTurningCw)
