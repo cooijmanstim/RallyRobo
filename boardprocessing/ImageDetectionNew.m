@@ -125,6 +125,9 @@ TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
 end
 game = RallyRobo.Game(gridSize, gridSize);
 rotatedimage = y;
+%new robots and checkpoints have to be stored separately to initialize them in the right order
+robots = {};
+checkpoints = {};
 for tile = tiles'
     % tile contains corner point coordinates
     x = tile(1);
@@ -139,13 +142,19 @@ for tile = tiles'
     croppedTile = imcrop(rotatedimage, [xmin ymin width height]);
     [isGamestate,featureOrGamestate] = identifyTileFeatures(croppedTile);
     if isGamestate
-       if ~isempty(featureOrGamestate.robotdir)
-           rgb = imcrop(imageRGB, [xmin ymin width height]);
-           midPixel = rgb(m,m,:);
-           player = getPlayerNumberOfColor(midPixel);
-       end
+		if ~isempty(featureOrGamestate.robotdir)
+			rgb = imcrop(imageRGB, [xmin ymin width height]);
+			midPixel = rgb(m,m,:);
+			player = getPlayerNumberOfColor(midPixel);
+			robots{player} = featureOrGamestate;
+		else
+			checkpoints{feature.checkpointid} = [y x];
+		end
+	else
+		game = board_enable_feature(game, [y x],featureOrGamestate );
     end
-    game = board_enable_feature_or_gamestate(game, [y x],isGamestate,featureOrGamestate,player );
 end
+game = board_enable_robots(game,robots);
+game = board_enable_checkpoints(game,checkpoints);
 initBoardFigure(game);
 refreshBoard(game.board, game.state.robots, game.state.checkpoints);

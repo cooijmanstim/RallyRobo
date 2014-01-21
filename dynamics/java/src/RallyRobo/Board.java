@@ -95,4 +95,13 @@ class Board {
 	public boolean has_feature(int[] x, Feature feature) {
 		return has_feature(x[0], x[1], feature);
 	}
+	
+	public void set_feature(int i,int j, boolean[] features){
+		for(int k=0; k < features.length; k++){
+			if(features[k]){
+				set_feature(i,j,k);
+			}
+		}
+	}
+	
 }
