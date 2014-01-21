@@ -28,13 +28,14 @@ public class Knowledge {
 		Robot robot = game.robots.get(irobot);
 		int[] a = robot.position.clone(),
 			  b = game.board.checkpoints.get(robot.next_checkpoint).clone();
-		return distance(game.board, a, b);
+		return Point.manhattanDistance(a, b);
 	}
 
 	private static int lindex(Board board, int[] x) {
 		return board.width*x[0]+x[1];
 	}
 	
+	// A* distance, moving around walls, pits
 	static int distance(final Board board, final int[] start, final int[] goal) {
 		if (board.has_feature(start, Feature.Pit))
 			return Integer.MAX_VALUE;

@@ -12,12 +12,14 @@ public enum Evaluator {
 			int distance = Math.min(game.board.width*game.board.height,
 									Knowledge.distanceToCheckpoint(game, irobot));
 			int active = robot.is_active() && !Knowledge.conveyorOfDeath(game, irobot) ? 1 : 0;
+			int winloss = game.is_over() ? (game.winner() == irobot ? 1 : -1) : 0;
 			// TODO: learn weights
-			return  3  *active +
-					 5  *Knowledge.checkpointAdvantage(game, irobot) +
-					 1  *robot.next_checkpoint +
-					-0.3*robot.damage +
-					-0.1*distance;
+			return 100  *winloss +
+					  3  *active +
+					  5  *Knowledge.checkpointAdvantage(game, irobot) +
+					  1  *robot.next_checkpoint +
+					 -0.3*robot.damage +
+					 -0.1*distance;
 		}
 	}),
 	Constant(new EvaluationFunction () {

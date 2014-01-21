@@ -54,22 +54,28 @@ class MonteCarloDecision {
 		@Override public Void call() {
 			while (!Thread.interrupted())
 				sampleOnce();
+			System.out.println("sampler interrupted");
 			return null;
 		}
 	}
 	
 	public void sampleTimeLimited(int timeBudget) {
-		int nthreads = Runtime.getRuntime().availableProcessors() - 1;
+		int nthreads = Runtime.getRuntime().availableProcessors();
 		ExecutorService es = Executors.newFixedThreadPool(nthreads);
 		List<Sampler> tasks = new ArrayList<Sampler>();
 		for (int i = 0; i < nthreads; i++)
 			tasks.add(new Sampler());
+
+		long startTime = System.nanoTime();
 		try {
 			es.invokeAll(tasks, timeBudget, TimeUnit.SECONDS);
 		} catch(InterruptedException e) {
-			System.err.println("sampling interrupted");
+			System.out.println("samplers interrupted");
 		}
 		es.shutdown();
+		long endTime = System.nanoTime();
+		double duration = (endTime - startTime)*1.0/1e9;
+		System.out.println(timeBudget+" seconds took "+duration+" seconds");
 	}
 
 	public void sampleOnce() {
