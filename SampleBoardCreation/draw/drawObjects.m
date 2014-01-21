@@ -3,7 +3,7 @@ import RallyRobo.Feature;
 
 directions = RallyRobo.Direction.ordinals;
 
-widthWalls = 0.2;
+widthWalls = 0.33;
 
 images = [];
 
@@ -13,12 +13,12 @@ width = height*scale;
 images.conveyor.plain = generate_conveyor_images(imread('images/conveyorEast.png'), height, width, directions);
 
 scale = 112/114;
-height = 0.6;
+height = 0.75;
 width = height*scale;
 images.conveyor.cw = generate_conveyor_images(imread('images/conveyorEastClockwise.png'), height, width, directions);
 
 scale = 126/118;
-height = 0.6;
+height = 0.65;
 width = height*scale;
 images.conveyor.ccw = generate_conveyor_images(imread('images/conveyorEastCounterclockwise.png'), height, width, directions);
 
@@ -54,7 +54,7 @@ for y = 1:board.interiorHeight
             fill(rectX,rectY,'black');
         end
         if board.has_feature(ij, Feature.Repair)
-            resize = 0.1;
+            resize = 0.02;
             imagesc([x+resize,x+1-resize],[y+1-resize,y+resize], images.repair);
         end
         
@@ -69,9 +69,9 @@ for y = 1:board.interiorHeight
         for direction = directions(:)'
             if board.has_feature(ij, direction_conveyor(direction))
                 image = images.conveyor.(conveyor_type){1+direction};
-            
-                xs = x + 0.5 + 0.5*image.width*[-1 1];
-                ys = y + 0.5 + 0.5*image.height*[-1 1];
+                [xShift,yShift] = getShiftedValues(board,ij);
+                xs = x + xShift + 0.5 + 0.5*image.width*[-1 1];
+                ys = y + yShift + 0.5 + 0.5*image.height*[-1 1];
             
                 % imagesc flips the image vertically, so compensate for that by
                 % flipping the ys
