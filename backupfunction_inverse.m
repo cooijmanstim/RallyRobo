@@ -43,6 +43,6 @@ for i=1:length(PlayersPos)
         factor = 10;
     end
     
-    PlayersPos(i) = robot.direction.ordinal() * factor + li;
+    PlayersPos(i) = (robot.direction.ordinal()+1) * factor + li;
 end
 end

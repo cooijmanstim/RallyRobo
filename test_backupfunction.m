@@ -15,9 +15,12 @@ ds = [1     0     0     0     6     0    26     0     0     0     0     0
 ps = [ 249         421        2107        1109];
 game = Backupfunction(ds, ps);
 [ds2,ps2] = backupfunction_inverse(game);
-assert(all(ds(:) == ds2(:)));
-assert(all(ps(:) == ps2(:)));
 game2 = Backupfunction(ds2,ps2);
 assert(game.equals(game2));
+
+% this might fail because there are multiple equivalent representations
+assert(all(ds(:) == ds2(:)));
+assert(all(ps(:) == ps2(:)));
+
 initBoardFigure(game);
 refreshBoard(game);
