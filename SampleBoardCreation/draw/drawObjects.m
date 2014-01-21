@@ -55,7 +55,8 @@ for y = 1:board.interiorHeight
         end
         if board.has_feature(ij, Feature.Repair)
             resize = 0.02;
-            imagesc([x+resize,x+1-resize],[y+1-resize,y+resize], images.repair);
+			[xShift,yShift] = getShiftedValues(board,ij);
+            imagesc([x+xShift+resize,x+xShift+1-resize],[y+yShift+1-resize,y+yShift+resize], images.repair);
         end
         
         if board.has_feature(ij, Feature.ConveyorTurningCw)
