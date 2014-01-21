@@ -2,7 +2,8 @@ close all ; clear all;
 
 %% read the original image 
 
-[im, map]= imread('Picture 21.jpg');
+[im, map]= imread('ourBoardJan14.PNG');
+
 figure, imshow(im);
 title('the original image');
 
@@ -10,8 +11,9 @@ title('the original image');
 %% convert to gray scale
 
 im2=rgbtograyscale(im);
-figure, imshow(im2,map);
-title('convert to gray scale');
+
+% figure, imshow(im2,map);
+% title('convert to gray scale');
 
 
 %% tresholding
@@ -19,19 +21,19 @@ title('convert to gray scale');
 threshold =135; 
 im3 = relativeScaling(im2,2);
 
-% im3 = makeLogicalOfImageWithTreshold(im2,threshold);
-figure, imshow(im3);
-title('thresholding');
+% figure, imshow(im3);
+% title('thresholding');
 
 %% noise removal
 
 im2 = bwareaopen(im3,20000);
-figure, imshow(im2);
-title('Noise removal');
 
-%%
+% figure, imshow(im2);
+% title('Noise removal');
+
+%% Clear the borders
 im2 = imclearborder(im2);
-imshow(im2);
+% imshow(im2);
 
 
 %% finding corners
@@ -54,10 +56,10 @@ DIAG2 = diff(R(kmax).PixelList,[],2);
 
 extcorner = R(kmax).PixelList([dUL dDL dDR dUR dUL],:);
 
-figure, imshow(im2);
-title('Looking for corners');
-hold on
-plot(extcorner(:,1), extcorner(:,2), 'g*');
+% figure, imshow(im2);
+% title('Looking for corners');
+% hold on
+% plot(extcorner(:,1), extcorner(:,2), 'g*');
 
 
 %% selcting the starting points
@@ -78,11 +80,7 @@ y = imtransform(im, t , 'bilinear' , 'XData' , [min(baseX) max(baseX)] , 'YData'
 figure, imshow(y);
 title('The transformed image');
 
-%% converting the transforming image in grayscale
-y=rgbtograyscale(y);
-
-figure, imshow(y, map);
-title('grayscaling the transformed image');
+imageRGB = y;
 
 % %% treshold the new image
 % 
@@ -94,13 +92,15 @@ title('grayscaling the transformed image');
  
 
 %%
-y = makeLogicalOfImageWithThreshold(y,threshold);
-figure, imshow(y);
+threshold =135; 
+y = relativeScaling(y,2);
+% y = makeLogicalOfImageWithThreshold(y,threshold);
+% figure, imshow(y);
 %% remove the noise from the new image / GOD function
 y = bwareaopen(y, 30);
 
-figure, imshow(y);
-title('removing noise again');
+% figure, imshow(y);
+% title('removing noise again');
 
 %% determine the gridsize
 gridSize = 12;
@@ -109,33 +109,43 @@ gridSize = 12;
 tiles = getTiles(y, gridSize);
 
 %shows only the bottom right corner of every tile
-figure, imshow(y);
-hold on;
-plot(tiles(:,9), tiles(:,10), 'g*');
-
+% figure, imshow(y);
+% hold on;
+% plot(tiles(:,9), tiles(:,10), 'g*');
 
 
 %% create board from tiles
 global RR;
 init();
-game = game_create(12, 12);
+%initiate sample tiles
+global TFM;
+TFM = load('tile_featureset_map');
+for i = 1:size(TFM.tiles);
+TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
+end
+game = RallyRobo.Game(gridSize, gridSize);
 rotatedimage = y;
 for tile = tiles'
     % tile contains corner point coordinates
-    x = tiles(1);
-    y = tiles(2);
-    xmin = tiles(3);
-    ymin = tiles(4);
-    xmax = tiles(end-1);
-    ymax = tiles(end);
+    x = tile(1);
+    y = tile(2);
+    xmin = tile(3);
+    ymin = tile(4);
+    xmax = tile(end-1);
+    ymax = tile(end);
     width = xmax - xmin;
     height = ymax - ymin;
     assert(all([width height] >= 0));
-    imdfs = imcrop(rotatedimage, [xmin xmax width height]);
-    imdfs = imresize(imdfs, [RR.tile_size RR.tile_size]);
-    %imdfs = makeLogicalOfImage(rgb2gray(imdfs));
-    keyboard
-    board_enable_feature(game.board, [y x], identifyTileFeatures(imdfs));
+    croppedTile = imcrop(rotatedimage, [xmin ymin width height]);
+    [isGamestate,featureOrGamestate] = identifyTileFeatures(croppedTile);
+    if isGamestate
+       if ~isempty(featureOrGamestate.robotdir)
+           rgb = imcrop(imageRGB, [xmin ymin width height]);
+           midPixel = rgb(m,m,:);
+           player = getPlayerNumberOfColor(midPixel);
+       end
+    end
+    game = board_enable_feature_or_gamestate(game, [y x],isGamestate,featureOrGamestate,player );
 end
 initBoardFigure(game);
-refreshBoard(game.board, game.robots, game.checkpoints);
+refreshBoard(game.board, game.state.robots, game.state.checkpoints);

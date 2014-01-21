@@ -1,9 +1,9 @@
-function [os] = generate_conveyor_images(rgbdata_east, height_east, width_east, directions)
+function [output] = generate_conveyor_images(rgbdata_east, height_east, width_east, directions)
 grayscale_east = rgb2gray(rgbdata_east);
 alphadata_east = ones(size(grayscale_east));
 alphadata_east(grayscale_east > 0.9) = 0;
 
-os = cell(size(directions));
+output = cell(size(directions));
 for i = 1:length(directions)
     angle = direction_get_angle(directions(i));
     
@@ -16,11 +16,11 @@ for i = 1:length(directions)
         [width, height] = deal(height, width);
     end
     
-    o = [];
-    o.rgbdata = rgbdata;
-    o.alphadata = alphadata;
-    o.height = height;
-    o.width = width;
+    turnedArrow = [];
+    turnedArrow.rgbdata = rgbdata;
+    turnedArrow.alphadata = alphadata;
+    turnedArrow.height = height;
+    turnedArrow.width = width;
     
-    os{i} = o;
+    output{i} = turnedArrow;
 end
