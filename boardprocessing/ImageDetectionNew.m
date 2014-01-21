@@ -1,8 +1,10 @@
 close all ; clear all;
-
+%% to be placed in header
+gridSize = 12;
+game = RallyRobo.Game(gridSize, gridSize);
 %% read the original image 
 
-[im, map]= imread('ourBoardJan14.PNG');
+[im, map]= imread('screenshotBoard0121_2.PNG');
 
 figure, imshow(im);
 title('the original image');
@@ -77,24 +79,17 @@ baseX = base_points(: , 1);
 baseY = base_points(: , 2);
 y = imtransform(im, t , 'bilinear' , 'XData' , [min(baseX) max(baseX)] , 'YData',[min(baseY) max(baseY)]);
 
-figure, imshow(y);
-title('The transformed image');
+
+% figure, imshow(y);
+% title('The transformed image');
 
 imageRGB = y;
 
-% %% treshold the new image
-% 
-% threshold = 4;
-% y = relativeScaling(y,threshold);
-% 
-% figure, imshow(y);
-% title('thresholding the grayscale transformed image');
- 
 
-%%
-threshold =135; 
-y = relativeScaling(y,2);
-% y = makeLogicalOfImageWithThreshold(y,threshold);
+%% treshold the new image
+threshold =115; 
+% y = relativeScaling(y,2);
+y = makeLogicalOfImage(y);
 % figure, imshow(y);
 %% remove the noise from the new image / GOD function
 y = bwareaopen(y, 30);
@@ -103,15 +98,15 @@ y = bwareaopen(y, 30);
 % title('removing noise again');
 
 %% determine the gridsize
-gridSize = 12;
+
 
 %% get the Array of tiles
 tiles = getTiles(y, gridSize);
 
 %shows only the bottom right corner of every tile
-% figure, imshow(y);
-% hold on;
-% plot(tiles(:,9), tiles(:,10), 'g*');
+figure, imshow(y);
+hold on;
+plot(tiles(:,9), tiles(:,10), 'g*');
 
 
 %% create board from tiles
@@ -123,7 +118,6 @@ TFM = load('tile_featureset_map');
 for i = 1:size(TFM.tiles);
 TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
 end
-game = RallyRobo.Game(gridSize, gridSize);
 rotatedimage = y;
 %new robots and checkpoints have to be stored separately to initialize them in the right order
 robots = {};
@@ -131,7 +125,7 @@ checkpoints = {};
 for tile = tiles'
     % tile contains corner point coordinates
     x = tile(1);
-    y = tile(2);
+    y = gridSize+1-tile(2);
     xmin = tile(3);
     ymin = tile(4);
     xmax = tile(end-1);
@@ -144,17 +138,18 @@ for tile = tiles'
     if isGamestate
 		if ~isempty(featureOrGamestate.robotdir)
 			rgb = imcrop(imageRGB, [xmin ymin width height]);
-			midPixel = rgb(m,m,:);
+            middle = round(size(rgb,1)/2);
+			midPixel = rgb(middle,middle,:);
 			player = getPlayerNumberOfColor(midPixel);
 			robots{player} = featureOrGamestate;
 		else
-			checkpoints{feature.checkpointid} = [y x];
+			checkpoints{featureOrGamestate.checkpointid} = [y x];
 		end
 	else
-		game = board_enable_feature(game, [y x],featureOrGamestate );
+		game = board_enable_feature(game, [y x], featureOrGamestate );
     end
 end
 game = board_enable_robots(game,robots);
 game = board_enable_checkpoints(game,checkpoints);
 initBoardFigure(game);
-refreshBoard(game.board, game.state.robots, game.state.checkpoints);
+refreshBoard(game);

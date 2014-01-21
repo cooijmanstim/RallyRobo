@@ -3,7 +3,7 @@ global TFM;
 index = 0;
 
 
-sampleSize = size(TFM.featuresets,1);
+sampleSize = size(TFM.featuresets,1)+size(TFM.gamestates,1);
 feature = zeros(1,sampleSize);
 % The actual identification algorithm
 
@@ -19,11 +19,14 @@ end
 
 maxs = max(S);
 index = find(S == maxs,1);
+% figure
+% subplot(1,2,1), imshow(tileTest)
+% subplot(1,2,2), imshow(TFM.tiles{index})
 if index < 213
     featureOrGamestate = TFM.featuresets(index,:);
     isGamestate= 0;
 else
-    featureOrGamestate = TFM.gamestates(index-213);
+    featureOrGamestate = TFM.gamestates(index+1-213);
     isGamestate = 1;
 end
 
