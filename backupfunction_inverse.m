@@ -43,6 +43,12 @@ for i=1:length(PlayersPos)
         factor = 10;
     end
     
-    PlayersPos(i) = (robot.direction.ordinal()+1) * factor + li;
+    if robot.is_virtual()
+        sign = -1;
+    else
+        sign = 1;
+    end
+    
+    PlayersPos(i) = sign*((robot.direction.ordinal()+1) * factor + li);
 end
 end
