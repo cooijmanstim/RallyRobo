@@ -4,25 +4,25 @@
 \usepackage{algpseudocode}
 \bibliographystyle{apalike}
 
-\newcommand{\upright}[1]{\mathrm{#1}}
-\DeclareMathOperator*{\argmin}{\arg\!\min}
-\DeclareMathOperator*{\nint}{nint}
-
-\newcommand{\twopartdef}[4]
+\newcommand{\twopartdef}[3]
 {
 	\left\{
 		\begin{array}{ll}
 			#1 & \mbox{if } #2 \\
-			#3 & \mbox{if } #4
+			#3 & \mbox{otherwise}
 		\end{array}
 	\right\}.
 }
+
+\newcommand{\ceil}[1]{\lceil#1\rceil}
+\newcommand{\floor}[1]{\lfloor#1\rfloor}
 
 \newcommand{\reals}{\mathbb{R}}
 
 \newcommand{\Action}{A}
 \newcommand{\action}{a}
 \newcommand{\actions}{\mathcal{A}}
+\newcommand{\actionnumber}{n_a}
 
 \newcommand{\randomState}{S}
 \newcommand{\state}{s}
@@ -36,9 +36,9 @@
 \newcommand{\expectation}[2]{E\left({#1\given#2}\right)}
 \newcommand{\given}[1][]{\:#1\vert\:}
 \newcommand{\factorial}[1]{#1\,!}
-\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\abs}[1]{|#1|}
 
-\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmax}{\arg\!\max}
 
 \newcommand{\initial}{0}
 \newcommand{\final}{f}
@@ -47,13 +47,18 @@
 \newcommand{\translation}[1]{\tau(#1)}
 
 \newcommand{\eclass}[1]{\left[#1\right]}
-\newcommand{\cardinality}[1]{\left|#1\right|}
+\newcommand{\cardinality}[1]{|#1|}
 
 \begin{document}
 
 \section{Monte-Carlo strategy}
 
 % TODO: cite MDPs
+In this section the Monte-Carlo strategy is discussed.  First the approach is described in terms of Markov Decision Processes.  Sections~\ref{sec:evaluators} and~\ref{sec:playout-strategies} introduce values for 
+
+\subsection{The approach}
+
+% TODO: introduce as MDPs
 Given a game state $\state_\initial$, an optimal action is one that maximizes the expected winning probability:
 
 \[
@@ -77,7 +82,7 @@ This works well if $\hat{\evaluator}\left(\state\right)$ positively correlates w
 
 \subsection{The action space}
 
-At the beginning of each turn, each player is dealt a hand $\hand = \left\{h_1,h_2,\ldots,h_n\right\}$ with which to populate a sequence of registers $r_1,r_2,\ldots,r_k$.  This gives rise to a set $\tilde{\actions}$ of $\factorial{n}/\factorial{\left(n-k\right)}$ actions, each of which corresponds to an ordered $k$-sequence of distinct cards.  Typically there exist sets of actions for which it can be deduced that they produce identical terminal state distributions.
+At the beginning of each turn, each player is dealt a hand $\hand = \left\{h_1,h_2,\ldots,h_n\right\}$ with which to populate a sequence of registers $r_1,r_2,\ldots,r_k$.  This gives rise to a set $\tilde{\actions}$ of $\factorial{m}/\factorial{\left(m-k\right)}$ actions, each of which corresponds to an ordered $k$-sequence of distinct cards.  Typically there exist sets of actions for which it can be deduced that they produce identical terminal state distributions.
 
 As an example of this, consider the set of cards $\hand = \left\{11,83,57,49,35,21, 3,50, 4\right\}$.  As the cards $49$ and $50$ have the same movement effect and their priorities are adjacent, their order with respect to each other makes no difference to the game.  That is, some action $\action = \left\{49,r_2,50,r_4,\ldots,r_k\right\}$ necessarily has the same effect as the action $\action' = \left\{50,r_2,49,\ldots,r_k\right\}$.  A similar relation holds for rotation cards, except that the priorities do not need to be adjacent, since rotating robots do not interfere with each other.
 
@@ -95,8 +100,7 @@ h \equiv h' \iff
            \exists \tilde{h} \in \hand \colon
                    \abs{h - \tilde{h}} = 1 \land
                    \tilde{h} \equiv h'
-           \right)
-           }{\text{otherwise}}
+           \right)}
 \]
 
 where $\rotation{h}$ denotes the rotational effect of card $h$, and $\translation{h}$ the translational effect.  The equivalence partition so induced allows the set of cards $\hand$ to be treated as a multiset containing each equivalence class of cards $\eclass{h_i}$ as an item with multiplicity $\cardinality{\eclass{h_i}}$.  This results in a severely reduced action space $\actions$ where each action assigns an equivalence class rather than a card to each register.
@@ -141,6 +145,7 @@ Finally, it is useful in practice to have a bijective mapping between elements o
   \State $\mathit{radices} \gets []$
   \For{\text{$i \gets 0 ~\textbf{to}~ k-1$}}
     \State $\mathit{radices}[i] \gets \mathit{radix}$
+
     \State Decrement $\mathit{multiplicities}[\mathit{digits}[i]]$
     \If{$\mathit{multiplicities}[\mathit{digits}[i]] = 0$}
       \State Decrement $\mathit{radix}$
@@ -154,17 +159,80 @@ Finally, it is useful in practice to have a bijective mapping between elements o
   \EndFor
 
   \Comment Compute in such a way that the least-significant radix is $m$
-  \State $n \gets 0$
+  \State $\actionnumber \gets 0$
   \For{\text{$i \gets 0 ~\textbf{to}~ k-1$}}
-    \State $n \gets n * \mathit{radices}[i]$
-    \State $n \gets n + \mathit{digits}[i]$
+    \State $\actionnumber \gets \actionnumber * \mathit{radices}[i]$
+    \State $\actionnumber \gets \actionnumber + \mathit{digits}[i]$
   \EndFor
-  \State \Return $n$
+  \State \Return $\actionnumber$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
-section: evaluators
+\begin{algorithm}
+\caption{Reconstruct action from number}
+\label{alg:number-action}
+\begin{algorithmic}[1]
+\Require{Hand $\hand$ with equivalence classes $c_1,c_2,...c_m$, action number $\actionnumber$}
+\Procedure{number-action}{$\hand$, $\actionnumber$}
+  \State $\mathit{multiplicities} \gets [\cardinality{c_i} \vert i = 1,\ldots,m]$
+  \State $\mathit{digits} \gets [0 \vert i = 1,\ldots,k]$
 
-section: playout strategies
+  \Comment Recover the digits, knowing that the least-significant radix is $m$
+  \State $\mathit{radix} \gets m$
+  \For{\text{$i \gets 0 ~\textbf{to}~ k-1$}}
+    \State $\mathit{digits}[i] \gets \actionnumber \bmod \mathit{radix}$
+    \State $\actionnumber \gets \floor{\actionnumber / \mathit{radix}}$
+
+    \For{\text{$j \gets 0 ~\textbf{to}~ \mathit{digits}[i]$}}
+      \If{$\mathit{multiplicities}[j] = 0$}
+        \State Increment $\mathit{digits}[i]$
+      \EndIf
+    \EndFor
+
+    \State Decrement $\mathit{multiplicities}[\mathit{digits}[i]]$
+    \If{$\mathit{multiplicities}[\mathit{digits}[i]] = 0$}
+      \State Decrement $\mathit{radix}$
+    \EndIf
+
+  \EndFor
+
+  \Ensure $\actionnumber = 0$
+  \State \Return $\mathit{digits}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Evaluation Functions} \label{sec:evaluators}
+
+Recall from Section~\ref{sec:approach} that the evaluation function $\evaluator(\state)$ is a substitute for the winning probability.  This section describes the evaluation functions that were implemented and tried.
+
+\begin{itemize}
+\item \textbf{Minimum Checkpoint Advantage} compares our robot to the opponent that is furthest ahead of the other opponents.  It computes the difference $a - b$ between the number of checkpoints $a$ reached by our robot and the number of checkpoints $b$ reached by the opponent.  Clearly, this correlates with winning probability.  However, it is sparse and delayed: it does not reward approaching a checkpoint until it is actually reached. \\
+\item \textbf{Manhattan Distance to Checkpoint} computes the $L_1$ distance to the next checkpoint. \\
+\item \textbf{Informed Distance to Checkpoint} finds the shortest path to the next checkpoint when traveling around walls and pits.  As a reward signal, it is less likely to get the robot stuck in a local optimum where it has to first distance itself from the checkpoint and then approach it again.  However, it is too expensive to compute, and since the Monte-Carlo strategy searches $d$ turns ahead, it is already able to escape local optima. \\
+\item The \textbf{Hodgepodge} is a linear combination of several features: \\
+  \begin{tabular}{l|r|l}
+    Feature & Weight & Domain \\
+    \hline
+    Whether our robot has won or lost or neither & $100$ & $\{-1,0,1\}$ \\
+    Whether our robot is active\footnote{A robot is \emph{active} if and only if it is not destroyed and not skipping a turn.} & $3$ & $\{-1,1\}$ \\
+    Minimum Checkpoint Advantage & $5$ & $[-3,3]$ \\
+    Absolute checkpoint progress & $1$ & $[1,4]$ \\
+    Damage                       & $-0.3$ & $[0,9]$ \\
+    Manhattan Distance to Checkpoint & $-0.1$ & $[0,144]$ \\
+  \end{tabular} \\
+  The weights were tuned by hand based on observed behavior in test games.  There was not enough time to apply a learning algorithm.
+\end{itemize}
+
+\subsection{Playout Strategies} \label{sec:playout-strategies}
+
+
+
+\begin{itemize}
+\item The \textbf{Uniform Random} playout strategy samples an action uniformly from $\actions(\state)$. \\
+\item The \textbf{Random Search} playout strategy samples a small number of actions uniformly from $\actions(\state)$ and executes the one that maximizes some evaluation function $\evaluator(\state)$. \\
+\end{itemize}
+
+
 \end{document}
