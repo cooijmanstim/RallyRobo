@@ -26,6 +26,8 @@ public class Knowledge {
 	
 	static int distanceToCheckpoint(Game game, int irobot) {
 		Robot robot = game.robots.get(irobot);
+		if (robot.next_checkpoint >= game.board.checkpoints.size())
+			return 0;
 		int[] a = robot.position.clone(),
 			  b = game.board.checkpoints.get(robot.next_checkpoint).clone();
 		return Point.manhattanDistance(a, b);

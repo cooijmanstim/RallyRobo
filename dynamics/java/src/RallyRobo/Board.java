@@ -76,6 +76,10 @@ class Board {
 		features[(i*width+j)*Feature.cardinality+k] = true;
 	}
 
+	public void unset_feature(int i, int j, int k) {
+		features[(i*width+j)*Feature.cardinality+k] = false;
+	}
+
 	public boolean has_feature(int i, int j, int k) {
 		return features[(i*width+j)*Feature.cardinality+k];
 	}
@@ -84,14 +88,36 @@ class Board {
 		set_feature(i, j, feature.ordinal());
 	}
 	
+	public void unset_feature(int i, int j, Feature feature) {
+		unset_feature(i, j, feature.ordinal());
+	}
+	
 	public boolean has_feature(int i, int j, Feature feature) {
 		return has_feature(i, j, feature.ordinal());
+	}
+	
+	public boolean[] has_feature(int i, int j, boolean[] features) {
+		int n = 0;
+		for (int k = 0; k < features.length; k++) {
+			if (features[k])
+				n++;
+		}
+
+		boolean[] result = new boolean[n];
+		int l = 0;
+		for (int k = 0; k < features.length; k++) {
+			if (features[k] && has_feature(i, j, k)) {
+				result[l] = true;
+				l++;
+			}
+		}
+		return result;
 	}
 
 	public void set_feature(int[] x, Feature feature) {
 		set_feature(x[0], x[1], feature);
 	}
-
+	
 	public boolean has_feature(int[] x, Feature feature) {
 		return has_feature(x[0], x[1], feature);
 	}

@@ -11,7 +11,7 @@ public enum Evaluator {
 			Robot robot = game.robots.get(irobot);
 			int distance = Math.min(game.board.width*game.board.height,
 									Knowledge.distanceToCheckpoint(game, irobot));
-			int active = robot.is_active() && !Knowledge.conveyorOfDeath(game, irobot) ? 1 : 0;
+			int active = robot.is_active() && !Knowledge.conveyorOfDeath(game, irobot) ? 1 : -1;
 			int winloss = game.is_over() ? (game.winner() == irobot ? 1 : -1) : 0;
 			// TODO: learn weights
 			return 100  *winloss +
@@ -20,6 +20,12 @@ public enum Evaluator {
 					  1  *robot.next_checkpoint +
 					 -0.3*robot.damage +
 					 -0.1*distance;
+		}
+	}),
+	WinLoss(new EvaluationFunction () {
+		@Override public double call(Game game, int irobot) {
+			int winloss = game.is_over() && game.winner() == irobot ? 1 : 0;
+			return winloss;
 		}
 	}),
 	Constant(new EvaluationFunction () {
