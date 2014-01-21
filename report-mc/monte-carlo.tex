@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{amsmath,bm,amsfonts}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\bibliographystyle{apalike}
+
+\newcommand{\upright}[1]{\mathrm{#1}}
+\DeclareMathOperator*{\argmin}{\arg\!\min}
+\DeclareMathOperator*{\nint}{nint}
+
+\newcommand{\twopartdef}[4]
+{
+	\left\{
+		\begin{array}{ll}
+			#1 & \mbox{if } #2 \\
+			#3 & \mbox{if } #4
+		\end{array}
+	\right\}.
+}
+
+\newcommand{\reals}{\mathbb{R}}
+
+\newcommand{\Action}{A}
+\newcommand{\action}{a}
+\newcommand{\actions}{\mathcal{A}}
+
+\newcommand{\randomState}{S}
+\newcommand{\state}{s}
+\newcommand{\states}{\mathcal{S}}
+
+\newcommand{\hand}{\mathcal{H}}
+
+\newcommand{\depth}{d}
+\newcommand{\evaluator}{v}
+\newcommand{\probability}{\rho}
+\newcommand{\expectation}[2]{E\left({#1\given#2}\right)}
+\newcommand{\given}[1][]{\:#1\vert\:}
+\newcommand{\factorial}[1]{#1\,!}
+\newcommand{\abs}[1]{\left|#1\right|}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\initial}{0}
+\newcommand{\final}{f}
+
+\newcommand{\rotation}[1]{\omega(#1)}
+\newcommand{\translation}[1]{\tau(#1)}
+
+\newcommand{\eclass}[1]{\left[#1\right]}
+\newcommand{\cardinality}[1]{\left|#1\right|}
+
+\begin{document}
+
+\section{Monte-Carlo strategy}
+
+% TODO: cite MDPs
+Given a game state $\state_\initial$, an optimal action is one that maximizes the expected winning probability:
+
+\[
+\argmax_{\action \in \actions\left(\state_\initial\right)} \expectation{\evaluator\left(\randomState\final\right)}{\randomState\initial=\state_\initial, \Action_\initial=\action}.
+\]
+
+Here the expectation is with respect to the distribution over terminal states $\randomState_\final$, and $\evaluator\left(\state\right) \in \left\{0,1\right\}$ indicates whether our robot is the winner in $\randomState_\final$.  Solving this exactly requires knowledge of the action-conditional distribution over terminal states $\probability\left(\randomState_\final \given \randomState_\initial=\state_\initial, \Action_\initial\right)$, which is a function of the unknown strategies of the opponents.
+
+Instead, the Monte-Carlo strategy estimates the expectation corresponding to each action $\action_\initial$ by sampling terminal states $\state_\final$ from an empirical distribution $\hat{\probability}\left(\randomState_\final \given \state_\initial,\action_\initial\right)$ and averaging the values $\evaluator\left(\state_\final\right)$ so found.  The sampling procedure is described in Algorithm~\ref{alg:sample_terminal_states}.  In short, a simulated game is played out in which our robot's first action is $\action_\initial$ and all further actions by all players are made according to some playout strategy $\pi\left(\state\right) \in \actions\left(\state\right)$.  Note that the resulting empirical distribution $\hat{\probability}$ is unlikely to be a good approximation to the actual distribution.  However, since the simulated game has all players playing according to the same strategy $\pi$, the expectations with respect to the two distributions are positively correlated.
+
+While the strategy as described above works in theory, in practice not enough samples are collected to provide reliable estimates of the expectations.  This is because it takes on average over a thousand turns to reach a terminal state.  Longer simulations take longer to compute and result in fewer samples per unit time.  At the same time, due to the uncertainty introduced with every turn, the resulting terminal state is much less dependent on the initial action.
+
+% TODO: cite minimax evaluation functions
+In order to improve the number of samples and their information content, the simulated games are played only up until a finite depth $\depth$.  Furthermore, the win indicator function $\evaluator$ is replaced by a heuristic evaluation function $\hat{\evaluator}\left(\state\right) \in \reals$ that is also defined for non-terminal states:
+
+\[
+\argmax_{\action \in \actions\left(\state_\initial\right)} \expectation{\hat{\evaluator}\left(\randomState_\depth\right)}{\Action_\initial=\action}.
+\]
+
+This works well if $\hat{\evaluator}\left(\state\right)$ positively correlates with the actual winning probability $\expectation{\evaluator\left(\randomState_\final\right)}{\randomState_\initial = \state_\initial}$.  Section~\ref{sec:evaluators} discusses the evaluation funcions that were implemented.
+
+\subsection{The action space}
+
+At the beginning of each turn, each player is dealt a hand $\hand = \left\{h_1,h_2,\ldots,h_n\right\}$ with which to populate a sequence of registers $r_1,r_2,\ldots,r_k$.  This gives rise to a set $\tilde{\actions}$ of $\factorial{n}/\factorial{\left(n-k\right)}$ actions, each of which corresponds to an ordered $k$-sequence of distinct cards.  Typically there exist sets of actions for which it can be deduced that they produce identical terminal state distributions.
+
+As an example of this, consider the set of cards $\hand = \left\{11,83,57,49,35,21, 3,50, 4\right\}$.  As the cards $49$ and $50$ have the same movement effect and their priorities are adjacent, their order with respect to each other makes no difference to the game.  That is, some action $\action = \left\{49,r_2,50,r_4,\ldots,r_k\right\}$ necessarily has the same effect as the action $\action' = \left\{50,r_2,49,\ldots,r_k\right\}$.  A similar relation holds for rotation cards, except that the priorities do not need to be adjacent, since rotating robots do not interfere with each other.
+
+This leads to the following equivalence relation:
+
+\[
+\forall h, h' \in \hand
+h \equiv h' \iff
+\twopartdef{\rotation{h} = \rotation{h'}}{h,h' <= 42}
+           {\translation{h} = \translation{h'} \land
+           % directly equivalent
+           \left(
+           \abs{h - h'} = 1 \lor
+           % or transitively equivalent
+           \exists \tilde{h} \in \hand \colon
+                   \abs{h - \tilde{h}} = 1 \land
+                   \tilde{h} \equiv h'
+           \right)
+           }{\text{otherwise}}
+\]
+
+where $\rotation{h}$ denotes the rotational effect of card $h$, and $\translation{h}$ the translational effect.  The equivalence partition so induced allows the set of cards $\hand$ to be treated as a multiset containing each equivalence class of cards $\eclass{h_i}$ as an item with multiplicity $\cardinality{\eclass{h_i}}$.  This results in a severely reduced action space $\actions$ where each action assigns an equivalence class rather than a card to each register.
+
+This analysis serves two purposes.  Firstly, sampling uniformly from $\actions$ is more useful than sampling uniformly from $\tilde{\actions}$, since it is closer to sampling uniformly from the set of possible outcomes.  Secondly, there are now many fewer actions for which expectations need to be estimated, which means more samples are available to estimate these expectations.
+
+Note that there are circumstances under which it is possible to reduce the action space further.  For example, if $49,51 \in \hand$ and $50$ is locked in some player's last register, then the relative order of $49$ and $51$ has no effect if both are played in an earlier register.  However, these cases are rare.
+
+Finally, it is useful in practice to have a bijective mapping between elements of $\actions$ and the natural numbers.  This allows efficient lookup tables to be used.  Algorithm~\ref{alg:actionnumber} computes the number corresponding to an action, and Algorithm~\ref{alg:numberaction} computes the action from the number.  The encoding is a generalization of the factoradic system to $k$-sequences taken from multisets.
+% TODO: cite factoradic
+
+\begin{algorithm}
+\caption{Sampling terminal states}
+\label{alg:sample_terminal_states}
+\begin{algorithmic}[1]
+\Require{Playout strategy $\pi$, initial state $\state_\initial \in \states$, initial action $\action_\initial \in \actions\left(\state_\initial\right)$}
+\Procedure{sample-terminal-state}{$\state_\initial$, $\action_\initial$, $\pi$}
+  \State $t \gets 0$
+  \State Fill registers of our robot according to $\action_t$
+  \State Deal cards for each opponent and fill their registers according to $\pi(\state_t)$
+  \While{$\lnot \mathit{terminal}(\state_t)$}
+    \State Perform the turn, obtaining $\state_{t+1} \gets \mathit{successor}(\state_t)$
+    \State $t \gets t + 1$
+    \State Deal cards for each player and fill their registers according to $\pi(\state_t)$
+  \EndWhile
+  \State \Return $\state$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Compute action number}
+\label{alg:actionnumber}
+\begin{algorithmic}[1]
+\Require{Hand $\hand$ with equivalence classes $c_1,c_2,...c_m$, action $\action$}
+\Procedure{action-number}{$\hand$, $\action$}
+  \State $\mathit{multiplicities} \gets [\cardinality{c_i} \vert i = 1,\ldots,m]$
+  \State $\mathit{digits} \gets [r_i \vert i = 1,\ldots,k]$
+
+  \Comment Determine the digits and radices
+  \State $\mathit{radix} \gets m$
+  \State $\mathit{radices} \gets []$
+  \For{\text{$i \gets 0 ~\textbf{to}~ k-1$}}
+    \State $\mathit{radices}[i] \gets \mathit{radix}$
+    \State Decrement $\mathit{multiplicities}[\mathit{digits}[i]]$
+    \If{$\mathit{multiplicities}[\mathit{digits}[i]] = 0$}
+      \State Decrement $\mathit{radix}$
+    \EndIf
+
+    \For{\text{$j \gets 0 ~\textbf{to}~ \mathit{digits}[i]-1$}}
+      \If{$\mathit{multiplicities}[j] = 0$}
+        \State Decrement $\mathit{digits}[i]$
+      \EndIf
+    \EndFor
+  \EndFor
+
+  \Comment Compute in such a way that the least-significant radix is $m$
+  \State $n \gets 0$
+  \For{\text{$i \gets 0 ~\textbf{to}~ k-1$}}
+    \State $n \gets n * \mathit{radices}[i]$
+    \State $n \gets n + \mathit{digits}[i]$
+  \EndFor
+  \State \Return $n$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+section: evaluators
+
+section: playout strategies
+\end{document}
