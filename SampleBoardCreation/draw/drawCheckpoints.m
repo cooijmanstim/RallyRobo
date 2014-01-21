@@ -1,7 +1,7 @@
 function [  ] = drawCheckpoints(checkpoints,n)
 hold on;
 
-resize = 0.1;
+resize = 0.02;
 % TODO: make checkpoint indices 0-based in java
 for i = 1: checkpoints.size()-1
     yx = double(checkpoints.get(i));
