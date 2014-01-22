@@ -2,6 +2,7 @@ package RallyRobo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 final public class DecisionSet {
 	public final int[][] xclasses;
@@ -175,8 +176,8 @@ final public class DecisionSet {
 	public int[] random() {
 		return random(Util.generator);
 	}
-	
-	public int[] random(MersenneTwisterFast random) {
+
+	public int[] random(Random random) {
 		int[] xclass_sizes = this.xclass_sizes.clone();
 		int[] decision = new int[decisionLength];
 		for (int i = 0; i < decisionLength; i++) {

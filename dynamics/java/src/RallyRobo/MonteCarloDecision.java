@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,7 +54,7 @@ final class MonteCarloDecision {
 	}
 	
 	private class Sampler implements Callable<Void> {
-		private MersenneTwisterFast generator = new MersenneTwisterFast();
+		private Random generator = new Random();
 		
 		@Override public Void call() {
 			try {
@@ -90,13 +91,11 @@ final class MonteCarloDecision {
 		sampleOnce(Util.generator);
 	}
 
-	public void sampleOnce(MersenneTwisterFast generator) {
+	public void sampleOnce(Random random) {
 		Game game = this.game.clone();
-		for (Robot robot: game.robots)
-			robot.set_strategy(Strategy.Random);
 
 		// make a decision
-		int[] decision = decisions.random(generator);
+		int[] decision = decisions.random(random);
 		int decisionIndex = decisions.decisionIndex(decision);
 		int[] cards = decisions.cards(decision);
 		game.robots.get(irobot).fill_registers(cards);
