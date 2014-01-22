@@ -1,7 +1,10 @@
-function [cards, DataStructure, PlayersPos] = the_one_function(...
+function [cards, DataStructure, PlayersPos] = the_one_function(image, ...
     color, hand, last_checkpoints, locked_registers, ...
     DataStructure, PlayersPos)
 assert(nargin >= 4);
+
+init();
+global RR;
 
 height = 12; width = 12;
 ncheckpoints = 4; nrobots = length(last_checkpoints);
@@ -14,9 +17,9 @@ for i = 1:nrobots
 end
 
 if isempty(DataStructure)
-    % TODO: image processing function
-    % TODO: how does the image get passed in?
-    ImageDetection?(game, ???);
+    % TODO: let image processing function be careful with overwriting
+    ProcessImage(game, image);
+    [DataStructure,PlayersPos] = backupfunction_inverse(game);
 else
     Backupfunction(game, DataStructure, PlayersPos);
 end
@@ -34,7 +37,6 @@ for i = 1:nrobots
     robot.damage = 9 - locked_registers(i, 6);
 end
 
-% TODO: figure out robot number from color
-irobot = some_function_of(color);
+irobot = RR.irobot_by_color.(color);
 strategy = RallyRobo.Strategy.MonteCarloHeuristicSmart;
 cards = strategy.decide(game, irobot-1, hand);
