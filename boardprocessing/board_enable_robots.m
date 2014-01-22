@@ -1,8 +1,10 @@
 function [game] = board_enable_robots(game,robots)
 directions = RallyRobo.Direction.values;
-counter = 1;
-for robot = robots
-        robot = game.robots.get(counter-1);
-        game.add_robot(robot.position, directions(robot.robotdir+1));
-        counter = counter +1;
+for i = 1 : game.robots.size
+        robot = game.robots.get(i-1);
+        if size(robots{i},1)>0
+            robot.position = robots{i}.position;
+            robot.direction = directions(robots{i}.robotdir+1);
+        end
+end
 end

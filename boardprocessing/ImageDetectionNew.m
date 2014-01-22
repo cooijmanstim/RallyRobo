@@ -1,7 +1,10 @@
 close all ; clear all;
-%% to be placed in header
 gridSize = 12;
 game = RallyRobo.Game(gridSize, gridSize);
+for i = 1:4
+    game.board.add_checkpoint([0 0]);
+    game.add_robot([1 1], RallyRobo.Direction.East);
+end
 %% read the original image 
 
 [im, map]= imread('screenshotBoard0121_2.PNG');
@@ -64,14 +67,16 @@ extcorner = R(kmax).PixelList([dUL dDL dDR dUR dUL],:);
 % plot(extcorner(:,1), extcorner(:,2), 'g*');
 
 
-%% selcting the starting points
+%% selecting the starting points
 input_points =[extcorner(1,1) extcorner(1,2);...
                extcorner(2,1) extcorner(2,2);...
                extcorner(4,1) extcorner(4,2);...
                extcorner(3,1) extcorner(3,2)];
 
-%% selcting the ending points
-base_points=[10 10; 610 10;10 610; 610 610 ] ;
+%% selecting the ending points
+sizePerTile = 64;
+transformationSize = gridSize * sizePerTile-1;
+base_points=[0 0; transformationSize 0;0 transformationSize; transformationSize transformationSize ] ;
 
 %% transforming the image
 t = cp2tform(input_points, base_points,'projective');
@@ -97,16 +102,13 @@ y = bwareaopen(y, 30);
 % figure, imshow(y);
 % title('removing noise again');
 
-%% determine the gridsize
-
-
 %% get the Array of tiles
 tiles = getTiles(y, gridSize);
 
 %shows only the bottom right corner of every tile
-figure, imshow(y);
-hold on;
-plot(tiles(:,9), tiles(:,10), 'g*');
+% figure, imshow(y);
+% hold on;
+% plot(tiles(:,9), tiles(:,10), 'g*');
 
 
 %% create board from tiles
@@ -121,8 +123,13 @@ end
 rotatedimage = y;
 %new robots and checkpoints have to be stored separately to initialize them in the right order
 robots = {};
+robots{game.robots.size} = [];
 checkpoints = {};
+checkpoints{game.board.checkpoints.size} = [];
+figure
+counter = 0;
 for tile = tiles'
+    counter = counter+1;
     % tile contains corner point coordinates
     x = tile(1);
     y = gridSize+1-tile(2);
@@ -130,19 +137,21 @@ for tile = tiles'
     ymin = tile(4);
     xmax = tile(end-1);
     ymax = tile(end);
-    width = xmax - xmin;
-    height = ymax - ymin;
+    width = xmax - xmin-1;
+    height = ymax - ymin-1;
     assert(all([width height] >= 0));
     croppedTile = imcrop(rotatedimage, [xmin ymin width height]);
     [isGamestate,featureOrGamestate] = identifyTileFeatures(croppedTile);
+    
     if isGamestate
 		if ~isempty(featureOrGamestate.robotdir)
 			rgb = imcrop(imageRGB, [xmin ymin width height]);
-            middle = round(size(rgb,1)/2);
-			midPixel = rgb(middle,middle,:);
-			player = getPlayerNumberOfColor(midPixel);
-			robots{player} = featureOrGamestate;
-		else
+			player = getPlayerNumberOfColor(rgb,featureOrGamestate);
+            if player ~=-1
+                robots{player} = featureOrGamestate;
+                robots{player}.position = [y x];
+            end
+        else
 			checkpoints{featureOrGamestate.checkpointid} = [y x];
 		end
 	else
