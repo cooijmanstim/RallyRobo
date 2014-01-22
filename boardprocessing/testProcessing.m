@@ -1,4 +1,4 @@
-close all ; clear all;
+clc; close all ; clear all;
 % picture here
 [picture, map]= imread('screenshotBoard0121_2.PNG');
 figure, imshow(picture);

@@ -97,10 +97,10 @@ for tile = tiles'
                 robot.direction = directions(featureOrGamestate.robotdir+1);
             end
         else
-            game.board.checkpoints.get(featureOrGamestate.checkpointid-1) = int32([y x]);
+            game.board.checkpoints.set(featureOrGamestate.checkpointid, int32([y x]));
 		end
     else
-        game.board.set_feature(y, x, featureOrGameState);
+        game.board.set_feature(y, x, featureOrGamestate);
     end
 end
 end

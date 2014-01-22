@@ -17,8 +17,7 @@ for i = 1:nrobots
 end
 
 if isempty(DataStructure)
-    % TODO: let image processing function be careful with overwriting
-    ProcessImage(game, image);
+    getGameFromImage(image, game);
     [DataStructure,PlayersPos] = mc_backupfunction_inverse(game);
 else
     mc_backupfunction(game, DataStructure, PlayersPos);
@@ -26,7 +25,8 @@ end
 
 assert(length(last_checkpoints) == nrobots);
 for i = 1:nrobots
-    game.robots.get(i-1).next_checkpoint = last_checkpoints(i)+1;
+    robot = game.robots.get(i-1);
+    robot.next_checkpoint = last_checkpoints(i)+1;
 end
 
 assert(size(locked_registers, 1) == nrobots);
@@ -38,5 +38,12 @@ for i = 1:nrobots
 end
 
 irobot = RR.irobot_by_color.(color);
-strategy = RallyRobo.Strategy.MonteCarloHeuristicSmart;
-cards = strategy.decide(game, irobot-1, hand);
+
+% change between true/false to switch between the Monte-Carlo strategy and
+% the Shortest-Path strategy
+if false
+    strategy = RallyRobo.Strategy.MonteCarloHeuristicSmart;
+    cards = strategy.decide(game, irobot-1, hand);
+else
+    cards = algorithm(color, hand, last_checkpoints, locked_registers,DataStructure,PlayersPos);
+end
