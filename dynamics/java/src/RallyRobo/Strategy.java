@@ -9,10 +9,10 @@ public enum Strategy {
 	}),
 	RandomSearchHeuristicFast(new RandomSearchDecisionFunction(100, Evaluator.Heuristic)),
 	RandomSearchHeuristicSlow(new RandomSearchDecisionFunction(10000, Evaluator.Heuristic)),
-	MonteCarloTerminal(new MonteCarloDecisionFunction(30, 10000, Evaluator.WinLoss, Strategy.RandomSearchHeuristicFast)),
-	MonteCarloCheckpointSmart(new MonteCarloDecisionFunction(30, 4, Evaluator.CheckpointAdvantage, Strategy.RandomSearchHeuristicFast)),
-	MonteCarloHeuristic(new MonteCarloDecisionFunction(30, 4, Evaluator.Heuristic, Strategy.Random)),
-	MonteCarloHeuristicSmart(new MonteCarloDecisionFunction(30, 4, Evaluator.Heuristic, Strategy.RandomSearchHeuristicFast));
+	MonteCarloTerminal(new MonteCarloDecisionFunction(25, 10000, Evaluator.WinLoss, Strategy.RandomSearchHeuristicFast)),
+	MonteCarloCheckpointSmart(new MonteCarloDecisionFunction(25, 4, Evaluator.CheckpointAdvantage, Strategy.RandomSearchHeuristicFast)),
+	MonteCarloHeuristic(new MonteCarloDecisionFunction(25, 4, Evaluator.Heuristic, Strategy.Random)),
+	MonteCarloHeuristicSmart(new MonteCarloDecisionFunction(25, 4, Evaluator.Heuristic, Strategy.RandomSearchHeuristicFast));
 	
 	final DecisionFunction f;
 	Strategy(DecisionFunction f) {
