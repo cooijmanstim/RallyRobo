@@ -64,20 +64,14 @@ y = bwareaopen(y, 30);
 tiles = getTiles(y, gridSize);
 
 %% create board from tiles
-global RR;
-init();
 %initiate sample tiles
 global TFM;
 TFM = load('tile_featureset_map');
 for i = 1:size(TFM.tiles);
 TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
 end
+directions = RallyRobo.Direction.values;
 rotatedimage = y;
-%new robots and checkpoints have to be stored separately to initialize them in the right order
-robots = {};
-robots{game.robots.size} = [];
-checkpoints = {};
-checkpoints{game.board.checkpoints.size} = [];
 counter = 0;
 for tile = tiles'
     counter = counter+1;
@@ -98,16 +92,15 @@ for tile = tiles'
 			rgb = imcrop(imageRGB, [xmin ymin width height]);
 			player = getPlayerNumberOfColor(rgb,featureOrGamestate);
             if player ~=-1
-                robots{player} = featureOrGamestate;
-                robots{player}.position = [y x];
+                robot = game.robots.get(player-1);
+                robot.position = [y x];
+                robot.direction = directions(featureOrGamestate.robotdir+1);
             end
         else
-			checkpoints{featureOrGamestate.checkpointid} = [y x];
+            game.board.checkpoints.get(featureOrGamestate.checkpointid-1) = int32([y x]);
 		end
-	else
-		game = board_enable_feature(game, [y x], featureOrGamestate );
+    else
+        game.board.set_feature(y, x, featureOrGameState);
     end
 end
-game = board_enable_robots(game,robots);
-game = board_enable_checkpoints(game,checkpoints);
 end
