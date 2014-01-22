@@ -1,45 +1,18 @@
-close all ; clear all;
-gridSize = 12;
-game = RallyRobo.Game(gridSize, gridSize);
-for i = 1:4
-    game.board.add_checkpoint([0 0]);
-    game.add_robot([1 1], RallyRobo.Direction.East);
-end
-%% read the original image 
+function [ game ] = getGameFromImage( image, game )
 
-[im, map]= imread('screenshotBoard0121_2.PNG');
-
-figure, imshow(im);
-title('the original image');
-
-
+gridSize = game.board.interiorHeight;
 %% convert to gray scale
 
-im2=rgbtograyscale(im);
-
-% figure, imshow(im2,map);
-% title('convert to gray scale');
-
-
+im2=rgbtograyscale(image);
 %% tresholding
-
-threshold =135; 
 im3 = relativeScaling(im2,2);
-
-% figure, imshow(im3);
-% title('thresholding');
 
 %% noise removal
 
 im2 = bwareaopen(im3,20000);
 
-% figure, imshow(im2);
-% title('Noise removal');
-
 %% Clear the borders
 im2 = imclearborder(im2);
-% imshow(im2);
-
 
 %% finding corners
 R = regionprops(im2,'Area','BoundingBox','PixelList');
@@ -61,12 +34,6 @@ DIAG2 = diff(R(kmax).PixelList,[],2);
 
 extcorner = R(kmax).PixelList([dUL dDL dDR dUR dUL],:);
 
-% figure, imshow(im2);
-% title('Looking for corners');
-% hold on
-% plot(extcorner(:,1), extcorner(:,2), 'g*');
-
-
 %% selecting the starting points
 input_points =[extcorner(1,1) extcorner(1,2);...
                extcorner(2,1) extcorner(2,2);...
@@ -78,38 +45,23 @@ sizePerTile = 64;
 transformationSize = gridSize * sizePerTile-1;
 base_points=[0 0; transformationSize 0;0 transformationSize; transformationSize transformationSize ] ;
 
-%% transforming the image
+%% transforming the original image
 t = cp2tform(input_points, base_points,'projective');
 baseX = base_points(: , 1);
 baseY = base_points(: , 2);
-y = imtransform(im, t , 'bilinear' , 'XData' , [min(baseX) max(baseX)] , 'YData',[min(baseY) max(baseY)]);
+y = imtransform(image, t , 'bilinear' , 'XData' , [min(baseX) max(baseX)] , 'YData',[min(baseY) max(baseY)]);
 
-
-% figure, imshow(y);
-% title('The transformed image');
-
+%% save a rgb image for color detection
 imageRGB = y;
 
 
 %% treshold the new image
-threshold =115; 
-% y = relativeScaling(y,2);
 y = makeLogicalOfImage(y);
-% figure, imshow(y);
 %% remove the noise from the new image / GOD function
 y = bwareaopen(y, 30);
 
-% figure, imshow(y);
-% title('removing noise again');
-
 %% get the Array of tiles
 tiles = getTiles(y, gridSize);
-
-%shows only the bottom right corner of every tile
-% figure, imshow(y);
-% hold on;
-% plot(tiles(:,9), tiles(:,10), 'g*');
-
 
 %% create board from tiles
 global RR;
@@ -126,7 +78,6 @@ robots = {};
 robots{game.robots.size} = [];
 checkpoints = {};
 checkpoints{game.board.checkpoints.size} = [];
-figure
 counter = 0;
 for tile = tiles'
     counter = counter+1;
@@ -142,7 +93,6 @@ for tile = tiles'
     assert(all([width height] >= 0));
     croppedTile = imcrop(rotatedimage, [xmin ymin width height]);
     [isGamestate,featureOrGamestate] = identifyTileFeatures(croppedTile);
-    
     if isGamestate
 		if ~isempty(featureOrGamestate.robotdir)
 			rgb = imcrop(imageRGB, [xmin ymin width height]);
@@ -160,5 +110,4 @@ for tile = tiles'
 end
 game = board_enable_robots(game,robots);
 game = board_enable_checkpoints(game,checkpoints);
-initBoardFigure(game);
-refreshBoard(game);
+end

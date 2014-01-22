@@ -1,13 +1,20 @@
-% toCheck = makeLogicalOfImage(imread('test.bmp'));
-% toCheck = makeLogicalOfImage(imread('test2.gif'));
-toCheck = makeLogicalOfImage(imread('test4.gif'));
-% [tiles,featuresets] = generate_tile_images();
-global TFM;
-TFM = load('tile_featureset_map');
-for i = 1:size(TFM.tiles);
-TFM.tiles{i} = makeLogicalOfImage(TFM.tiles{i});
+close all ; clear all;
+% picture here
+[picture, map]= imread('screenshotBoard0121_2.PNG');
+figure, imshow(picture);
+title('the original image');
+
+%initialize game
+gridSize = 12;
+game = RallyRobo.Game(gridSize, gridSize);
+for i = 1:4
+    game.board.add_checkpoint([0 0]);
+    game.add_robot([1 1], RallyRobo.Direction.East);
 end
 
+% identify board
+game = getGameFromImage(picture,game);
 
-
-[features, gamestate] =identifyTileFeatures(toCheck);
+figure;
+initBoardFigure(game);
+refreshBoard(game);
