@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
-class Board {
+final class Board {
 	public final int interiorHeight, interiorWidth, height, width;
 
 	final boolean features[];

@@ -2,7 +2,7 @@ package RallyRobo;
 
 import java.util.Arrays;
 
-class Card {
+final class Card {
 	static final int None = 0; // used to specify absence of card in registers
 
 	static final int cardinality = 84;

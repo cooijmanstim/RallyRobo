@@ -2,13 +2,15 @@ package RallyRobo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-class MonteCarloDecision {
+final class MonteCarloDecision {
 	private final Game game;
 	private final int irobot;
 	public final DecisionSet decisions;
@@ -51,15 +53,16 @@ class MonteCarloDecision {
 	}
 	
 	private class Sampler implements Callable<Void> {
+		private MersenneTwisterFast generator = new MersenneTwisterFast();
+		
 		@Override public Void call() {
 			try {
 				while (!Thread.interrupted())
-					sampleOnce();
+					sampleOnce(generator);
 			} catch(Throwable t) {
 				System.out.println("sampler threw: "+t);
 				t.printStackTrace();
 			}
-			System.out.println("sampler interrupted");
 			return null;
 		}
 	}
@@ -82,14 +85,18 @@ class MonteCarloDecision {
 		double duration = (endTime - startTime)*1.0/1e9;
 		System.out.println(timeBudget+" seconds took "+duration+" seconds");
 	}
-
+	
 	public void sampleOnce() {
+		sampleOnce(Util.generator);
+	}
+
+	public void sampleOnce(MersenneTwisterFast generator) {
 		Game game = this.game.clone();
 		for (Robot robot: game.robots)
 			robot.set_strategy(Strategy.Random);
 
 		// make a decision
-		int[] decision = decisions.random();
+		int[] decision = decisions.random(generator);
 		int decisionIndex = decisions.decisionIndex(decision);
 		int[] cards = decisions.cards(decision);
 		game.robots.get(irobot).fill_registers(cards);
@@ -121,7 +128,6 @@ class MonteCarloDecision {
 			if (expectations[i].value() > expectations[decisionIndex].value())
 				decisionIndex = i;
 		}
-		System.out.println("deciding on decision with expectation "+expectations[decisionIndex].value());
 		return decisions.cards(decisionIndex);
 	}
 
@@ -169,12 +175,16 @@ class MonteCarloDecision {
 
 	public static void main(String[] args) {
 		Game game = Game.example_game();
-		int[] hand = {11,83,57,49,35,21, 3,50, 4};
-		MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10);
+		//int[] hand = {11,83,57,49,35,21, 3,50, 4};
+		int[] hand = {77, 72, 34, 69, 41, 21};
+		final MonteCarloDecision mcd = new MonteCarloDecision(game, 0, hand, 10);
 		mcd.setEvaluator(Evaluator.Heuristic);
 		mcd.setPlayoutStrategy(Strategy.RandomSearchHeuristicFast);
 		mcd.sampleTimeLimited(10);
+		
 		Statistics s = mcd.statistics();
+		System.out.println("hand: "+Arrays.toString(hand));
+		System.out.println("xclasses: "+Arrays.toString(mcd.decisions.xclass_sizes));
 		System.out.println("sample count: "+mcd.sampleCount);
 		System.out.println("decision set size: "+mcd.decisions.computeSize());
 		System.out.println("mean depth: "+s.meanDepth.value());

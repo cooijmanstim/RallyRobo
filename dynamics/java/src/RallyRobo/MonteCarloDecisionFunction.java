@@ -1,5 +1,7 @@
 package RallyRobo;
 
+import java.util.Arrays;
+
 import RallyRobo.MonteCarloDecision.Statistics;
 
 public class MonteCarloDecisionFunction implements DecisionFunction {
@@ -21,8 +23,9 @@ public class MonteCarloDecisionFunction implements DecisionFunction {
 		mcd.setPlayoutStrategy(playoutStrategy);
 		mcd.sampleTimeLimited(duration);
 		Statistics s = mcd.statistics();
-		System.out.println("sample count: "+mcd.sampleCount());
+		System.out.println("hand: "+Arrays.toString(hand));
 		System.out.println("decision set size: "+mcd.decisions.computeSize());
+		System.out.println("sample count: "+mcd.sampleCount());
 		System.out.println("mean depth: "+s.meanDepth.value());
 		System.out.println("expectations: "+s.expectationHistogram);
 		System.out.println("sample counts: "+s.sampleCountHistogram);

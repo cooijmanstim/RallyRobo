@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Util {
-	static final Random generator = new Random();
+	static final MersenneTwisterFast generator = new MersenneTwisterFast();
 
 	static double variance(double[] xs) {
 		int n = xs.length;

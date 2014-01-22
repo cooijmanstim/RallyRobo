@@ -2,7 +2,7 @@ package RallyRobo;
 
 import java.util.Arrays;
 
-class Robot {
+final class Robot {
 	public static final int NRegisters = 5;
 	static final int MaximumDamage = 9;
 

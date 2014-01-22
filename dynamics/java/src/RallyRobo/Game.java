@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
-class Game {
+final class Game {
 	final public Board board;
 	public ArrayList<Robot> robots = new ArrayList<Robot>();
 	boolean over = false;
