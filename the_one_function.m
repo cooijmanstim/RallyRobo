@@ -19,9 +19,9 @@ end
 if isempty(DataStructure)
     % TODO: let image processing function be careful with overwriting
     ProcessImage(game, image);
-    [DataStructure,PlayersPos] = backupfunction_inverse(game);
+    [DataStructure,PlayersPos] = mc_backupfunction_inverse(game);
 else
-    Backupfunction(game, DataStructure, PlayersPos);
+    mc_backupfunction(game, DataStructure, PlayersPos);
 end
 
 assert(length(last_checkpoints) == nrobots);

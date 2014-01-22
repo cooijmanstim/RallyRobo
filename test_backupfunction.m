@@ -19,14 +19,14 @@ for i = 1:4
     game.board.add_checkpoint([0 0]);
     game.add_robot([1 1], RallyRobo.Direction.East);
 end
-Backupfunction(game, ds, ps);
-[ds2,ps2] = backupfunction_inverse(game);
+mc_backupfunction(game, ds, ps);
+[ds2,ps2] = mc_backupfunction_inverse(game);
 game2 = RallyRobo.Game(m, n);
 for i = 1:4
     game2.board.add_checkpoint([0 0]);
     game2.add_robot([1 1], RallyRobo.Direction.East);
 end
-Backupfunction(game2, ds2,ps2);
+mc_backupfunction(game2, ds2,ps2);
 assert(game.equals(game2));
 
 % this might fail because there are multiple equivalent representations
