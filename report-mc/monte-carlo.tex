@@ -53,25 +53,22 @@
 
 \section{Monte-Carlo strategy}
 
-% TODO: cite MDPs
-In this section the Monte-Carlo strategy is discussed.  First the approach is described in terms of Markov Decision Processes.  Sections~\ref{sec:evaluators} and~\ref{sec:playout-strategies} introduce values for 
+In this section the Monte-Carlo strategy is discussed.  In Section~\ref{sec:approach} the approach is described and the concepts of evaluation functions and playout stragies are introduced.  Section~\ref{sec:action-space} presents an analysis of the symmetries in the action space and how they are exploited.  Concrete examples of evaluation functions and playout strategies are described in sections~\ref{sec:evaluators} and~\ref{sec:playout-strategies}.
 
-\subsection{The approach}
+\subsection{The approach} \label{sec:approach}
 
-% TODO: introduce as MDPs
-Given a game state $\state_\initial$, an optimal action is one that maximizes the expected winning probability:
+The Monte-Carlo strategy treats the game as a Markov Decision Process\cite{puterman2009markov} with state space $\states$ and action space $\actions(\states)$, with unknown action-conditional transition probabilities determined by the behavior of the opponents.  Given a game state $\state_\initial$, an optimal action is one that maximizes the expected winning probability:
 
 \[
 \argmax_{\action \in \actions\left(\state_\initial\right)} \expectation{\evaluator\left(\randomState\final\right)}{\randomState\initial=\state_\initial, \Action_\initial=\action}.
 \]
 
-Here the expectation is with respect to the distribution over terminal states $\randomState_\final$, and $\evaluator\left(\state\right) \in \left\{0,1\right\}$ indicates whether our robot is the winner in $\randomState_\final$.  Solving this exactly requires knowledge of the action-conditional distribution over terminal states $\probability\left(\randomState_\final \given \randomState_\initial=\state_\initial, \Action_\initial\right)$, which is a function of the unknown strategies of the opponents.
+Here the expectation is with respect to the limiting distribution over states $\randomState_\final$, and $\evaluator\left(\state\right) \in \left\{0,1\right\}$ indicates whether our robot is the winner in $\randomState_\final$.\footnote{It is assumed that there are no recurring states.}  Solving this exactly requires knowledge of the action-conditional distribution over terminal states $\probability\left(\randomState_\final \given \randomState_\initial=\state_\initial, \Action_\initial\right)$, which is a function of the unknown strategies of the opponents.
 
 Instead, the Monte-Carlo strategy estimates the expectation corresponding to each action $\action_\initial$ by sampling terminal states $\state_\final$ from an empirical distribution $\hat{\probability}\left(\randomState_\final \given \state_\initial,\action_\initial\right)$ and averaging the values $\evaluator\left(\state_\final\right)$ so found.  The sampling procedure is described in Algorithm~\ref{alg:sample_terminal_states}.  In short, a simulated game is played out in which our robot's first action is $\action_\initial$ and all further actions by all players are made according to some playout strategy $\pi\left(\state\right) \in \actions\left(\state\right)$.  Note that the resulting empirical distribution $\hat{\probability}$ is unlikely to be a good approximation to the actual distribution.  However, since the simulated game has all players playing according to the same strategy $\pi$, the expectations with respect to the two distributions are positively correlated.
 
 While the strategy as described above works in theory, in practice not enough samples are collected to provide reliable estimates of the expectations.  This is because it takes on average over a thousand turns to reach a terminal state.  Longer simulations take longer to compute and result in fewer samples per unit time.  At the same time, due to the uncertainty introduced with every turn, the resulting terminal state is much less dependent on the initial action.
 
-% TODO: cite minimax evaluation functions
 In order to improve the number of samples and their information content, the simulated games are played only up until a finite depth $\depth$.  Furthermore, the win indicator function $\evaluator$ is replaced by a heuristic evaluation function $\hat{\evaluator}\left(\state\right) \in \reals$ that is also defined for non-terminal states:
 
 \[
@@ -109,8 +106,7 @@ This analysis serves two purposes.  Firstly, sampling uniformly from $\actions$ 
 
 Note that there are circumstances under which it is possible to reduce the action space further.  For example, if $49,51 \in \hand$ and $50$ is locked in some player's last register, then the relative order of $49$ and $51$ has no effect if both are played in an earlier register.  However, these cases are rare.
 
-Finally, it is useful in practice to have a bijective mapping between elements of $\actions$ and the natural numbers.  This allows efficient lookup tables to be used.  Algorithm~\ref{alg:actionnumber} computes the number corresponding to an action, and Algorithm~\ref{alg:numberaction} computes the action from the number.  The encoding is a generalization of the factoradic system to $k$-sequences taken from multisets.
-% TODO: cite factoradic
+Finally, it is useful in practice to have a bijective mapping between elements of $\actions$ and the natural numbers.  This allows efficient lookup tables to be used.  Algorithm~\ref{alg:actionnumber} computes the number corresponding to an action, and Algorithm~\ref{alg:numberaction} computes the action from the number.  The encoding is a generalization of the factorial number system~\cite{knuth1981art} to $k$-sequences taken from multisets.
 
 \begin{algorithm}
 \caption{Sampling terminal states}
@@ -205,13 +201,13 @@ Finally, it is useful in practice to have a bijective mapping between elements o
 
 \subsection{Evaluation Functions} \label{sec:evaluators}
 
-Recall from Section~\ref{sec:approach} that the evaluation function $\evaluator(\state)$ is a substitute for the winning probability.  This section describes the evaluation functions that were implemented and tried.
+Recall from Section~\ref{sec:approach} that the evaluation function $\evaluator(\state)$ is a substitute for the winning probability.  This substitution is a trick that is often applied in game AI.~\cite{russell1995artificial}  The main requirements of evaluation functions are that they correlate with winning probability, and that they are inexpensive to compute.  This section describes the evaluation functions that were implemented and tried.
 
 \begin{itemize}
 \item \textbf{Minimum Checkpoint Advantage} compares our robot to the opponent that is furthest ahead of the other opponents.  It computes the difference $a - b$ between the number of checkpoints $a$ reached by our robot and the number of checkpoints $b$ reached by the opponent.  Clearly, this correlates with winning probability.  However, it is sparse and delayed: it does not reward approaching a checkpoint until it is actually reached. \\
 \item \textbf{Manhattan Distance to Checkpoint} computes the $L_1$ distance to the next checkpoint. \\
 \item \textbf{Informed Distance to Checkpoint} finds the shortest path to the next checkpoint when traveling around walls and pits.  As a reward signal, it is less likely to get the robot stuck in a local optimum where it has to first distance itself from the checkpoint and then approach it again.  However, it is too expensive to compute, and since the Monte-Carlo strategy searches $d$ turns ahead, it is already able to escape local optima. \\
-\item The \textbf{Hodgepodge} is a linear combination of several features: \\
+\item The \textbf{Hodgepodge} is a linear combination of several quantities: \\
   \begin{tabular}{l|r|l}
     Feature & Weight & Domain \\
     \hline
@@ -227,12 +223,32 @@ Recall from Section~\ref{sec:approach} that the evaluation function $\evaluator(
 
 \subsection{Playout Strategies} \label{sec:playout-strategies}
 
-
+The sampling distribution $\hat{\probability}$ of $\randomState_\depth$ depends heavily on the strategy $\pi$ used in the simulated games.  The strategy should most of all be \emph{fast} to compute.  However, stronger playout strategies make the simulated games closer to the real game, and thus result in more useful samples.
 
 \begin{itemize}
-\item The \textbf{Uniform Random} playout strategy samples an action uniformly from $\actions(\state)$. \\
-\item The \textbf{Random Search} playout strategy samples a small number of actions uniformly from $\actions(\state)$ and executes the one that maximizes some evaluation function $\evaluator(\state)$. \\
+\item The \textbf{Uniform Random} playout strategy samples an action uniformly from $\actions(\state)$.  This is the trivial case.  The samples it produces do not provide much information on the strength of the tentative action $\action_\initial$, since any advantages or weaknesses created by the action are rarely exploited.  \\
+\item The \textbf{Shortest-Path Strategy} introduced in Section~\ref{sec:shortest-path} finds an action that minimizes a heuristic cost function, penalizing such quantities as proximity to hazards and distance to the next checkpoint.  Due to technical complications this was never tried as a playout strategy, but regardless it would have been too expensive to compute and too deterministic. \\
+\item The \textbf{Random Search} playout strategy samples a small number $k$ of actions $\action^{(i)}, i = 1,\ldots,k$ uniformly from $\actions(\state_0)$.  For each of these actions, it simulates a single turn where none of the other robots move, obtaining $\state_1^{(i)}$.  Finally, it chooses the action $\argmax_{\action^{(i)}} \evaluator(\state_1^{(i)})$ for some evaluator $\evaluator$.  This can be seen as a fast approximation to the Shortest-Path strategy. \\
 \end{itemize}
 
+
+\subsection{Future Research}
+
+The strength of the Monte-Carlo strategy crucially depends on the evaluation function and the playout strategy used.  It could be improved by application of techniques from machine learning such as representation learning \cite{bengio2013representation} (to reduce the dimensionality of the state space) and reinforcement learning \cite{sutton1998reinforcement} (to learn a mapping from game states to winning probabilities based on simulations or actual games).  Alternatively, its play can be improved simply by running it on a faster computer and giving it more decision time.
+
+@article{bengio2013representation,
+  title={Representation learning: A review and new perspectives},
+  author={Bengio, Yoshua and Courville, Aaron and Vincent, Pascal},
+  publisher={IEEE}
+}
+
+@book{sutton1998reinforcement,
+  title={Reinforcement learning: An introduction},
+  author={Sutton, Richard S and Barto, Andrew G},
+  volume={1},
+  number={1},
+  year={1998},
+  publisher={Cambridge Univ Press}
+}
 
 \end{document}
