@@ -107,29 +107,29 @@ final class Robot {
 		direction = dir;
 	}
 
-	void rotate(int d) {
+	public void rotate(int d) {
 		direction = direction.rotate(d);
 	}
 
-	void take_damage() {
+	public void take_damage() {
 		damage++;
 		if (damage > MaximumDamage)
 			destroy();
 	}
 	
-	void repair() {
+	public void repair() {
 		damage = Math.max(0, damage - 1);
 	}
 	
-	void destroy() {
+	public void destroy() {
 		state = State.Destroyed;
 	}
 	
-	void skip() {
+	public void skip() {
 		state = State.Waiting;
 	}
 	
-	void respawn() {
+	public void respawn() {
 		load_respawn();
 		damage = 0;
 		state = State.Active;
@@ -149,11 +149,11 @@ final class Robot {
 		direction = respawn_direction;
 	}
 	
-	void virtualize() {
+	public void virtualize() {
 		is_virtual = true;
 	}
 	
-	void devirtualize() {
+	public void devirtualize() {
 		is_virtual = false;
 	}
 
@@ -178,7 +178,7 @@ final class Robot {
 			registers[i] = cards[i];
 	}
 	
-	void vacate_registers() {
+	public void vacate_registers() {
 		int ni = free_register_count();
 		if (!is_active())
 			ni = NRegisters;
